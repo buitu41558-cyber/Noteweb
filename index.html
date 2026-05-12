@@ -3,70 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Map Horizontal</title>
+    <title>Bản Đồ Thời Tiết - Khung Ngang</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        /* Ép toàn bộ giao diện theo chiều ngang */
         body, html { 
             margin: 0; padding: 0; height: 100%; 
             background: #000; 
-            display: flex; align-items: center; justify-content: center; 
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* KHÓA CỨNG KHUNG HÌNH CHỮ NHẬT NGANG */
-        .map-wrapper {
-            width: 95vw; 
-            height: calc(95vw * 0.6); /* Tỷ lệ ngang 1.6:1 */
-            max-height: 90vh;
+        /* Khung chứa bản đồ luôn nằm ngang */
+        .container {
+            width: 100vw;
+            height: 56.25vw; /* Tỉ lệ 16:9 chuẩn nằm ngang */
+            max-height: 100vh;
+            max-width: 177.78vh; /* Đảm bảo không vượt quá màn hình */
             position: relative;
-            border: 2px solid #444;
+            border: 1px solid #333;
         }
 
-        #map { width: 100%; height: 100%; background: #0b0e11; }
+        #map { 
+            width: 100%; 
+            height: 100%; 
+            background: #0b0e11; 
+        }
 
-        /* UI tối giản */
-        .overlay-label {
+        /* Giao diện tối giản nhất có thể */
+        .status-bar {
             position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(255,255,255,0.9); padding: 5px 10px;
-            font-family: monospace; font-size: 12px; border: 1px solid #000;
+            background: rgba(0,0,0,0.8); color: #fff; padding: 5px 10px;
+            font-family: monospace; font-size: 11px; border: 1px solid #444;
         }
 
-        .storm-dot {
-            width: 8px; height: 8px; background: red;
-            border-radius: 50%; border: 1px solid white;
+        .storm-marker {
+            width: 10px; height: 10px; background: #ff0000;
+            border-radius: 50%; border: 1px solid #fff;
         }
     </style>
 </head>
 <body>
 
-    <div class="map-wrapper">
-        <div class="overlay-label">DATA TYPE: RAW_SATELLITE</div>
+    <div class="container">
+        <div class="status-bar">LIVE RADAR | SCALE: 1:1.000.000</div>
         <div id="map"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Sử dụng CRS.Simple để giữ đúng tỉ lệ pixel ảnh
         var map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -1,
+            minZoom: -2,
             attributionControl: false
         });
 
-        // THIẾT LẬP TỶ LỆ NGANG: Rộng 1600, Cao 1000
-        var bounds = [[0, 0], [1000, 1600]]; 
+        // ĐỊNH NGHĨA KHUNG NGANG: Rộng 2000, Cao 1000 (Tỉ lệ 2:1)
+        // Đây là thông số quyết định map nằm ngang và không bị méo
+        var bounds = [[0, 0], [1000, 2000]]; 
         var image = L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
 
         map.fitBounds(bounds);
 
-        // Marker bão đơn giản
-        function addStorm(y, x, id) {
-            L.circle([y, x], { radius: 60, color: 'red', weight: 1, fillOpacity: 0.1 }).addTo(map);
-            var icon = L.divIcon({ className: 'storm-dot', iconSize: [10, 10] });
-            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(id);
+        // Chấm đỏ đánh dấu bão (Tọa độ x,y đơn giản)
+        function setStorm(y, x, label) {
+            L.circle([y, x], { radius: 60, color: 'red', weight: 1, fillOpacity: 0.1, dashArray: '5,5' }).addTo(map);
+            var icon = L.divIcon({ className: 'storm-marker', iconSize: [10, 10] });
+            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(label);
         }
 
-        // Đặt bão vào vị trí biển (tọa độ theo khung ngang)
-        addStorm(550, 420, "SYS_A1");
-        addStorm(450, 1150, "SYS_B2");
+        // Đặt bão vào các khu vực biển trên bản đồ nằm ngang
+        setStorm(550, 500, "ZONE_A");
+        setStorm(450, 1500, "ZONE_B");
 
     </script>
 </body>
