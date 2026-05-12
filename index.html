@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Khí Tượng 3 Điểm - Auto Save</title>
+    <title>Hệ Thống Khí Tượng 3 Điểm - Realtime</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
-        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; margin: auto; top: 50%; transform: translateY(-50%); }
-        #map { width: 100%; height: 100%; background: #05070a; cursor: crosshair; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; margin: auto; top: 50%; transform: translateY(-50%); border: 1px solid #333; }
+        #map { width: 100%; height: 100%; background: #05070a; }
 
-        /* Admin Panel Trượt */
+        /* Panel quản trị bên trái */
         #adminPanel { 
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%; 
-            background: rgba(15, 15, 15, 0.98); border-right: 3px solid #ff4b4b; 
-            z-index: 4000; transition: 0.4s; color: #fff; padding: 20px; box-sizing: border-box;
+            background: rgba(10, 10, 10, 0.98); border-right: 3px solid #ff4b4b; 
+            z-index: 4000; transition: 0.4s ease-in-out; color: #fff; padding: 25px; box-sizing: border-box;
         }
         #adminPanel.active { left: 0; }
         .toggle-panel {
@@ -23,17 +23,23 @@
             border-radius: 0 5px 5px 0; cursor: pointer; display: none; font-weight: bold;
         }
 
-        h2 { color: #ff4b4b; font-size: 16px; text-align: center; margin-bottom: 20px; }
-        input, select { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-        .btn { width: 100%; padding: 12px; background: #ff4b4b; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        h2 { color: #ff4b4b; font-size: 16px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+        .item { margin-bottom: 12px; }
+        label { font-size: 10px; color: #666; display: block; margin-bottom: 3px; }
+        input, select { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 12px; background: #ff4b4b; color: #fff; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius: 4px; }
 
-        /* Marker & Line */
-        .storm-marker { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; position: relative; }
-        .radar { position: absolute; inset: -15px; border: 2px solid inherit; border-radius: 50%; animation: pulse 2s infinite; opacity: 0.5; }
+        /* Marker bão Pro */
+        .storm-marker { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; position: relative; }
+        .radar-pulse { 
+            position: absolute; inset: -20px; border: 2px solid inherit; border-radius: 50%; 
+            animation: pulse 2s infinite; opacity: 0.6; pointer-events: none;
+        }
         @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
 
-        .login-btn { position: absolute; bottom: 15px; right: 20px; z-index: 1000; background: rgba(255,255,255,0.1); color: #888; border: 1px solid #333; padding: 5px 15px; cursor: pointer; border-radius: 20px; }
-        #statusHint { font-size: 12px; color: #ff4b4b; text-align: center; margin-top: 15px; font-weight: bold; }
+        .login-btn { position: absolute; bottom: 15px; right: 20px; z-index: 1000; background: rgba(255,255,255,0.05); color: #444; border: 1px solid #222; padding: 5px 15px; cursor: pointer; border-radius: 20px; font-size: 11px; }
+        .login-btn:hover { color: #ff4b4b; border-color: #ff4b4b; }
+        #statusHint { font-size: 11px; color: #ff4b4b; text-align: center; margin-top: 15px; line-height: 1.5; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -44,17 +50,29 @@
 
         <div id="adminPanel">
             <button class="toggle-panel" id="toggleBtn" onclick="togglePanel()"> < </button>
-            <h2>QUẢN TRỊ VIÊN</h2>
-            <input type="text" id="sName" placeholder="Tên bão">
-            <input type="number" id="sTemp" placeholder="Nhiệt độ" value="28">
-            <select id="sLevel">
-                <option value="apthap">Áp thấp</option>
-                <option value="bao">Bão</option>
-                <option value="sieubao">Siêu bão</option>
-            </select>
-            <input type="range" id="sRadius" min="50" max="500" value="200">
-            <div id="statusHint">ẤN ĐIỂM 1: CHỌN TÂM BÃO</div>
-            <button class="btn" style="background:#333; margin-top:30px;" onclick="location.reload()">ĐĂNG XUẤT</button>
+            <h2>COMMAND CENTER</h2>
+            <div class="item">
+                <label>TÊN BÃO</label>
+                <input type="text" id="sName" placeholder="VD: TYPHOON 01">
+            </div>
+            <div class="item">
+                <label>NHIỆT ĐỘ (°C)</label>
+                <input type="number" id="sTemp" value="28">
+            </div>
+            <div class="item">
+                <label>CẤP ĐỘ</label>
+                <select id="sLevel">
+                    <option value="apthap">ÁP THẤP (VÀNG)</option>
+                    <option value="bao">BÃO (CAM)</option>
+                    <option value="sieubao">SIÊU BÃO (ĐỎ)</option>
+                </select>
+            </div>
+            <div class="item">
+                <label>BÁN KÍNH (KM)</label>
+                <input type="range" id="sRadius" min="50" max="600" value="250">
+            </div>
+            <div id="statusHint">CLICK LẦN 1: CHỌN TÂM BÃO</div>
+            <button class="btn-action" style="background:#222; margin-top:20px;" onclick="location.reload()">ĐĂNG XUẤT</button>
         </div>
     </div>
 
@@ -62,11 +80,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Cấu hình PubNub
         const pubnub = new PubNub({
             publishKey: 'pub-c-497793d9-a359-458b-967b-1b913840742d',
             subscribeKey: 'sub-c-17937446-ec8c-4f76-905c-3a8595085e6a',
-            uuid: "user_" + Math.floor(Math.random() * 9999)
+            uuid: "meteor_" + Math.random().toString(36).substr(2, 5)
         });
 
         const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
@@ -92,90 +109,66 @@
             btn.innerText = panel.classList.contains('active') ? '<' : '>';
         }
 
-        // TẢI DỮ LIỆU CŨ KHI LOAD TRANG (History)
-        pubnub.fetchMessages({ channels: ['storm_v4_3point'], count: 50 }, (status, response) => {
-            if (response && response.channels['storm_v4_3point']) {
-                const history = response.channels['storm_v4_3point'];
-                history.forEach(msgObj => {
-                    const data = msgObj.message;
-                    if(data.type === 'storm') renderStorm(data);
-                    if(data.type === 'delete') removeStormLocal(data.id);
+        // Tải dữ liệu lịch sử
+        pubnub.fetchMessages({ channels: ['global_storm_v5'], count: 20 }, (s, res) => {
+            if (res && res.channels['global_storm_v5']) {
+                res.channels['global_storm_v5'].forEach(m => {
+                    if(m.message.type === 'storm') renderStorm(m.message);
+                    if(m.message.type === 'delete') deleteLocal(m.message.id);
                 });
             }
         });
 
-        // NHẬN DỮ LIỆU MỚI (Real-time)
-        pubnub.addListener({
-            message: (obj) => {
-                const data = obj.message;
-                if(data.type === 'storm') renderStorm(data);
-                if(data.type === 'delete') removeStormLocal(data.id);
-            }
-        });
-        pubnub.subscribe({ channels: ['storm_v4_3point'] });
+        pubnub.addListener({ message: (obj) => {
+            const d = obj.message;
+            if(d.type === 'storm') renderStorm(d);
+            if(d.type === 'delete') deleteLocal(d.id);
+        }});
+        pubnub.subscribe({ channels: ['global_storm_v5'] });
 
         function renderStorm(s) {
             if(stormLayers[s.id]) layerGroup.removeLayer(stormLayers[s.id]);
             const color = s.lv === 'sieubao' ? '#ff0000' : (s.lv === 'bao' ? '#ff9800' : '#ffeb3b');
             
             const marker = L.marker([s.p1.y, s.p1.x], {
-                icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar" style="border-color:${color}; background:${color}"></div>` })
+                icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar-pulse" style="border-color:${color}; background:radial-gradient(circle, ${color} 10%, transparent 70%); opacity:0.3"></div>`, iconSize:[20,20] })
             });
 
             const circle = L.circle([s.p1.y, s.p1.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.1 });
             const elements = [marker, circle];
             
-            // Vẽ đường đi qua 3 điểm
             if(s.p2 && s.p3) {
-                const path = L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '5,5', opacity: 0.5 });
-                elements.push(path);
-                const endMarker = L.circle([s.p3.y, s.p3.x], { radius: 10, color: color, fillOpacity: 0.8 });
-                elements.push(endMarker);
+                elements.push(L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '10,10', opacity: 0.5 }));
+                elements.push(L.circle([s.p3.y, s.p3.x], { radius: 10, color: color, fillOpacity: 0.5 }));
             }
 
             const group = L.layerGroup(elements).addTo(layerGroup);
-            const delBtn = isAdmin ? `<br><button onclick="publishDelete('${s.id}')" style="background:red; color:white; border:none; padding:3px 8px; cursor:pointer; margin-top:5px;">XÓA</button>` : "";
-            marker.bindTooltip(`<b>${s.name}</b><br>${s.temp}°C${delBtn}`, { permanent: true, direction: 'top', interactive: true });
+            const delAction = isAdmin ? `<br><button onclick="publishDel('${s.id}')" style="background:red; color:white; border:none; padding:3px 10px; cursor:pointer; border-radius:3px; margin-top:5px;">XÓA BÃO</button>` : "";
+            marker.bindTooltip(`<b>${s.name}</b><br>${s.temp}°C${delAction}`, { permanent: true, direction: 'top', interactive: true });
             
             stormLayers[s.id] = group;
         }
 
         map.on('click', e => {
             if(!isAdmin) return;
-            const pos = { y: e.latlng.lat, x: e.latlng.lng };
-            points.push(pos);
+            const p = { y: e.latlng.lat, x: e.latlng.lng };
+            points.push(p);
 
-            if(step === 1) {
-                document.getElementById('statusHint').innerText = "ẤN ĐIỂM 2: CHỌN ĐIỂM TRUNG GIAN";
-                step = 2;
-            } else if(step === 2) {
-                document.getElementById('statusHint').innerText = "ẤN ĐIỂM 3: CHỌN ĐIỂM KẾT THÚC";
-                step = 3;
-            } else {
-                // Đủ 3 điểm -> Gửi dữ liệu
-                const finalStorm = {
-                    type: 'storm',
-                    id: "STORM_" + Date.now(),
+            if(step === 1) { document.getElementById('statusHint').innerText = "CLICK LẦN 2: CHỌN ĐIỂM GIỮA"; step = 2; }
+            else if(step === 2) { document.getElementById('statusHint').innerText = "CLICK LẦN 3: XÁC NHẬN KẾT THÚC"; step = 3; }
+            else {
+                const data = {
+                    type: 'storm', id: "ID" + Date.now(),
                     name: document.getElementById('sName').value || "BÃO MỚI",
                     temp: document.getElementById('sTemp').value,
                     lv: document.getElementById('sLevel').value,
                     r: document.getElementById('sRadius').value,
                     p1: points[0], p2: points[1], p3: points[2]
                 };
-                pubnub.publish({ channel: 'storm_v4_3point', message: finalStorm });
-                
-                // Reset
-                points = [];
-                step = 1;
-                document.getElementById('statusHint').innerText = "ĐÃ LƯU! ẤN ĐIỂM 1: CHỌN TÂM BÃO MỚI";
+                pubnub.publish({ channel: 'global_storm_v5', message: data });
+                points = []; step = 1;
+                document.getElementById('statusHint').innerText = "ĐÃ LƯU VĨNH VIỄN! CLICK ĐỂ TẠO BÃO MỚI";
             }
         });
 
-        window.publishDelete = (id) => pubnub.publish({ channel: 'storm_v4_3point', message: { type: 'delete', id: id } });
-        
-        function removeStormLocal(id) {
-            if(stormLayers[id]) { layerGroup.removeLayer(stormLayers[id]); delete stormLayers[id]; }
-        }
-    </script>
-</body>
-</html>
+        window.publishDel = (id
