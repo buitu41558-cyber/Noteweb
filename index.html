@@ -3,84 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Map - Final Fix</title>
+    <title>Weather Map Fixed</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Reset chuẩn để không bị vỡ layout */
-        body, html { margin: 0; padding: 0; height: 100%; background: #111; overflow: hidden; }
-        
-        #map { 
-            width: 100vw; 
-            height: 100vh; 
-            background: #0b0e11; 
-        }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
+        #map { width: 100vw; height: 100vh; }
 
-        /* Giao diện phẳng, đơn giản */
-        .info-box {
-            position: absolute; top: 15px; left: 50px; z-index: 1000;
-            background: white; padding: 10px; border: 1px solid #000;
-            font-family: sans-serif; min-width: 180px;
+        /* UI Clean */
+        .info-panel {
+            position: absolute; top: 10px; left: 50px; z-index: 1000;
+            background: rgba(255,255,255,0.9); padding: 8px 15px; border: 1px solid #333;
+            font-family: Arial, sans-serif; box-shadow: 2px 2px 0px #000;
         }
         .menu-right {
-            position: absolute; right: 15px; top: 15px; z-index: 1000;
-            display: flex; flex-direction: column; border: 1px solid #000;
+            position: absolute; right: 10px; top: 10px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 2px;
         }
-        .menu-item {
-            background: white; border: 0.5px solid #eee; padding: 8px 12px;
-            font-size: 12px; cursor: pointer; text-align: center;
+        .btn {
+            background: white; border: 1px solid #333; padding: 8px;
+            font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;
         }
-        .menu-item.active { background: #000; color: white; }
+        .btn.active { background: #333; color: white; }
 
-        /* Icon tâm bão đơn giản */
+        /* Tâm bão */
         .storm-dot {
-            width: 10px; height: 10px; background: red;
-            border-radius: 50%; border: 2px solid white;
+            width: 8px; height: 8px; background: #ff0000;
+            border-radius: 50%; border: 1.5px solid white;
+            box-shadow: 0 0 5px rgba(255,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <div class="info-box">
-        <div style="font-weight: bold; border-bottom: 1px solid #000; margin-bottom: 5px;">DỮ LIỆU BẢN ĐỒ</div>
-        <div style="font-size: 12px;">Vùng: Eldria Continent</div>
-        <div style="font-size: 12px; color: red;">● Cảnh báo bão</div>
+    <div class="info-panel">
+        <div style="font-size: 14px; font-weight: bold;">HỆ THỐNG GIÁM SÁT</div>
+        <div style="font-size: 11px; color: #cc0000;">● 2 CƠN BÃO ĐANG HOẠT ĐỘNG</div>
     </div>
 
     <div class="menu-right">
-        <div class="menu-item active">BẢN ĐỒ</div>
-        <div class="menu-item">GIÓ</div>
-        <div class="menu-item">MƯA</div>
+        <div class="btn active">BẢN ĐỒ</div>
+        <div class="btn">GIÓ</div>
+        <div class="btn">MƯA</div>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Tọa độ phẳng cho map giả tưởng
+        // Tọa độ phẳng
         var map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -1,
-            maxZoom: 2,
+            minZoom: -1.5,
             attributionControl: false
         });
 
-        // QUAN TRỌNG: Định nghĩa kích thước ảnh gốc (Dựa trên ảnh của bạn là 890x1778 hoặc tương đương)
-        // Tôi lấy con số 1000 để làm chuẩn, Leaflet sẽ tự fit không lo bị méo.
-        var bounds = [[0, 0], [1000, 1000]]; 
+        // FIX TỶ LỆ: Ảnh của bạn có tỷ lệ đứng. 
+        // Ta set chiều cao (Y) là 1500 và chiều rộng (X) là 800 để map không bị kéo ngang.
+        var bounds = [[0, 0], [1500, 800]]; 
         var image = L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
 
         map.fitBounds(bounds);
 
-        // Thêm các điểm bão (tọa độ tính trong khoảng 0-1000)
-        function addStorm(y, x, text) {
-            L.circle([y, x], { radius: 80, color: 'red', weight: 1, fillOpacity: 0.05, dashArray: '5,5' }).addTo(map);
+        // Hàm thêm bão đơn giản
+        function addStorm(y, x, label) {
+            // Vòng tròn quét radar
+            L.circle([y, x], {
+                radius: 120, color: 'red', weight: 1, fillOpacity: 0.05, dashArray: '5, 10'
+            }).addTo(map);
+
+            // Chấm đỏ tâm bão
             var icon = L.divIcon({ className: 'storm-dot', iconSize: [10, 10] });
-            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(text);
+            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(label, {permanent: true, direction: 'right'});
         }
 
-        // Đặt bão vào các vị trí chính xác trên map của bạn
-        addStorm(650, 280, "Áp thấp nhiệt đới");
-        addStorm(450, 750, "Cơn bão số 2");
+        // Đặt bão (Tọa độ đã căn chỉnh theo tỷ lệ mới)
+        addStorm(1000, 250, "BÃO SỐ 1");
+        addStorm(600, 620, "BÃO SỐ 2");
 
     </script>
 </body>
