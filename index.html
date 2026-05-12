@@ -3,208 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meteorological Command Center</title>
+    <title>Hệ Thống Khí Tượng Đồng Bộ Toàn Cầu</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
-        
-        /* Map Layout */
-        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; border: 2px solid #222; margin: auto; top: 50%; transform: translateY(-50%); }
-        #map { width: 100%; height: 100%; background: #05070a; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; margin: auto; top: 50%; transform: translateY(-50%); border: 1px solid #333; }
+        #map { width: 100%; height: 100%; background: #05070a; cursor: crosshair; }
 
-        /* News Ticker (Thông báo toàn cầu) */
-        .ticker-wrap { position: absolute; top: 0; width: 100%; background: rgba(255, 0, 0, 0.8); color: white; overflow: hidden; white-space: nowrap; z-index: 5000; display: none; }
-        .ticker { display: inline-block; padding-left: 100%; animation: ticker 20s linear infinite; font-weight: bold; padding: 5px 0; }
-        @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+        /* Global Alert Ticker */
+        #tickerWrap { position: absolute; top: 0; width: 100%; background: #ff0000; color: #fff; z-index: 5000; display: none; padding: 5px 0; overflow: hidden; }
+        .ticker { display: inline-block; white-space: nowrap; animation: ticker 15s linear infinite; font-weight: bold; text-transform: uppercase; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         /* Admin Panel Pro */
         #adminPanel { 
-            position: absolute; top: 10px; right: -350px; width: 300px; height: 95%; 
-            background: rgba(10, 15, 20, 0.95); border-left: 2px solid #ff4b4b; 
-            z-index: 4000; transition: 0.5s; color: #00ff00; padding: 15px; box-sizing: border-box;
-            overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            position: absolute; top: 10px; right: -350px; width: 320px; height: 95%; 
+            background: rgba(15, 15, 15, 0.98); border-left: 3px solid #ff4b4b; 
+            z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); color: #fff; padding: 20px; box-sizing: border-box;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.9);
         }
         #adminPanel.active { right: 0; }
-        
-        h3 { color: #ff4b4b; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 16px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; margin-bottom: 5px; color: #888; }
-        input, select { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #00ff00; padding: 8px; border-radius: 3px; font-family: inherit; }
-        
-        .btn-action { width: 100%; padding: 10px; border: none; cursor: pointer; font-weight: bold; margin-bottom: 5px; font-family: inherit; }
-        .btn-save { background: #ff4b4b; color: white; }
-        .btn-clear { background: #333; color: #888; font-size: 10px; }
+        h3 { margin-top: 0; color: #ff4b4b; border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; }
+        .group { margin-bottom: 15px; }
+        label { font-size: 11px; color: #888; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-add { background: #ff4b4b; color: white; }
+        .btn-msg { background: #444; color: #ccc; font-size: 11px; }
 
-        /* Storm Marker & Radar */
-        .storm-marker { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; position: relative; }
-        .radar-wave { position: absolute; inset: -15px; border: 1px solid rgba(255,0,0,0.3); border-radius: 50%; animation: radar 2s linear infinite; }
+        /* Marker & Radar Style */
+        .storm-marker { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; position: relative; }
+        .radar { position: absolute; inset: -20px; border: 2px solid rgba(255,0,0,0.5); border-radius: 50%; animation: radar 2s infinite; }
         @keyframes radar { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
 
-        .login-dot { position: absolute; bottom: 10px; right: 10px; z-index: 1000; width: 10px; height: 10px; background: #111; border: none; cursor: pointer; }
+        .login-dot { position: absolute; bottom: 5px; right: 5px; z-index: 1000; background: none; border: none; color: #111; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap" id="tickerWrap">
-        <div class="ticker" id="tickerMsg">CẢNH BÁO: HỆ THỐNG ĐANG THEO DÕI CÁC DIỄN BIẾN KHÍ TƯỢNG BẤT THƯỜNG...</div>
-    </div>
+    <div id="tickerWrap"><div class="ticker" id="tickerMsg"></div></div>
 
     <div class="map-container">
         <div id="map"></div>
-        <button class="login-dot" onclick="auth()"></button>
+        <button class="login-dot" onclick="login()">.</button>
 
         <div id="adminPanel">
-            <h3>COMMAND CENTER</h3>
-            
-            <div class="input-group">
-                <label>TÊN HỆ THỐNG</label>
-                <input type="text" id="sName" placeholder="Ví dụ: SUPER TYPHOON">
+            <h3>BẢNG ĐIỀU KHIỂN</h3>
+            <div class="group">
+                <label>TÊN CƠN BÃO</label>
+                <input type="text" id="sName" placeholder="VD: YAGI 2026">
             </div>
-
-            <div class="input-group">
+            <div class="group">
                 <label>NHIỆT ĐỘ TÂM (°C)</label>
-                <input type="number" id="sTemp" value="28">
+                <input type="number" id="sTemp" value="29">
             </div>
-
-            <div class="input-group">
+            <div class="group">
                 <label>CẤP ĐỘ NGUY HIỂM</label>
                 <select id="sLevel">
-                    <option value="apthap">Áp thấp nhiệt đới</option>
-                    <option value="bao">Bão (Category 1-3)</option>
-                    <option value="sieubao">Siêu bão (Category 5)</option>
+                    <option value="apthap">Áp thấp (Vàng)</option>
+                    <option value="bao">Bão nhiệt đới (Cam)</option>
+                    <option value="sieubao">Siêu bão (Đỏ)</option>
                 </select>
             </div>
-
-            <div class="input-group">
+            <div class="group">
                 <label>BÁN KÍNH ẢNH HƯỞNG (KM)</label>
-                <input type="range" id="sRadius" min="50" max="500" value="150">
+                <input type="range" id="sRadius" min="50" max="600" value="200">
             </div>
-
-            <div class="input-group">
-                <label>TIN NHẮN CẢNH BÁO (HIỆN TOÀN CẦU)</label>
-                <input type="text" id="globalMsg" placeholder="Nhập nội dung cảnh báo...">
-                <button onclick="sendAlert()" class="btn-action" style="background:#444; margin-top:5px; font-size:10px;">PHÁT THÔNG BÁO</button>
+            <div class="group">
+                <label>TIN NHẮN TOÀN CẦU</label>
+                <input type="text" id="alertInp" placeholder="Cảnh báo khẩn cấp...">
+                <button class="btn btn-msg" onclick="sendMsg()">PHÁT THÔNG BÁO</button>
             </div>
-
             <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-            <p id="hintText" style="font-size: 11px; color: #ff4b4b;">* Click Map: Chọn tâm bão<br>* Click tiếp: Chọn hướng</p>
-            
-            <div id="stormList" style="font-size: 10px; margin-top: 15px;"></div>
-            
-            <button onclick="location.reload()" class="btn-clear">ĐĂNG XUẤT & THOÁT</button>
+            <div id="statusHint" style="font-size: 11px; color: #ff4b4b; text-align: center;">HÃY CHỌN TÂM BÃO TRÊN MAP</div>
+            <button class="btn" style="background:#222; color:#555; font-size:10px; margin-top:20px;" onclick="location.reload()">ĐĂNG XUẤT</button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const db = gun.get('meteorology_pro_data_v1');
+        // Setup PubNub (Sử dụng Demo Keys công cộng)
+        const pubnub = new PubNub({
+            publishKey: 'pub-c-497793d9-a359-458b-967b-1b913840742d',
+            subscribeKey: 'sub-c-17937446-ec8c-4f76-905c-3a8595085e6a',
+            uuid: "user_" + Math.random().toString(36).substring(7)
+        });
 
         const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
         const bounds = [[0, 0], [1000, 2000]];
         L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
         map.fitBounds(bounds);
 
-        let isAdmin = false;
-        let step = 1;
-        let tempStorm = {};
-        const activeLayers = {};
-        const stormGroup = L.layerGroup().addTo(map);
+        let isAdmin = false, step = 1, tempStorm = {}, stormLayers = {};
+        const layerGroup = L.layerGroup().addTo(map);
 
-        function auth() {
-            if(prompt("Mật khẩu Admin:") === 'aihoi') {
-                isAdmin = true;
-                document.getElementById('adminPanel').classList.add('active');
-            }
-        }
+        function login() { if(prompt("Mật khẩu:") === 'aihoi') { isAdmin = true; document.getElementById('adminPanel').classList.add('active'); } }
 
-        // Đồng bộ dữ liệu bão và thông báo
-        db.get('alert').on(msg => {
-            if(msg) {
-                document.getElementById('tickerWrap').style.display = 'block';
-                document.getElementById('tickerMsg').innerText = msg;
-            } else {
-                document.getElementById('tickerWrap').style.display = 'none';
+        // Nhận dữ liệu đồng bộ
+        pubnub.addListener({
+            message: (obj) => {
+                const data = obj.message;
+                if(data.type === 'storm') {
+                    addStormToMap(data);
+                } else if(data.type === 'msg') {
+                    if(data.txt) {
+                        document.getElementById('tickerWrap').style.display = 'block';
+                        document.getElementById('tickerMsg').innerText = data.txt;
+                    } else {
+                        document.getElementById('tickerWrap').style.display = 'none';
+                    }
+                } else if(data.type === 'delete') {
+                    if(stormLayers[data.id]) { layerGroup.removeLayer(stormLayers[data.id]); delete stormLayers[data.id]; }
+                }
             }
         });
+        pubnub.subscribe({ channels: ['weather_channel_shared'] });
 
-        db.get('storms').map().on((data, id) => {
-            if (activeLayers[id]) { stormGroup.removeLayer(activeLayers[id]); delete activeLayers[id]; }
-            if (!data) { updateList(); return; }
-
-            // Tạo Marker bão
-            const color = data.level === 'sieubao' ? '#ff0000' : (data.level === 'bao' ? '#ff9800' : '#ffeb3b');
-            const marker = L.marker([data.y, data.x], {
-                icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar-wave" style="border-color:${color}"></div>`, iconSize:[16,16] })
+        function addStormToMap(s) {
+            if(stormLayers[s.id]) layerGroup.removeLayer(stormLayers[s.id]);
+            const color = s.lv === 'sieubao' ? '#ff0000' : (s.lv === 'bao' ? '#ff9800' : '#ffeb3b');
+            
+            const marker = L.marker([s.y, s.x], {
+                icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar" style="border-color:${color}"></div>` })
             });
-
-            // Vòng bán kính ảnh hưởng
-            const circle = L.circle([data.y, data.x], { radius: parseInt(data.radius), color: color, weight: 1, fillOpacity: 0.1 });
-            
-            // Đường hướng đi
+            const circle = L.circle([s.y, s.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.1 });
             const elements = [marker, circle];
-            if(data.ty) {
-                const line = L.polyline([[data.y, data.x], [data.ty, data.tx]], { color: color, weight: 1, dashArray: '5,5', opacity: 0.5 });
-                elements.push(line);
-            }
-
-            const g = L.layerGroup(elements).addTo(stormGroup);
-            marker.bindTooltip(`<b>${data.name}</b><br>${data.temp}°C | Bán kính: ${data.radius}km`, { permanent:true, direction:'top' });
             
-            activeLayers[id] = g;
-            updateList();
-        });
+            if(s.ty) elements.push(L.polyline([[s.y, s.x], [s.ty, s.tx]], { color: color, weight: 1, dashArray: '5,5', opacity: 0.4 }));
 
-        function sendAlert() {
-            const msg = document.getElementById('globalMsg').value;
-            db.get('alert').put(msg);
+            const group = L.layerGroup(elements).addTo(layerGroup);
+            const delBtn = isAdmin ? `<br><button onclick="deleteStorm('${s.id}')" style="background:red; color:white; border:none; padding:2px 5px; cursor:pointer;">XÓA</button>` : "";
+            marker.bindTooltip(`<b>${s.name}</b><br>${s.temp}°C | Bán kính: ${s.r}km${delBtn}`, { permanent: true, direction: 'top', interactive: true });
+            
+            stormLayers[s.id] = group;
         }
 
         map.on('click', e => {
             if(!isAdmin) return;
             if(step === 1) {
-                tempStorm = {
-                    y: e.latlng.lat, x: e.latlng.lng,
-                    name: document.getElementById('sName').value || "Hệ thống X",
+                tempStorm = { 
+                    y: e.latlng.lat, x: e.latlng.lng, 
+                    name: document.getElementById('sName').value || "UNNAMED",
                     temp: document.getElementById('sTemp').value,
-                    level: document.getElementById('sLevel').value,
-                    radius: document.getElementById('sRadius').value
+                    lv: document.getElementById('sLevel').value,
+                    r: document.getElementById('sRadius').value
                 };
                 step = 2;
-                document.getElementById('hintText').innerText = "VỊ TRÍ ĐÃ CHỌN. CLICK HƯỚNG ĐI...";
+                document.getElementById('statusHint').innerText = "CHỌN HƯỚNG BÃO DI CHUYỂN";
             } else {
-                tempStorm.ty = e.latlng.lat;
-                tempStorm.tx = e.latlng.lng;
-                db.get('storms').set(tempStorm);
+                tempStorm.ty = e.latlng.lat; tempStorm.tx = e.latlng.lng;
+                tempStorm.type = 'storm'; tempStorm.id = "S" + Date.now();
+                pubnub.publish({ channel: 'weather_channel_shared', message: tempStorm });
                 step = 1;
-                document.getElementById('hintText').innerText = "* Click Map: Chọn tâm bão\n* Click tiếp: Chọn hướng";
+                document.getElementById('statusHint').innerText = "HÃY CHỌN TÂM BÃO TRÊN MAP";
             }
         });
 
-        function updateList() {
-            const list = document.getElementById('stormList');
-            list.innerHTML = '<b>DANH SÁCH BÃO:</b><br>';
-            db.get('storms').once(data => {
-                // Gun.js map once
-            });
-            // (Tính năng xóa bão nhanh cho Admin)
-            if(isAdmin) list.innerHTML += "(Chuột phải vào bão trên map để xóa)";
-        }
-
-        // Xóa bão bằng cách click chuột phải vào vị trí bão (Chỉ Admin)
-        map.on('contextmenu', e => {
-            if(!isAdmin) return;
-            // Logic xóa bão gần vị trí click nhất
-            db.get('storms').once((data) => {
-               Object.keys(data).forEach(key => {
-                   if(data[key] && Math.abs(data[key].y - e.latlng.lat) < 20) {
-                       db.get('storms').get(key).put(null);
-                   }
-               });
-            });
-        });
+        window.deleteStorm = (id) => pubnub.publish({ channel: 'weather_channel_shared', message: { type: 'delete', id: id } });
+        window.sendMsg = () => pubnub.publish({ channel: 'weather_channel_shared', message: { type: 'msg', txt: document.getElementById('alertInp').value } });
 
     </script>
 </body>
