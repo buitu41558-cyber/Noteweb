@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>portfolio · tối giản</title>
+  <!-- Font chữ sans-serif sạch sẽ, không màu mè -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset và base – giao diện sạch, tông trung tính */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: #fafaf9;
+      color: #1c1c1c;
+      line-height: 1.5;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0 1.5rem;
+    }
+
+    /* Container chính giới hạn độ rộng, gọn gàng */
+    .container {
+      max-width: 980px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+      padding: 3rem 0 4rem;
+    }
+
+    /* ===== NAVIGATION ===== */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e5e5e0;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-weight: 600;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+      color: #171717;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #444;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+      padding: 0.3rem 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .nav-links a:hover {
+      color: #0a0a0a;
+      border-bottom-color: #b0b0a8;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: #171717;
+      max-width: 700px;
+    }
+
+    .hero .subtitle {
+      font-size: 1.2rem;
+      color: #4b4b4b;
+      max-width: 600px;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7rem 1.6rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: #f0f0ec;
+      color: #1c1c1c;
+      border-color: #d1d1c6;
+    }
+
+    .btn-primary {
+      background: #1c1c1c;
+      color: #fafaf9;
+      border-color: #1c1c1c;
+    }
+
+    .btn-primary:hover {
+      background: #2e2e2e;
+      border-color: #2e2e2e;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #c4c4b8;
+      color: #2b2b2b;
+    }
+
+    .btn-outline:hover {
+      background: #f4f4ef;
+      border-color: #a8a89b;
+    }
+
+    /* ===== ABOUT SECTION ===== */
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      color: #1f1f1f;
+      position: relative;
+      display: inline-block;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: #3d3d3d;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .skills-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .skills-list li {
+      background: #f0f0ea;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #2d2d2d;
+      border: 1px solid #dddcd2;
+    }
+
+    /* ===== PROJECTS ===== */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .project-card {
+      background: #ffffff;
+      border: 1px solid #e6e6df;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .project-card:hover {
+      border-color: #bebeb2;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+    }
+
+    .project-card h3 {
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: #1a1a1a;
+    }
+
+    .project-card p {
+      color: #555;
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    .project-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.3rem;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      background: #f3f3ed;
+      padding: 0.25rem 0.7rem;
+      border-radius: 1rem;
+      color: #4a4a4a;
+      letter-spacing: 0.02em;
+      border: 1px solid #e2e2d7;
+    }
+
+    .project-link {
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #2b2b2b;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.3rem;
+      border-bottom: 1px solid #c0c0b5;
+      width: fit-content;
+      transition: color 0.2s;
+    }
+
+    .project-link:hover {
+      color: #000;
+    }
+
+    /* ===== CONTACT ===== */
+    .contact-section {
+      background: #f3f3ed;
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border: 1px solid #e2e2d7;
+    }
+
+    .contact-section p {
+      max-width: 500px;
+      color: #464646;
+      margin: 0.7rem 0 1.5rem;
+    }
+
+    .contact-links {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .contact-links a {
+      color: #2c2c2c;
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid #b9b9ab;
+      padding-bottom: 0.15rem;
+    }
+
+    .contact-links a:hover {
+      color: #000;
+      border-bottom-color: #5e5e52;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 1.5rem;
+      padding: 1.8rem 0 1rem;
+      border-top: 1px solid #e2e2da;
+      width: 100%;
+      text-align: center;
+      color: #6f6f6f;
+      font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+      }
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav>
+      <a href="#" class="logo">tên.portfolio</a>
+      <ul class="nav-links">
+        <li><a href="#about">Giới thiệu</a></li>
+        <li><a href="#projects">Dự án</a></li>
+        <li><a href="#contact">Liên hệ</a></li>
+      </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>Thiết kế tối giản, tập trung vào nội dung.</h1>
+      <p class="subtitle">Tôi xây dựng những trải nghiệm kỹ thuật số rõ ràng, không ồn ào. Mọi chi tiết đều có chủ đích.</p>
+      <div class="hero-buttons">
+        <a href="#projects" class="btn btn-primary">Xem dự án</a>
+        <a href="#contact" class="btn btn-outline">Kết nối</a>
+      </div>
+    </section>
+
+    <!-- About / Giới thiệu -->
+    <section id="about">
+      <h2 class="section-title">sơ lược</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>Tôi là một nhà phát triển yêu thích sự đơn giản. Với hơn 6 năm làm việc trong lĩnh vực web và ứng dụng, tôi tập trung vào hiệu suất, khả năng truy cập và thiết kế không phô trương.</p>
+          <p>Triết lý của tôi: ít hơn nhưng tốt hơn. Không hiệu ứng hào nhoáng, chỉ có những dòng code gọn gàng và trải nghiệm mượt mà.</p>
+        </div>
+        <div>
+          <p style="font-weight: 500; margin-bottom: 0.8rem; color:#1e1e1e;">Kỹ năng & Công cụ</p>
+          <ul class="skills-list">
+            <li>JavaScript / TypeScript</li>
+            <li>React & Next.js</li>
+            <li>Node.js</li>
+            <li>Thiết kế UI hệ thống</li>
+            <li>Figma</li>
+            <li>HTML/CSS thuần</li>
+            <li>Git & quy trình CI/CD</li>
+            <li>Tối ưu hiệu năng</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects">
+      <h2 class="section-title">dự án gần đây</h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <h3>Nền tảng ghi chú Minima</h3>
+          <p>Ứng dụng ghi chú cá nhân với giao diện thuần khiết, hỗ trợ Markdown và đồng bộ cục bộ.</p>
+          <div class="project-tags">
+            <span class="tag">React</span>
+            <span class="tag">Electron</span>
+            <span class="tag">local-first</span>
+          </div>
+          <a href="#" class="project-link">↗ chi tiết</a>
+        </div>
+        <div class="project-card">
+          <h3>Cửa hàng mỹ phẩm thuần</h3>
+          <p>Trang thương mại điện tử tối giản, tập trung vào hình ảnh sản phẩm và quy trình thanh toán nhanh.</p>
+          <div class="project-tags">
+            <span class="tag">Next.js</span>
+            <span class="tag">Stripe</span>
+            <span class="tag">Tailwind</span>
+          </div>
+          <a href="#" class="project-link">↗ khám phá</a>
+        </div>
+        <div class="project-card">
+          <h3>Bảng điều khiển phân tích</h3>
+          <p>Công cụ trực quan dữ liệu nhẹ, không phụ thuộc thư viện nặng, dành cho doanh nghiệp nhỏ.</p>
+          <div class="project-tags">
+            <span class="tag">D3.js</span>
+            <span class="tag">Python API</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+          <a href="#" class="project-link">↗ xem demo</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact / Liên hệ -->
+    <section id="contact" class="contact-section">
+      <h2 class="section-title" style="margin-bottom: 0.25rem;">liên lạc</h2>
+      <p>Dù bạn có dự án, câu hỏi hay chỉ muốn trao đổi về thiết kế tối giản — hãy gửi tin nhắn.</p>
+      <div class="contact-links">
+        <a href="mailto:hello@tenmien.vn">email · hello@tenmien.vn</a>
+        <a href="#">github</a>
+        <a href="#">linkedin</a>
+        <a href="#">twitter/x</a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <span>© 2025 — giữ sự đơn giản. Không màu mè, không neon.</span>
+    </footer>
+  </div>
+</body>
+</html>
