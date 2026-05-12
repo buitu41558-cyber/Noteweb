@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Bản đồ thời tiết thế giới</title>
+  <title>Bản đồ thời tiết toàn cầu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
@@ -19,340 +19,302 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: #1a1d23;
-      color: #e0e0e0;
+      background: #0b0d12;
+      color: #d0d0d0;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: fadeIn 0.6s ease;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-20px); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @keyframes pulse {
-      0%,
-      100% {
-        opacity: 0.7;
-      }
-      50% {
-        opacity: 1;
-      }
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    @keyframes stormGlow {
+      0%, 100% { box-shadow: 0 0 6px currentColor; }
+      50% { box-shadow: 0 0 18px currentColor, 0 0 30px currentColor; }
     }
 
-    /* Top bar */
+    /* Top bar siêu gọn */
     .top-bar {
-      background: #22262e;
-      padding: 0.7rem 1.2rem;
+      background: #10141c;
+      padding: 0.4rem 0.9rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      border-bottom: 1px solid #333840;
+      gap: 0.5rem;
+      border-bottom: 1px solid #1c2230;
       z-index: 1000;
-      animation: slideDown 0.5s ease;
+      flex-wrap: wrap;
     }
-    .top-bar h1 {
-      font-size: 1.3rem;
+    .top-bar .title {
+      font-size: 1rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: #f0f0f0;
+      color: #e8e8e8;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.35rem;
+      white-space: nowrap;
     }
-    .top-bar h1 .dot {
-      width: 10px;
-      height: 10px;
+    .live-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #4ade80;
       animation: pulse 2s infinite;
     }
-    .controls {
+    .btns {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.25rem;
       flex-wrap: wrap;
-      align-items: center;
     }
     .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 0.4rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 0.3rem;
       font-weight: 500;
-      font-size: 0.82rem;
-      border: 1px solid #3a3f4a;
+      font-size: 0.72rem;
+      border: 1px solid #252c3a;
       cursor: pointer;
-      background: #2a2f3a;
-      color: #d0d0d0;
-      transition: all 0.2s;
+      background: #161b26;
+      color: #b0b0b0;
+      transition: all 0.18s;
       font-family: inherit;
       white-space: nowrap;
+      letter-spacing: -0.01em;
     }
     .btn:hover {
-      background: #353b48;
-      border-color: #5a5f6a;
+      background: #1e2533;
+      border-color: #404a5c;
       color: #fff;
     }
     .btn:active {
-      transform: scale(0.96);
+      transform: scale(0.94);
     }
     .btn.active {
-      background: #3b82f6;
-      border-color: #3b82f6;
+      background: #2563eb;
+      border-color: #2563eb;
       color: #fff;
+      font-weight: 600;
     }
-    .btn-storm {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: #fff;
-    }
-    .btn-storm:hover {
+    .btn.storm-active {
       background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+      font-weight: 600;
     }
 
-    /* Map container */
+    /* Map */
     #map {
       flex: 1;
       width: 100%;
       z-index: 1;
+      background: #080a10 !important;
     }
 
-    /* Panel bên phải */
-    .side-panel {
+    /* Panel nhỏ góc dưới trái */
+    .info-panel {
       position: absolute;
-      top: 80px;
-      right: 15px;
-      width: 300px;
-      max-height: calc(100vh - 120px);
-      background: #22262e;
-      border: 1px solid #333840;
-      border-radius: 0.8rem;
-      padding: 1rem;
+      bottom: 16px;
+      left: 10px;
       z-index: 999;
-      overflow-y: auto;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-      animation: slideDown 0.5s 0.2s ease both;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-    .side-panel h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #e0e0e0;
-      border-bottom: 1px solid #333840;
-      padding-bottom: 0.5rem;
-      letter-spacing: -0.01em;
-    }
-    .city-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0.6rem;
-      border-radius: 0.4rem;
-      cursor: pointer;
-      transition: background 0.15s;
-      font-size: 0.85rem;
-      border: 1px solid transparent;
-    }
-    .city-item:hover {
-      background: #2a2f3a;
-      border-color: #3a3f4a;
-    }
-    .city-name {
-      font-weight: 500;
-    }
-    .city-temp {
-      font-weight: 600;
-      color: #fbbf24;
-    }
-    .storm-list {
+      background: #10141cee;
+      border: 1px solid #1c2230;
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      backdrop-filter: blur(12px);
+      font-size: 0.7rem;
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
+      max-height: 42vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.65);
+      animation: slideUp 0.4s 0.1s ease both;
+      min-width: 150px;
     }
-    .storm-item {
+    .info-panel h4 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      font-weight: 700;
+    }
+    .city-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.7rem;
+      cursor: pointer;
+      padding: 0.15rem 0;
+      font-weight: 500;
+      font-size: 0.73rem;
+      transition: color 0.15s;
+    }
+    .city-row:hover { color: #fff; }
+    .city-row .val { color: #fbbf24; font-weight: 600; }
+    .storm-row {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0.5rem;
-      background: #2a1a1a;
-      border-radius: 0.4rem;
-      border: 1px solid #4a2020;
-      font-size: 0.8rem;
+      gap: 0.35rem;
       cursor: pointer;
-      transition: background 0.15s;
+      padding: 0.12rem 0;
+      font-size: 0.7rem;
+      transition: color 0.15s;
     }
-    .storm-item:hover {
-      background: #3a2020;
-    }
-    .storm-cat {
-      font-weight: 700;
-      color: #fca5a5;
-      min-width: 28px;
+    .storm-row:hover { color: #fff; }
+    .mini-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: pulse 1.2s infinite;
     }
     .legend {
       display: flex;
-      flex-wrap: wrap;
       gap: 0.5rem;
-      font-size: 0.7rem;
-      color: #aaa;
+      font-size: 0.6rem;
+      color: #6b7280;
+      margin-top: 0.1rem;
+      flex-wrap: wrap;
     }
-    .legend span {
-      display: flex;
+    .legend span { display: flex;
       align-items: center;
-      gap: 0.25rem;
-    }
-    .legend-dot {
-      width: 8px;
-      height: 8px;
+      gap: 0.2rem; }
+    .ldot { width: 5px;
+      height: 5px;
       border-radius: 50%;
-      display: inline-block;
-    }
+      display: inline-block; }
 
-    /* Leaflet overrides */
-    .leaflet-container {
-      background: #1a1d23 !important;
-    }
+    /* Leaflet */
+    .leaflet-container { background: #080a10 !important; }
     .leaflet-control-zoom a {
-      background: #2a2f3a !important;
-      color: #e0e0e0 !important;
-      border-color: #3a3f4a !important;
+      background: #161b26 !important;
+      color: #bbb !important;
+      border-color: #252c3a !important;
     }
     .leaflet-popup-content-wrapper {
-      background: #22262e;
-      color: #e0e0e0;
-      border-radius: 0.6rem;
-      border: 1px solid #3a3f4a;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      background: #10141c;
+      color: #ddd;
+      border-radius: 0.4rem;
+      border: 1px solid #252c3a;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+      font-size: 0.75rem;
     }
-    .leaflet-popup-tip {
-      background: #22262e;
-    }
+    .leaflet-popup-tip { background: #10141c; }
 
-    @media (max-width: 700px) {
-      .side-panel {
-        width: 260px;
-        right: 5px;
-        top: 75px;
-        font-size: 0.8rem;
-      }
-      .top-bar h1 {
-        font-size: 1.1rem;
-      }
+    @media (max-width: 550px) {
+      .btn { padding: 0.25rem 0.5rem;
+        font-size: 0.68rem; }
+      .info-panel { bottom: 8px;
+        left: 4px;
+        padding: 0.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Thanh trên cùng -->
   <div class="top-bar">
-    <h1><span class="dot"></span> Bản đồ thời tiết toàn cầu</h1>
-    <div class="controls">
-      <button class="btn active" id="btnTemp">Nhiệt độ</button>
-      <button class="btn" id="btnRain">Mưa</button>
-      <button class="btn" id="btnWind">Gió</button>
-      <button class="btn" id="btnSnow">Tuyết</button>
-      <button class="btn btn-storm" id="btnStorm">Bão & Áp thấp</button>
-      <button class="btn" id="btnReset">Đặt lại</button>
+    <div class="title"><span class="live-dot"></span>Thời tiết toàn cầu</div>
+    <div class="btns">
+      <button class="btn active" data-layer="temp">Nhiệt độ</button>
+      <button class="btn" data-layer="rain">Mưa</button>
+      <button class="btn" data-layer="wind">Gió</button>
+      <button class="btn" data-layer="snow">Tuyết</button>
+      <button class="btn" data-layer="storm" id="stormBtn">Bão</button>
+      <button class="btn" data-layer="reset">⟳</button>
     </div>
   </div>
 
-  <!-- Bản đồ -->
   <div id="map"></div>
 
-  <!-- Panel thông tin bên phải -->
-  <div class="side-panel" id="sidePanel">
-    <h3>Thành phố lớn</h3>
+  <div class="info-panel" id="infoPanel">
+    <h4>Thành phố</h4>
     <div id="cityList"></div>
-    <h3 style="margin-top:0.3rem;">Bão / Áp thấp đang hoạt động</h3>
-    <div class="storm-list" id="stormList"></div>
+    <h4 style="margin-top:0.15rem;">Bão</h4>
+    <div id="stormList"></div>
     <div class="legend">
-      <span><span class="legend-dot" style="background:#fbbf24;"></span> Nhiệt độ</span>
-      <span><span class="legend-dot" style="background:#3b82f6;"></span> Mưa</span>
-      <span><span class="legend-dot" style="background:#10b981;"></span> Gió</span>
-      <span><span class="legend-dot" style="background:#a78bfa;"></span> Tuyết</span>
-      <span><span class="legend-dot" style="background:#ef4444;"></span> Bão</span>
+      <span><span class="ldot" style="background:#fbbf24;"></span>Nhiệt</span>
+      <span><span class="ldot" style="background:#3b82f6;"></span>Mưa</span>
+      <span><span class="ldot" style="background:#10b981;"></span>Gió</span>
+      <span><span class="ldot" style="background:#a78bfa;"></span>Tuyết</span>
     </div>
   </div>
 
   <script>
     (() => {
-      // ===== DỮ LIỆU GIẢ TƯỞNG =====
+      // ===== DỮ LIỆU =====
       const cities = [
-        { name: 'Hà Nội', lat: 21.0285, lng: 105.8542, temp: 32, condition: 'Nắng', rain: 0, wind: 12, snow: 0 },
-        { name: 'Tokyo', lat: 35.6762, lng: 139.6503, temp: 22, condition: 'Mưa nhẹ', rain: 45, wind: 18, snow: 0 },
-        { name: 'New York', lat: 40.7128, lng: -74.006, temp: 15, condition: 'Nhiều mây', rain: 20, wind: 25, snow: 0 },
-        { name: 'London', lat: 51.5074, lng: -0.1278, temp: 11, condition: 'Mưa', rain: 70, wind: 30, snow: 0 },
-        { name: 'Moscow', lat: 55.7558, lng: 37.6173, temp: -5, condition: 'Tuyết rơi', rain: 0, wind: 15, snow: 80 },
-        { name: 'Sydney', lat: -33.8688, lng: 151.2093, temp: 28, condition: 'Nắng', rain: 0, wind: 10, snow: 0 },
-        { name: 'Rio de Janeiro', lat: -22.9068, lng: -43.1729, temp: 31, condition: 'Nắng nóng', rain: 5, wind: 8, snow: 0 },
-        { name: 'Cairo', lat: 30.0444, lng: 31.2357, temp: 38, condition: 'Nắng gắt', rain: 0, wind: 6, snow: 0 },
-        { name: 'Bắc Kinh', lat: 39.9042, lng: 116.4074, temp: 18, condition: 'Sương mù', rain: 10, wind: 8, snow: 0 },
-        { name: 'Delhi', lat: 28.6139, lng: 77.209, temp: 42, condition: 'Nắng nóng', rain: 0, wind: 5, snow: 0 },
-        { name: 'Paris', lat: 48.8566, lng: 2.3522, temp: 14, condition: 'Nhiều mây', rain: 30, wind: 20, snow: 0 },
-        { name: 'Seoul', lat: 37.5665, lng: 126.978, temp: 20, condition: 'Mưa rào', rain: 55, wind: 22, snow: 0 },
+        { name: 'Hà Nội', lat: 21.03, lng: 105.85, temp: 32, rain: 5, wind: 10, snow: 0, cond: 'Nắng' },
+        { name: 'Tokyo', lat: 35.68, lng: 139.65, temp: 22, rain: 45, wind: 18, snow: 0, cond: 'Mưa nhẹ' },
+        { name: 'New York', lat: 40.71, lng: -74.0, temp: 16, rain: 20, wind: 24, snow: 0, cond: 'Mây' },
+        { name: 'London', lat: 51.51, lng: -0.13, temp: 11, rain: 65, wind: 28, snow: 0, cond: 'Mưa' },
+        { name: 'Moscow', lat: 55.75, lng: 37.62, temp: -4, rain: 0, wind: 14, snow: 85, cond: 'Tuyết' },
+        { name: 'Sydney', lat: -33.87, lng: 151.21, temp: 27, rain: 0, wind: 12, snow: 0, cond: 'Nắng' },
+        { name: 'Rio', lat: -22.91, lng: -43.17, temp: 30, rain: 8, wind: 9, snow: 0, cond: 'Nóng' },
+        { name: 'Cairo', lat: 30.04, lng: 31.24, temp: 37, rain: 0, wind: 7, snow: 0, cond: 'Nắng gắt' },
+        { name: 'Delhi', lat: 28.61, lng: 77.21, temp: 41, rain: 0, wind: 6, snow: 0, cond: 'Nóng' },
+        { name: 'Paris', lat: 48.86, lng: 2.35, temp: 14, rain: 28, wind: 19, snow: 0, cond: 'Mây' },
+        { name: 'Seoul', lat: 37.57, lng: 126.98, temp: 20, rain: 50, wind: 21, snow: 0, cond: 'Mưa' },
+        { name: 'Lagos', lat: 6.45, lng: 3.4, temp: 29, rain: 40, wind: 11, snow: 0, cond: 'Mưa' },
       ];
 
-      // Bão giả tưởng
       let storms = [
-        { id: 1, name: 'Bão TALA', lat: 16.5, lng: 118.2, cat: 3, windSpeed: 185, movement: 'Tây Bắc', pressure: 945 },
-        { id: 2, name: 'Bão NORU', lat: 28.3, lng: -88.5, cat: 4, windSpeed: 220, movement: 'Bắc', pressure: 920 },
-        { id: 3, name: 'Áp thấp 06W', lat: 12.8, lng: 142.3, cat: 1, windSpeed: 65, movement: 'Tây', pressure: 995 },
-        { id: 4, name: 'Bão LIDIA', lat: 18.1, lng: -108.4, cat: 2, windSpeed: 155, movement: 'Đông Bắc', pressure: 970 },
+        { id: 1, name: 'TALA', lat: 16.8, lng: 119.5, cat: 3, wind: 185, dir: 'Tây Bắc', pres: 945 },
+        { id: 2, name: 'NORU', lat: 27.5, lng: -87.0, cat: 4, wind: 220, dir: 'Bắc', pres: 918 },
+        { id: 3, name: '06W', lat: 13.2, lng: 141.0, cat: 1, wind: 65, dir: 'Tây', pres: 996 },
+        { id: 4, name: 'LIDIA', lat: 17.5, lng: -107.0, cat: 2, wind: 150, dir: 'ĐB', pres: 972 },
       ];
 
-      let currentOverlay = 'temp'; // temp, rain, wind, snow, storm
+      let currentLayer = 'temp';
       let map;
+      let imageOverlay;
       let cityMarkers = [];
       let stormMarkers = [];
-      let stormPolylines = [];
-      let imageOverlay; // Lớp ảnh bản đồ
+      let stormLines = [];
 
       // ===== KHỞI TẠO BẢN ĐỒ =====
       function initMap() {
         map = L.map('map', {
-          center: [15, 20],
-          zoom: 2.5,
+          center: [18, 20],
+          zoom: 2.3,
           minZoom: 2,
-          maxZoom: 8,
+          maxZoom: 7,
           zoomControl: true,
           attributionControl: false,
-          // Giới hạn kéo để tránh lộ viền ảnh quá nhiều
           maxBounds: [
-            [-85, -250],
-            [85, 250]
+            [-80, -240],
+            [80, 240]
           ],
-          maxBoundsViscosity: 0.8,
+          maxBoundsViscosity: 0.7,
         });
 
-        // Sử dụng ảnh bản đồ của bạn làm lớp nền
+        // Ảnh bản đồ của bạn
         imageOverlay = L.imageOverlay(
-          'https://i.ibb.co/dhCgk7h/IMG-20260512-160553.png',
-          // Tọa độ giới hạn cho ảnh bản đồ thế giới
-          // Bạn có thể điều chỉnh 4 con số này nếu ảnh bị lệch
+          'https://i.ibb.co/p6njm03s/1778582329890.png',
           [
-            [-85, -250],
-            [85, 250]
+            [-82, -240],
+            [82, 240]
           ], {
-            opacity: 1.0,
-            attribution: 'Bản đồ tùy chỉnh',
+            opacity: 1,
             interactive: false,
           }
         ).addTo(map);
 
-        // Thêm tile layer mờ phía sau để có tọa độ tham chiếu
+        // Lớp mờ tham chiếu
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
           subdomains: 'abcd',
-          maxZoom: 8,
-          opacity: 0.3,
+          maxZoom: 7,
+          opacity: 0.12,
         }).addTo(map);
 
         renderAll();
@@ -367,36 +329,27 @@
 
         cities.forEach(city => {
           let color = '#fbbf24';
-          if (currentOverlay === 'rain') color = '#3b82f6';
-          else if (currentOverlay === 'wind') color = '#10b981';
-          else if (currentOverlay === 'snow') color = '#a78bfa';
-          else if (currentOverlay === 'storm') color = '#ef4444';
+          if (currentLayer === 'rain') color = '#3b82f6';
+          if (currentLayer === 'wind') color = '#10b981';
+          if (currentLayer === 'snow') color = '#a78bfa';
+          if (currentLayer === 'storm') color = '#ef4444';
 
-          const value = currentOverlay === 'temp' ? `${Math.round(city.temp)}°C` :
-            currentOverlay === 'rain' ? `${Math.round(city.rain)}mm` :
-            currentOverlay === 'wind' ? `${Math.round(city.wind)}km/h` :
-            currentOverlay === 'snow' ? `${Math.round(city.snow)}%` :
-            `${Math.round(city.temp)}°C`;
+          const value = currentLayer === 'temp' ? `${Math.round(city.temp)}°` :
+            currentLayer === 'rain' ? `${Math.round(city.rain)}mm` :
+            currentLayer === 'wind' ? `${Math.round(city.wind)}km/h` :
+            currentLayer === 'snow' ? `${Math.round(city.snow)}%` :
+            `${Math.round(city.temp)}°`;
 
-          const iconHtml =
-            `<div style="background:${color};color:#000;font-weight:700;padding:3px 8px;border-radius:12px;font-size:11px;white-space:nowrap;border:1px solid rgba(255,255,255,0.3);box-shadow:0 2px 6px rgba(0,0,0,0.5);">${value}</div>`;
+          const iconHtml = `<div style="
+            background:${color};color:#000;font-weight:700;
+            padding:2px 7px;border-radius:10px;font-size:10px;
+            white-space:nowrap;border:1px solid rgba(255,255,255,0.2);
+            box-shadow:0 1px 4px rgba(0,0,0,0.5);
+          ">${value}</div>`;
 
-          const icon = L.divIcon({
-            html: iconHtml,
-            className: '',
-            iconSize: [60, 24],
-            iconAnchor: [30, 12],
-          });
-
+          const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [48, 18], iconAnchor: [24, 9] });
           const marker = L.marker([city.lat, city.lng], { icon }).addTo(map);
-          marker.bindPopup(`
-            <div style="font-family:Inter,sans-serif;">
-              <b style="font-size:1rem;">${city.name}</b><br/>
-              <span style="color:#fbbf24;">🌡 ${Math.round(city.temp)}°C</span> · ${city.condition}<br/>
-              💧 Mưa: ${Math.round(city.rain)}mm · 💨 Gió: ${Math.round(city.wind)}km/h<br/>
-              ❄ Tuyết: ${Math.round(city.snow)}%
-            </div>
-          `);
+          marker.bindPopup(`<b>${city.name}</b><br>🌡 ${Math.round(city.temp)}°C · ${city.cond}<br>💧 ${Math.round(city.rain)}mm · 💨 ${Math.round(city.wind)}km/h`);
           cityMarkers.push(marker);
         });
       }
@@ -404,174 +357,109 @@
       // ===== RENDER BÃO =====
       function renderStorms() {
         stormMarkers.forEach(m => map.removeLayer(m));
-        stormPolylines.forEach(p => map.removeLayer(p));
+        stormLines.forEach(l => map.removeLayer(l));
         stormMarkers = [];
-        stormPolylines = [];
+        stormLines = [];
 
-        storms.forEach(storm => {
-          const catColor = storm.cat >= 4 ? '#ff4444' : storm.cat >= 2 ? '#ff8800' : '#ffcc00';
-          const icon = L.divIcon({
-            html: `<div style="
-              width:${24 + storm.cat * 4}px;height:${24 + storm.cat * 4}px;
-              background:${catColor};border-radius:50%;opacity:0.8;
-              border:2px solid #fff;box-shadow:0 0 ${10 + storm.cat * 5}px ${catColor};
-              animation: pulse 1.5s infinite;
-            "></div>`,
-            className: '',
-            iconSize: [36 + storm.cat * 4, 36 + storm.cat * 4],
-            iconAnchor: [18 + storm.cat * 2, 18 + storm.cat * 2],
-          });
-
-          const marker = L.marker([storm.lat, storm.lng], { icon }).addTo(map);
-          marker.bindPopup(`
-            <div style="font-family:Inter,sans-serif;">
-              <b style="font-size:1rem;color:#fca5a5;">🌀 ${storm.name}</b><br/>
-              Cấp: <span style="color:#fbbf24;font-weight:700;">${storm.cat}</span> ·
-              Gió: ${storm.windSpeed}km/h<br/>
-              Áp suất: ${storm.pressure}hPa<br/>
-              Hướng: ${storm.movement}
-            </div>
-          `);
+        storms.forEach(s => {
+          const catColor = s.cat >= 4 ? '#ff4444' : s.cat >= 2 ? '#ff8800' : '#ffaa00';
+          const size = 20 + s.cat * 4;
+          const html = `<div style="
+            width:${size}px;height:${size}px;background:${catColor};
+            border-radius:50%;opacity:0.85;border:2px solid #fff;
+            box-shadow:0 0 ${8+s.cat*4}px ${catColor};
+            animation:stormGlow 1.5s infinite;
+          "></div>`;
+          const icon = L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
+          const marker = L.marker([s.lat, s.lng], { icon }).addTo(map);
+          marker.bindPopup(`<b>🌀 ${s.name}</b><br>Cấp ${s.cat} · Gió ${s.wind}km/h<br>Áp suất ${s.pres}hPa · ${s.dir}`);
           stormMarkers.push(marker);
 
-          // Đường dự báo hướng di chuyển
-          const destLat = storm.lat + (storm.movement.includes('Bắc') ? 2 : storm.movement.includes('Nam') ? -2 : 0);
-          const destLng = storm.lng + (storm.movement.includes('Đông') ? 2 : storm.movement.includes('Tây') ? -2 : 0);
-          const line = L.polyline([
-            [storm.lat, storm.lng],
-            [destLat, destLng]
-          ], {
-            color: catColor,
-            weight: 2,
-            dashArray: '8 6',
-            opacity: 0.6,
-          }).addTo(map);
-          stormPolylines.push(line);
+          const dLat = s.dir.includes('Bắc') ? 2 : s.dir.includes('Nam') ? -2 : 0;
+          const dLng = s.dir.includes('Đông') ? 2 : s.dir.includes('Tây') ? -2 : 0;
+          stormLines.push(L.polyline([
+            [s.lat, s.lng],
+            [s.lat + dLat, s.lng + dLng]
+          ], { color: catColor, weight: 2, dashArray: '5 4', opacity: 0.5 }).addTo(map));
         });
       }
 
-      // ===== RENDER PANEL =====
+      // ===== PANEL NHỎ =====
       function renderPanel() {
-        const cityList = document.getElementById('cityList');
-        cityList.innerHTML = cities.map(c => `
-          <div class="city-item" data-lat="${c.lat}" data-lng="${c.lng}">
-            <span class="city-name">${c.name}</span>
-            <span class="city-temp">${Math.round(c.temp)}°C</span>
+        document.getElementById('cityList').innerHTML = cities.slice(0, 7).map(c => `
+          <div class="city-row" data-lat="${c.lat}" data-lng="${c.lng}">
+            <span>${c.name}</span><span class="val">${Math.round(c.temp)}°</span>
+          </div>
+        `).join('');
+        document.getElementById('stormList').innerHTML = storms.map(s => `
+          <div class="storm-row" data-lat="${s.lat}" data-lng="${s.lng}">
+            <span class="mini-dot"></span>${s.name}<span style="color:#fbbf24;margin-left:auto;">C${s.cat}</span>
           </div>
         `).join('');
 
-        document.querySelectorAll('.city-item').forEach(el => {
-          el.addEventListener('click', function() {
-            const lat = parseFloat(this.dataset.lat);
-            const lng = parseFloat(this.dataset.lng);
-            map.flyTo([lat, lng], 6, { duration: 1.5 });
-          });
+        document.querySelectorAll('.city-row').forEach(el => {
+          el.addEventListener('click', () => map.flyTo([+el.dataset.lat, +el.dataset.lng], 5, { duration: 1 }));
         });
-
-        updateStormList();
-      }
-
-      function updateStormList() {
-        const stormList = document.getElementById('stormList');
-        if (!stormList) return;
-        stormList.innerHTML = storms.map(s => `
-          <div class="storm-item" data-lat="${s.lat}" data-lng="${s.lng}">
-            <span class="storm-cat">C${s.cat}</span>
-            <span>${s.name}</span>
-            <span style="margin-left:auto;color:#fbbf24;">${s.windSpeed}km/h</span>
-          </div>
-        `).join('');
-        document.querySelectorAll('.storm-item').forEach(el => {
-          el.addEventListener('click', function() {
-            const lat = parseFloat(this.dataset.lat);
-            const lng = parseFloat(this.dataset.lng);
-            map.flyTo([lat, lng], 5, { duration: 1.5 });
-          });
+        document.querySelectorAll('.storm-row').forEach(el => {
+          el.addEventListener('click', () => map.flyTo([+el.dataset.lat, +el.dataset.lng], 4.5, { duration: 1 }));
         });
       }
 
-      function renderAll() {
-        renderCities();
+      function renderAll() { renderCities();
         renderStorms();
-        renderPanel();
-      }
+        renderPanel(); }
 
-      // ===== MÔ PHỎNG THAY ĐỔI THỜI TIẾT =====
+      // ===== GIẢ LẬP THỜI TIẾT =====
       function simulateWeather() {
         cities.forEach(c => {
-          c.temp = Math.max(-10, Math.min(45, c.temp + (Math.random() - 0.5) * 3));
-          c.rain = Math.max(0, Math.min(100, c.rain + (Math.random() - 0.5) * 15));
-          c.wind = Math.max(0, Math.min(60, c.wind + (Math.random() - 0.5) * 8));
-          c.snow = Math.max(0, Math.min(100, c.snow + (Math.random() - 0.5) * 10));
-          c.temp = Math.round(c.temp * 10) / 10;
-          c.rain = Math.round(c.rain);
-          c.wind = Math.round(c.wind);
-          c.snow = Math.round(c.snow);
+          c.temp += (Math.random() - 0.5) * 2.5;
+          c.rain = Math.max(0, Math.min(100, c.rain + (Math.random() - 0.5) * 12));
+          c.wind = Math.max(0, Math.min(60, c.wind + (Math.random() - 0.5) * 7));
+          c.snow = Math.max(0, Math.min(100, c.snow + (Math.random() - 0.5) * 8));
         });
         renderCities();
         renderPanel();
       }
 
-      // ===== DI CHUYỂN BÃO =====
       function moveStorms() {
         storms.forEach(s => {
-          const dLat = (Math.random() - 0.4) * 1.2;
-          const dLng = (Math.random() - 0.5) * 1.5;
-          s.lat = Math.max(-60, Math.min(60, s.lat + dLat));
-          s.lng = ((s.lng + dLng + 540) % 360) - 180;
-          s.windSpeed = Math.max(40, Math.min(280, s.windSpeed + (Math.random() - 0.5) * 20));
-          s.windSpeed = Math.round(s.windSpeed);
-          s.pressure = Math.round(s.pressure + (Math.random() - 0.5) * 10);
-          if (s.cat === 1 && s.windSpeed > 118) s.cat = 2;
-          else if (s.cat === 2 && s.windSpeed > 153) s.cat = 3;
-          else if (s.cat === 3 && s.windSpeed > 178) s.cat = 4;
-          else if (s.cat === 4 && s.windSpeed > 209) s.cat = 5;
-          else if (s.cat >= 2 && s.windSpeed < 100) s.cat = 1;
+          s.lat += (Math.random() - 0.4) * 1.1;
+          s.lng += (Math.random() - 0.5) * 1.3;
+          s.lat = Math.max(-55, Math.min(55, s.lat));
+          s.lng = ((s.lng + 540) % 360) - 180;
+          s.wind = Math.max(40, Math.min(270, s.wind + (Math.random() - 0.5) * 18));
+          s.wind = Math.round(s.wind);
+          s.pres = Math.round(s.pres + (Math.random() - 0.5) * 8);
+          if (s.cat === 1 && s.wind > 118) s.cat = 2;
+          else if (s.cat === 2 && s.wind > 153) s.cat = 3;
+          else if (s.cat === 3 && s.wind > 178) s.cat = 4;
+          else if (s.cat >= 2 && s.wind < 95) s.cat = 1;
         });
         renderStorms();
-        updateStormList();
+        renderPanel();
       }
 
       // ===== NÚT ĐIỀU KHIỂN =====
-      document.getElementById('btnTemp').addEventListener('click', function() {
-        setActiveButton(this);
-        currentOverlay = 'temp';
-        renderCities();
-      });
-      document.getElementById('btnRain').addEventListener('click', function() {
-        setActiveButton(this);
-        currentOverlay = 'rain';
-        renderCities();
-      });
-      document.getElementById('btnWind').addEventListener('click', function() {
-        setActiveButton(this);
-        currentOverlay = 'wind';
-        renderCities();
-      });
-      document.getElementById('btnSnow').addEventListener('click', function() {
-        setActiveButton(this);
-        currentOverlay = 'snow';
-        renderCities();
-      });
-      document.getElementById('btnStorm').addEventListener('click', function() {
-        setActiveButton(this);
-        currentOverlay = 'storm';
-        map.flyTo([16, 115], 3.5, { duration: 1.5 });
-        renderCities();
-      });
-      document.getElementById('btnReset').addEventListener('click', function() {
-        setActiveButton(document.getElementById('btnTemp'));
-        currentOverlay = 'temp';
-        map.flyTo([15, 20], 2.5, { duration: 1.5 });
-        renderCities();
+      document.querySelectorAll('.btn[data-layer]').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const layer = this.dataset.layer;
+          document.querySelectorAll('.btn').forEach(b => b.classList.remove('active', 'storm-active'));
+          if (layer === 'reset') {
+            currentLayer = 'temp';
+            document.querySelector('.btn[data-layer="temp"]').classList.add('active');
+            map.flyTo([18, 20], 2.3, { duration: 1 });
+          } else if (layer === 'storm') {
+            currentLayer = 'storm';
+            this.classList.add('storm-active');
+            map.flyTo([16, 118], 3.2, { duration: 1.2 });
+          } else {
+            currentLayer = layer;
+            this.classList.add('active');
+          }
+          renderCities();
+        });
       });
 
-      function setActiveButton(activeBtn) {
-        document.querySelectorAll('.controls .btn').forEach(b => b.classList.remove('active'));
-        activeBtn.classList.add('active');
-      }
-
-      // ===== KHỞI ĐỘNG =====
       initMap();
     })();
   </script>
