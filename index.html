@@ -3,79 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bản Đồ Thời Tiết - Khung Ngang</title>
+    <title>Hệ Thống Quản Trị Khí Tượng</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Ép toàn bộ giao diện theo chiều ngang */
-        body, html { 
-            margin: 0; padding: 0; height: 100%; 
-            background: #000; 
-            display: flex; align-items: center; justify-content: center;
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: Arial, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        
+        /* Khung map nằm ngang chuẩn tỉ lệ */
+        .map-container {
+            width: 100vw; height: 50vw; /* Tỉ lệ 2:1 ngang */
+            max-height: 100vh; max-width: 200vh;
+            position: relative; border: 1px solid #333;
         }
+        #map { width: 100%; height: 100%; background: #0b0e11; cursor: crosshair; }
 
-        /* Khung chứa bản đồ luôn nằm ngang */
-        .container {
-            width: 100vw;
-            height: 56.25vw; /* Tỉ lệ 16:9 chuẩn nằm ngang */
-            max-height: 100vh;
-            max-width: 177.78vh; /* Đảm bảo không vượt quá màn hình */
-            position: relative;
-            border: 1px solid #333;
+        /* Login & Admin Panel */
+        .admin-trigger { position: absolute; bottom: 10px; right: 10px; z-index: 2000; background: #222; color: #fff; border: 1px solid #444; padding: 5px 10px; cursor: pointer; font-size: 11px; }
+        .panel { 
+            position: absolute; top: 0; right: -350px; width: 300px; height: 100%; 
+            background: rgba(20, 20, 20, 0.95); z-index: 3000; transition: 0.3s; 
+            border-left: 1px solid #444; color: white; padding: 20px; overflow-y: auto;
         }
+        .panel.active { right: 0; }
+        
+        input, select, button { width: 100%; margin-bottom: 10px; padding: 8px; background: #333; border: 1px solid #555; color: white; border-radius: 3px; }
+        button { background: #d32f2f; cursor: pointer; font-weight: bold; border: none; }
+        button:hover { background: #ff5252; }
+        
+        .login-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+            z-index: 4000; display: none; align-items: center; justify-content: center; 
+        }
+        .login-box { background: #222; padding: 30px; border: 1px solid #444; width: 250px; text-align: center; }
 
-        #map { 
-            width: 100%; 
-            height: 100%; 
-            background: #0b0e11; 
-        }
-
-        /* Giao diện tối giản nhất có thể */
-        .status-bar {
-            position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0,0,0,0.8); color: #fff; padding: 5px 10px;
-            font-family: monospace; font-size: 11px; border: 1px solid #444;
-        }
-
-        .storm-marker {
-            width: 10px; height: 10px; background: #ff0000;
-            border-radius: 50%; border: 1px solid #fff;
-        }
+        /* Label map */
+        .capital-label { background: none; border: none; box-shadow: none; color: #fff; font-weight: bold; text-shadow: 1px 1px 2px #000; font-size: 12px; }
+        .storm-marker { width: 12px; height: 12px; background: red; border-radius: 50%; border: 2px solid white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="status-bar">LIVE RADAR | SCALE: 1:1.000.000</div>
+    <div class="map-container">
         <div id="map"></div>
+        <div class="admin-trigger" onclick="showLogin()">🔐 ADMIN LOGIN</div>
+    </div>
+
+    <div id="adminPanel" class="panel">
+        <h3 style="border-bottom: 1px solid #444; padding-bottom: 10px;">QUẢN TRỊ VIÊN</h3>
+        
+        <label>Thao tác:</label>
+        <select id="mode">
+            <option value="storm">Thêm Bão (Click Map)</option>
+            <option value="capital">Thêm Thủ Đô (Click Map)</option>
+        </select>
+
+        <div id="form-storm">
+            <input type="text" id="stormName" placeholder="Tên/Mã hiệu bão">
+            <input type="number" id="temp" placeholder="Nhiệt độ tâm bão (°C)">
+            <input type="text" id="path" placeholder="Hướng đi (VD: Tây Bắc)">
+        </div>
+
+        <div id="data-list" style="margin-top: 20px; font-size: 12px;">
+            <p>Dữ liệu hiện có (Click để xóa):</p>
+            <div id="items"></div>
+        </div>
+
+        <button onclick="logout()" style="background: #555; margin-top: 20px;">Đăng xuất</button>
+    </div>
+
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h4>XÁC THỰC ADMIN</h4>
+            <input type="password" id="pass" placeholder="Mật khẩu">
+            <button onclick="doLogin()">VÀO HỆ THỐNG</button>
+            <button onclick="closeLogin()" style="background:none;">Hủy</button>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Sử dụng CRS.Simple để giữ đúng tỉ lệ pixel ảnh
-        var map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -2,
-            attributionControl: false
-        });
-
-        // ĐỊNH NGHĨA KHUNG NGANG: Rộng 2000, Cao 1000 (Tỉ lệ 2:1)
-        // Đây là thông số quyết định map nằm ngang và không bị méo
-        var bounds = [[0, 0], [1000, 2000]]; 
-        var image = L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
-
+        // Khởi tạo Map nằm ngang
+        const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
+        const bounds = [[0, 0], [1000, 2000]]; // Tỷ lệ ngang 2:1
+        L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // Chấm đỏ đánh dấu bão (Tọa độ x,y đơn giản)
-        function setStorm(y, x, label) {
-            L.circle([y, x], { radius: 60, color: 'red', weight: 1, fillOpacity: 0.1, dashArray: '5,5' }).addTo(map);
-            var icon = L.divIcon({ className: 'storm-marker', iconSize: [10, 10] });
-            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(label);
+        let db = JSON.parse(localStorage.getItem('weather_db')) || { storms: [], capitals: [] };
+        let markers = [];
+
+        function renderData() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            const list = document.getElementById('items');
+            list.innerHTML = '';
+
+            // Vẽ bão
+            db.storms.forEach((s, idx) => {
+                const m = L.marker([s.y, s.x], { 
+                    icon: L.divIcon({ className: 'storm-marker' }) 
+                }).addTo(map).bindTooltip(`<b>Bão: ${s.name}</b><br>Nhiệt độ: ${s.temp}°C<br>Hướng: ${s.path}`);
+                markers.push(m);
+                
+                const btn = document.createElement('button');
+                btn.innerText = `Xóa Bão: ${s.name}`;
+                btn.onclick = () => deleteItem('storms', idx);
+                list.appendChild(btn);
+            });
+
+            // Vẽ thủ đô
+            db.capitals.forEach((c, idx) => {
+                const m = L.marker([c.y, c.x], {
+                    icon: L.divIcon({ className: 'capital-label', html: `★ ${c.name}`, iconSize: [100, 20] })
+                }).addTo(map);
+                markers.push(m);
+
+                const btn = document.createElement('button');
+                btn.innerText = `Xóa Thủ Đô: ${c.name}`;
+                btn.style.background = "#2e7d32";
+                btn.onclick = () => deleteItem('capitals', idx);
+                list.appendChild(btn);
+            });
+
+            localStorage.setItem('weather_db', JSON.stringify(db));
         }
 
-        // Đặt bão vào các khu vực biển trên bản đồ nằm ngang
-        setStorm(550, 500, "ZONE_A");
-        setStorm(450, 1500, "ZONE_B");
+        // Sự kiện click map để thêm dữ liệu
+        map.on('click', function(e) {
+            if (!document.getElementById('adminPanel').classList.contains('active')) return;
 
+            const mode = document.getElementById('mode').value;
+            const name = document.getElementById('stormName').value || "Chưa đặt tên";
+
+            if (mode === 'storm') {
+                db.storms.push({
+                    y: e.latlng.lat, x: e.latlng.lng,
+                    name: name,
+                    temp: document.getElementById('temp').value || 25,
+                    path: document.getElementById('path').value || "Đứng yên"
+                });
+            } else {
+                const cName = prompt("Nhập tên Thủ Đô/Vùng:");
+                if (cName) db.capitals.push({ y: e.latlng.lat, x: e.latlng.lng, name: cName });
+            }
+            renderData();
+        });
+
+        function deleteItem(type, idx) {
+            db[type].splice(idx, 1);
+            renderData();
+        }
+
+        // Login Logic
+        function showLogin() { document.getElementById('loginOverlay').style.display = 'flex'; }
+        function closeLogin() { document.getElementById('loginOverlay').style.display = 'none'; }
+        function doLogin() {
+            if (document.getElementById('pass').value === 'admin') {
+                document.getElementById('adminPanel').classList.add('active');
+                closeLogin();
+            } else { alert('Sai mật khẩu!'); }
+        }
+        function logout() {
+            document.getElementById('adminPanel').classList.remove('active');
+            document.getElementById('pass').value = '';
+        }
+
+        renderData();
     </script>
 </body>
 </html>
