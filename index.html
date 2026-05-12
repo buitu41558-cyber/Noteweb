@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>portfolio · tối giản</title>
-  <!-- Font chữ sans-serif sạch sẽ, không màu mè -->
+  <title>Ghi chú · Tối giản</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
   <style>
-    /* Reset và base – giao diện sạch, tông trung tính */
     * {
       margin: 0;
       padding: 0;
@@ -18,117 +16,137 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background-color: #fafaf9;
-      color: #1c1c1c;
+      background-color: #f5f5f0;
+      color: #1a1a1a;
       line-height: 1.5;
-      font-weight: 400;
-      -webkit-font-smoothing: antialiased;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       min-height: 100vh;
-      padding: 0 1.5rem;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
     }
 
-    /* Container chính giới hạn độ rộng, gọn gàng */
-    .container {
-      max-width: 980px;
+    .app-container {
+      max-width: 720px;
       width: 100%;
-      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 5rem;
-      padding: 3rem 0 4rem;
+      gap: 2rem;
     }
 
-    /* ===== NAVIGATION ===== */
-    nav {
+    /* Header */
+    .app-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #e5e5e0;
       flex-wrap: wrap;
       gap: 1rem;
     }
 
-    .logo {
+    .app-header h1 {
+      font-size: 1.7rem;
       font-weight: 600;
-      font-size: 1.25rem;
       letter-spacing: -0.02em;
       color: #171717;
-      text-decoration: none;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: #444;
+    .note-count {
+      background: #e8e8df;
+      padding: 0.3rem 0.9rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
       font-weight: 500;
-      font-size: 0.95rem;
-      transition: color 0.2s;
-      padding: 0.3rem 0;
-      border-bottom: 2px solid transparent;
+      color: #3d3d3d;
     }
 
-    .nav-links a:hover {
-      color: #0a0a0a;
-      border-bottom-color: #b0b0a8;
-    }
-
-    /* ===== HERO SECTION ===== */
-    .hero {
+    /* Form thêm ghi chú */
+    .note-form {
+      background: #ffffff;
+      border: 1px solid #e0e0d8;
+      border-radius: 0.9rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .hero h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      line-height: 1.2;
-      color: #171717;
-      max-width: 700px;
-    }
-
-    .hero .subtitle {
-      font-size: 1.2rem;
-      color: #4b4b4b;
-      max-width: 600px;
-      font-weight: 400;
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-buttons {
-      display: flex;
       gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .note-form input[type="text"],
+    .note-form textarea {
+      width: 100%;
+      border: 1px solid #e2e2d9;
+      border-radius: 0.5rem;
+      padding: 0.8rem 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fcfcf9;
+      transition: border 0.2s;
+      resize: vertical;
+      outline: none;
+    }
+
+    .note-form input[type="text"]:focus,
+    .note-form textarea:focus {
+      border-color: #b0b0a0;
+      background: #fff;
+    }
+
+    .note-form textarea {
+      min-height: 90px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
       flex-wrap: wrap;
-      margin-top: 0.5rem;
+      justify-content: space-between;
+    }
+
+    .file-upload-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      background: #f0f0e8;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid #d9d9ce;
+      color: #2e2e2e;
+      transition: background 0.2s;
+    }
+
+    .file-upload-label:hover {
+      background: #e6e6da;
+    }
+
+    #imageInput {
+      display: none;
+    }
+
+    .image-preview-name {
+      font-size: 0.8rem;
+      color: #5e5e5e;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.7rem 1.6rem;
+      padding: 0.6rem 1.4rem;
       border-radius: 0.5rem;
       font-weight: 500;
-      font-size: 0.95rem;
-      text-decoration: none;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      font-size: 0.9rem;
       border: 1px solid transparent;
       cursor: pointer;
-      background: #f0f0ec;
+      background: #f0f0e8;
       color: #1c1c1c;
-      border-color: #d1d1c6;
+      transition: background 0.2s, border-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .btn-primary {
@@ -139,193 +157,125 @@
 
     .btn-primary:hover {
       background: #2e2e2e;
-      border-color: #2e2e2e;
     }
 
     .btn-outline {
       background: transparent;
       border: 1px solid #c4c4b8;
-      color: #2b2b2b;
     }
 
     .btn-outline:hover {
       background: #f4f4ef;
-      border-color: #a8a89b;
     }
 
-    /* ===== ABOUT SECTION ===== */
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin-bottom: 1.5rem;
-      color: #1f1f1f;
-      position: relative;
-      display: inline-block;
+    .btn-sm {
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+      border-radius: 0.4rem;
     }
 
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2.5rem;
-      align-items: start;
+    .btn-danger {
+      border-color: #d0c8c8;
+      color: #4a3030;
+      background: #faf5f5;
     }
 
-    .about-text p {
-      color: #3d3d3d;
-      margin-bottom: 1rem;
-      font-size: 1rem;
+    .btn-danger:hover {
+      background: #f1e8e8;
+      border-color: #b8a7a7;
     }
 
-    .skills-list {
-      list-style: none;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-
-    .skills-list li {
-      background: #f0f0ea;
-      padding: 0.4rem 1rem;
-      border-radius: 2rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #2d2d2d;
-      border: 1px solid #dddcd2;
-    }
-
-    /* ===== PROJECTS ===== */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.8rem;
-      margin-top: 0.5rem;
-    }
-
-    .project-card {
-      background: #ffffff;
-      border: 1px solid #e6e6df;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
+    /* Danh sách ghi chú */
+    .notes-list {
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 1.2rem;
+    }
+
+    .note-card {
+      background: #ffffff;
+      border: 1px solid #e4e4dc;
+      border-radius: 0.8rem;
+      padding: 1.3rem 1.3rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
       transition: border-color 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
 
-    .project-card:hover {
-      border-color: #bebeb2;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+    .note-card:hover {
+      border-color: #c5c5b6;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.04);
     }
 
-    .project-card h3 {
+    .note-title {
       font-weight: 600;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #1a1a1a;
+      word-break: break-word;
     }
 
-    .project-card p {
-      color: #555;
-      font-size: 0.9rem;
-      flex: 1;
+    .note-content {
+      color: #444;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .project-tags {
+    .note-image {
+      margin-top: 0.4rem;
+      border-radius: 0.5rem;
+      max-width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      border: 1px solid #e6e6dd;
+      background: #fafaf7;
+    }
+
+    .note-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      color: #7a7a7a;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .note-actions {
       display: flex;
       gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-top: 0.3rem;
     }
 
-    .tag {
-      font-size: 0.7rem;
-      background: #f3f3ed;
-      padding: 0.25rem 0.7rem;
-      border-radius: 1rem;
-      color: #4a4a4a;
-      letter-spacing: 0.02em;
-      border: 1px solid #e2e2d7;
-    }
-
-    .project-link {
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #2b2b2b;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      margin-top: 0.3rem;
-      border-bottom: 1px solid #c0c0b5;
-      width: fit-content;
-      transition: color 0.2s;
-    }
-
-    .project-link:hover {
-      color: #000;
-    }
-
-    /* ===== CONTACT ===== */
-    .contact-section {
-      background: #f3f3ed;
-      border-radius: 1rem;
-      padding: 2.5rem 2rem;
+    .edit-mode-actions {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .empty-state {
       text-align: center;
-      border: 1px solid #e2e2d7;
+      padding: 3rem 1rem;
+      color: #8a8a8a;
+      background: #fdfdfb;
+      border-radius: 0.8rem;
+      border: 1px dashed #d5d5cb;
+      font-size: 0.95rem;
     }
 
-    .contact-section p {
-      max-width: 500px;
-      color: #464646;
-      margin: 0.7rem 0 1.5rem;
+    hr {
+      border: 0;
+      border-top: 1px solid #eaeae2;
+      margin: 0.2rem 0;
     }
 
-    .contact-links {
-      display: flex;
-      gap: 1.2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .contact-links a {
-      color: #2c2c2c;
-      text-decoration: none;
-      font-weight: 500;
-      border-bottom: 1px solid #b9b9ab;
-      padding-bottom: 0.15rem;
-    }
-
-    .contact-links a:hover {
-      color: #000;
-      border-bottom-color: #5e5e52;
-    }
-
-    /* Footer */
-    footer {
-      margin-top: 1.5rem;
-      padding: 1.8rem 0 1rem;
-      border-top: 1px solid #e2e2da;
-      width: 100%;
-      text-align: center;
-      color: #6f6f6f;
-      font-size: 0.85rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 650px) {
-      .about-grid {
-        grid-template-columns: 1fr;
-        gap: 1.8rem;
+    @media (max-width: 480px) {
+      .form-actions {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-      nav {
+      .note-footer {
         flex-direction: column;
         align-items: flex-start;
       }
@@ -333,104 +283,262 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Navigation -->
-    <nav>
-      <a href="#" class="logo">tên.portfolio</a>
-      <ul class="nav-links">
-        <li><a href="#about">Giới thiệu</a></li>
-        <li><a href="#projects">Dự án</a></li>
-        <li><a href="#contact">Liên hệ</a></li>
-      </ul>
-    </nav>
+<div class="app-container">
+  <header class="app-header">
+    <h1>📋 ghi chú</h1>
+    <span class="note-count" id="noteCount">0 ghi chú</span>
+  </header>
 
-    <!-- Hero -->
-    <section class="hero">
-      <h1>Thiết kế tối giản, tập trung vào nội dung.</h1>
-      <p class="subtitle">Tôi xây dựng những trải nghiệm kỹ thuật số rõ ràng, không ồn ào. Mọi chi tiết đều có chủ đích.</p>
-      <div class="hero-buttons">
-        <a href="#projects" class="btn btn-primary">Xem dự án</a>
-        <a href="#contact" class="btn btn-outline">Kết nối</a>
+  <!-- Form thêm / chỉnh sửa -->
+  <div class="note-form" id="noteFormContainer">
+    <input type="text" id="noteTitle" placeholder="Tiêu đề ghi chú" maxlength="120" />
+    <textarea id="noteContent" placeholder="Nội dung ghi chú..."></textarea>
+    <div class="form-actions">
+      <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+        <label for="imageInput" class="file-upload-label">
+          <span>🖼️</span> Chọn ảnh
+        </label>
+        <input type="file" id="imageInput" accept="image/*" />
+        <span class="image-preview-name" id="imagePreviewName"></span>
       </div>
-    </section>
-
-    <!-- About / Giới thiệu -->
-    <section id="about">
-      <h2 class="section-title">sơ lược</h2>
-      <div class="about-grid">
-        <div class="about-text">
-          <p>Tôi là một nhà phát triển yêu thích sự đơn giản. Với hơn 6 năm làm việc trong lĩnh vực web và ứng dụng, tôi tập trung vào hiệu suất, khả năng truy cập và thiết kế không phô trương.</p>
-          <p>Triết lý của tôi: ít hơn nhưng tốt hơn. Không hiệu ứng hào nhoáng, chỉ có những dòng code gọn gàng và trải nghiệm mượt mà.</p>
-        </div>
-        <div>
-          <p style="font-weight: 500; margin-bottom: 0.8rem; color:#1e1e1e;">Kỹ năng & Công cụ</p>
-          <ul class="skills-list">
-            <li>JavaScript / TypeScript</li>
-            <li>React & Next.js</li>
-            <li>Node.js</li>
-            <li>Thiết kế UI hệ thống</li>
-            <li>Figma</li>
-            <li>HTML/CSS thuần</li>
-            <li>Git & quy trình CI/CD</li>
-            <li>Tối ưu hiệu năng</li>
-          </ul>
-        </div>
+      <div style="display: flex; gap: 0.6rem;">
+        <button class="btn btn-outline btn-sm" id="cancelEditBtn" style="display: none;">Huỷ</button>
+        <button class="btn btn-primary" id="saveNoteBtn">➕ Thêm ghi chú</button>
       </div>
-    </section>
-
-    <!-- Projects -->
-    <section id="projects">
-      <h2 class="section-title">dự án gần đây</h2>
-      <div class="projects-grid">
-        <div class="project-card">
-          <h3>Nền tảng ghi chú Minima</h3>
-          <p>Ứng dụng ghi chú cá nhân với giao diện thuần khiết, hỗ trợ Markdown và đồng bộ cục bộ.</p>
-          <div class="project-tags">
-            <span class="tag">React</span>
-            <span class="tag">Electron</span>
-            <span class="tag">local-first</span>
-          </div>
-          <a href="#" class="project-link">↗ chi tiết</a>
-        </div>
-        <div class="project-card">
-          <h3>Cửa hàng mỹ phẩm thuần</h3>
-          <p>Trang thương mại điện tử tối giản, tập trung vào hình ảnh sản phẩm và quy trình thanh toán nhanh.</p>
-          <div class="project-tags">
-            <span class="tag">Next.js</span>
-            <span class="tag">Stripe</span>
-            <span class="tag">Tailwind</span>
-          </div>
-          <a href="#" class="project-link">↗ khám phá</a>
-        </div>
-        <div class="project-card">
-          <h3>Bảng điều khiển phân tích</h3>
-          <p>Công cụ trực quan dữ liệu nhẹ, không phụ thuộc thư viện nặng, dành cho doanh nghiệp nhỏ.</p>
-          <div class="project-tags">
-            <span class="tag">D3.js</span>
-            <span class="tag">Python API</span>
-            <span class="tag">PostgreSQL</span>
-          </div>
-          <a href="#" class="project-link">↗ xem demo</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact / Liên hệ -->
-    <section id="contact" class="contact-section">
-      <h2 class="section-title" style="margin-bottom: 0.25rem;">liên lạc</h2>
-      <p>Dù bạn có dự án, câu hỏi hay chỉ muốn trao đổi về thiết kế tối giản — hãy gửi tin nhắn.</p>
-      <div class="contact-links">
-        <a href="mailto:hello@tenmien.vn">email · hello@tenmien.vn</a>
-        <a href="#">github</a>
-        <a href="#">linkedin</a>
-        <a href="#">twitter/x</a>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-      <span>© 2025 — giữ sự đơn giản. Không màu mè, không neon.</span>
-    </footer>
+    </div>
   </div>
+
+  <!-- Danh sách ghi chú -->
+  <div class="notes-list" id="notesList">
+    <div class="empty-state">
+      Chưa có ghi chú nào. Hãy thêm ghi chú đầu tiên.
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Lưu trữ ghi chú trong bộ nhớ (có thể mở rộng localStorage)
+    let notes = [];
+    // Trạng thái chỉnh sửa
+    let editingId = null;
+    // Ảnh được chọn (dạng base64)
+    let selectedImageData = null;
+
+    // DOM elements
+    const titleInput = document.getElementById('noteTitle');
+    const contentInput = document.getElementById('noteContent');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewName = document.getElementById('imagePreviewName');
+    const saveBtn = document.getElementById('saveNoteBtn');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    const notesListEl = document.getElementById('notesList');
+    const noteCountEl = document.getElementById('noteCount');
+
+    // Đọc ảnh thành base64
+    imageInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) {
+        selectedImageData = null;
+        imagePreviewName.textContent = '';
+        return;
+      }
+      // Giới hạn kích thước ảnh (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB.');
+        imageInput.value = '';
+        selectedImageData = null;
+        imagePreviewName.textContent = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        selectedImageData = ev.target.result;
+        imagePreviewName.textContent = file.name.length > 22 ? file.name.substring(0, 19) + '...' : file.name;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Lưu hoặc cập nhật ghi chú
+    function saveNote() {
+      const title = titleInput.value.trim();
+      const content = contentInput.value.trim();
+      if (!title && !content && !selectedImageData) {
+        alert('Vui lòng nhập tiêu đề, nội dung hoặc chọn ảnh.');
+        return;
+      }
+
+      if (editingId !== null) {
+        // Đang sửa
+        const noteIndex = notes.findIndex(n => n.id === editingId);
+        if (noteIndex > -1) {
+          notes[noteIndex].title = title || 'Không tiêu đề';
+          notes[noteIndex].content = content;
+          // Nếu có ảnh mới thì cập nhật, không thì giữ ảnh cũ
+          if (selectedImageData !== null) {
+            notes[noteIndex].image = selectedImageData;
+          }
+          // Nếu người dùng không chọn ảnh mới (selectedImageData = null) => giữ nguyên ảnh cũ
+        }
+        exitEditMode();
+      } else {
+        // Thêm mới
+        const newNote = {
+          id: Date.now(),
+          title: title || 'Không tiêu đề',
+          content: content,
+          image: selectedImageData || null,
+          createdAt: new Date().toISOString(),
+        };
+        notes.unshift(newNote);
+      }
+
+      // Reset form
+      clearForm();
+      renderNotes();
+    }
+
+    // Xoá ghi chú
+    function deleteNote(id) {
+      if (editingId === id) {
+        exitEditMode();
+      }
+      notes = notes.filter(note => note.id !== id);
+      renderNotes();
+    }
+
+    // Bắt đầu chỉnh sửa
+    function startEdit(id) {
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+      // Nếu đang sửa note khác thì huỷ trước
+      if (editingId !== null && editingId !== id) {
+        exitEditMode();
+      }
+      editingId = id;
+      titleInput.value = note.title;
+      contentInput.value = note.content;
+      // Hiển thị tên ảnh nếu có
+      if (note.image) {
+        imagePreviewName.textContent = 'Ảnh hiện tại (chọn ảnh mới để thay)';
+      } else {
+        imagePreviewName.textContent = '';
+      }
+      selectedImageData = null; // reset lựa chọn mới
+      imageInput.value = '';
+      saveBtn.textContent = '✏️ Cập nhật';
+      cancelBtn.style.display = 'inline-flex';
+      // Cuộn nhẹ lên form
+      document.getElementById('noteFormContainer').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Thoát chế độ chỉnh sửa
+    function exitEditMode() {
+      editingId = null;
+      clearForm();
+      saveBtn.textContent = '➕ Thêm ghi chú';
+      cancelBtn.style.display = 'none';
+    }
+
+    function clearForm() {
+      titleInput.value = '';
+      contentInput.value = '';
+      imageInput.value = '';
+      selectedImageData = null;
+      imagePreviewName.textContent = '';
+    }
+
+    // Render danh sách ghi chú
+    function renderNotes() {
+      noteCountEl.textContent = `${notes.length} ghi chú`;
+      if (notes.length === 0) {
+        notesListEl.innerHTML = `<div class="empty-state">Chưa có ghi chú nào. Hãy thêm ghi chú đầu tiên.</div>`;
+        return;
+      }
+
+      let html = '';
+      notes.forEach(note => {
+        const titleSafe = escapeHtml(note.title || 'Không tiêu đề');
+        const contentSafe = escapeHtml(note.content || '');
+        const dateStr = note.createdAt ? new Date(note.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+        html += `
+          <div class="note-card" data-id="${note.id}">
+            <div class="note-title">${titleSafe}</div>
+            ${note.content ? `<div class="note-content">${contentSafe}</div>` : ''}
+            ${note.image ? `<img src="${note.image}" alt="ảnh ghi chú" class="note-image" loading="lazy" />` : ''}
+            <div class="note-footer">
+              <span>${dateStr}</span>
+              <div class="note-actions">
+                <button class="btn btn-outline btn-sm edit-note-btn" data-id="${note.id}">✎ Sửa</button>
+                <button class="btn btn-danger btn-sm delete-note-btn" data-id="${note.id}">🗑 Xoá</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      notesListEl.innerHTML = html;
+
+      // Gắn sự kiện cho nút sửa và xoá
+      document.querySelectorAll('.edit-note-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const id = Number(this.getAttribute('data-id'));
+          startEdit(id);
+        });
+      });
+
+      document.querySelectorAll('.delete-note-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const id = Number(this.getAttribute('data-id'));
+          if (confirm('Xoá ghi chú này?')) {
+            deleteNote(id);
+          }
+        });
+      });
+    }
+
+    // Hàm escape HTML đơn giản
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Sự kiện nút Lưu
+    saveBtn.addEventListener('click', saveNote);
+
+    // Nút Huỷ chỉnh sửa
+    cancelBtn.addEventListener('click', exitEditMode);
+
+    // Mặc định load dữ liệu mẫu nhẹ để trải nghiệm (có thể xoá)
+    function loadSampleNotes() {
+      if (notes.length === 0) {
+        notes.push({
+          id: 1678901234567,
+          title: 'Ý tưởng thiết kế',
+          content: 'Tập trung vào không gian trắng, font Inter, bố cục rõ ràng.',
+          image: null,
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+        });
+        notes.push({
+          id: 1678901234568,
+          title: 'Mua sắm cuối tuần',
+          content: 'Trái cây, sữa chua, bánh mì đen.',
+          image: null,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      renderNotes();
+    }
+
+    // Khởi tạo
+    loadSampleNotes();
+  })();
+</script>
 </body>
 </html>
+```
