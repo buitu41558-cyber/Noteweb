@@ -3,24 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Map - Rectangular Fix</title>
+    <title>Weather Map Horizontal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
-        
-        /* Ép khung map thành hình chữ nhật đứng (Ví dụ: rộng 450px, cao 900px hoặc theo % màn hình) */
-        #map { 
-            width: 100vw; 
-            height: 100vh;
-            max-width: 500px; /* Giới hạn chiều rộng để giữ hình chữ nhật đứng */
-            border: 1px solid #333;
-            background: #0b0e11;
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            background: #000; 
+            display: flex; align-items: center; justify-content: center; 
         }
 
-        .ui-box {
+        /* KHÓA CỨNG KHUNG HÌNH CHỮ NHẬT NGANG */
+        .map-wrapper {
+            width: 95vw; 
+            height: calc(95vw * 0.6); /* Tỷ lệ ngang 1.6:1 */
+            max-height: 90vh;
+            position: relative;
+            border: 2px solid #444;
+        }
+
+        #map { width: 100%; height: 100%; background: #0b0e11; }
+
+        /* UI tối giản */
+        .overlay-label {
             position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: white; padding: 8px; font-family: sans-serif; font-size: 12px;
-            border: 1px solid #000;
+            background: rgba(255,255,255,0.9); padding: 5px 10px;
+            font-family: monospace; font-size: 12px; border: 1px solid #000;
         }
 
         .storm-dot {
@@ -31,39 +38,35 @@
 </head>
 <body>
 
-    <div class="ui-box">
-        <b>RADAR THEO DÕI</b><br>
-        Tỉ lệ: 1:200.000<br>
-        Trạng thái: Hoạt động
+    <div class="map-wrapper">
+        <div class="overlay-label">DATA TYPE: RAW_SATELLITE</div>
+        <div id="map"></div>
     </div>
-
-    <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Thiết lập map với hệ tọa độ đơn giản
         var map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -1,
             attributionControl: false
         });
 
-        // ĐỊNH NGHĨA HÌNH CHỮ NHẬT: Chiều cao 2000, Chiều rộng 1000 (Tỉ lệ 2:1)
-        var bounds = [[0, 0], [2000, 1000]]; 
+        // THIẾT LẬP TỶ LỆ NGANG: Rộng 1600, Cao 1000
+        var bounds = [[0, 0], [1000, 1600]]; 
         var image = L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
 
         map.fitBounds(bounds);
 
-        // Thêm điểm báo bão đơn giản
-        function addMarker(y, x, code) {
-            L.circle([y, x], { radius: 100, color: 'red', weight: 1, fillOpacity: 0.1 }).addTo(map);
+        // Marker bão đơn giản
+        function addStorm(y, x, id) {
+            L.circle([y, x], { radius: 60, color: 'red', weight: 1, fillOpacity: 0.1 }).addTo(map);
             var icon = L.divIcon({ className: 'storm-dot', iconSize: [10, 10] });
-            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(code);
+            L.marker([y, x], {icon: icon}).addTo(map).bindTooltip(id);
         }
 
-        // Tọa độ bão căn chỉnh lại theo khung hình chữ nhật mới
-        addMarker(1350, 320, "TS-01");
-        addMarker(850, 780, "TS-02");
+        // Đặt bão vào vị trí biển (tọa độ theo khung ngang)
+        addStorm(550, 420, "SYS_A1");
+        addStorm(450, 1150, "SYS_B2");
 
     </script>
 </body>
