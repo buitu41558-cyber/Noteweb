@@ -68,4 +68,154 @@
 </head>
 <body>
 
-    <div id="tickerWrap"><div class="ticker"
+    <div id="tickerWrap"><div class="ticker" id="tickerMsg"></div></div>
+
+    <div class="map-container">
+        <div id="map"></div>
+        <button class="login-btn" onclick="login()">ADMIN</button>
+
+        <div id="adminPanel">
+            <h2>HỆ THỐNG QUẢN TRỊ</h2>
+            
+            <div class="item">
+                <label>Tên cơn bão / Áp thấp</label>
+                <input type="text" id="sName" placeholder="VD: TYPHOON YAGI">
+            </div>
+
+            <div class="item">
+                <label>Nhiệt độ tâm bão (°C)</label>
+                <input type="number" id="sTemp" value="28">
+            </div>
+
+            <div class="item">
+                <label>Cấp độ cảnh báo</label>
+                <select id="sLevel">
+                    <option value="apthap">Cấp 1: Áp thấp (Vàng)</option>
+                    <option value="bao">Cấp 2: Bão (Cam)</option>
+                    <option value="sieubao">Cấp 3: Siêu bão (Đỏ)</option>
+                </select>
+            </div>
+
+            <div class="item">
+                <label>Bán kính ảnh hưởng (km)</label>
+                <input type="range" id="sRadius" min="50" max="600" value="250">
+            </div>
+
+            <div class="item" style="border-top: 1px solid #222; padding-top: 15px;">
+                <label>Thông báo toàn cầu</label>
+                <input type="text" id="alertText" placeholder="Nhập tin nhắn cảnh báo...">
+                <button class="btn-send btn-msg" onclick="sendGlobalMsg()">PHÁT THÔNG BÁO</button>
+            </div>
+
+            <p id="statusHint" style="font-size: 11px; color: #ff4b4b; text-align: center; margin-top: 20px;">
+                * Click lần 1: Đặt vị trí bão<br>* Click lần 2: Chọn hướng đi
+            </p>
+
+            <button class="btn-send" style="background:#222; margin-top:30px;" onclick="location.reload()">ĐĂNG XUẤT</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Cấu hình PubNub (Dùng key demo)
+        const pubnub = new PubNub({
+            publishKey: 'pub-c-497793d9-a359-458b-967b-1b913840742d',
+            subscribeKey: 'sub-c-17937446-ec8c-4f76-905c-3a8595085e6a',
+            uuid: "admin_" + Math.floor(Math.random() * 9999)
+        });
+
+        const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
+        const bounds = [[0, 0], [1000, 2000]];
+        L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
+        map.fitBounds(bounds);
+
+        let isAdmin = false, step = 1, tempStorm = {}, stormLayers = {};
+        const layerGroup = L.layerGroup().addTo(map);
+
+        function login() {
+            if(prompt("Nhập mật khẩu quản trị:") === 'aihoi') {
+                isAdmin = true;
+                document.getElementById('adminPanel').classList.add('active');
+            }
+        }
+
+        // Nhận dữ liệu đồng bộ từ mọi nơi
+        pubnub.addListener({
+            message: (obj) => {
+                const data = obj.message;
+                if(data.type === 'storm') {
+                    renderStorm(data);
+                } else if(data.type === 'alert') {
+                    const wrap = document.getElementById('tickerWrap');
+                    if(data.txt) {
+                        wrap.style.display = 'block';
+                        document.getElementById('tickerMsg').innerText = data.txt;
+                    } else {
+                        wrap.style.display = 'none';
+                    }
+                } else if(data.type === 'delete') {
+                    if(stormLayers[data.id]) { layerGroup.removeLayer(stormLayers[data.id]); delete stormLayers[data.id]; }
+                }
+            }
+        });
+        pubnub.subscribe({ channels: ['meteorology_global_v2'] });
+
+        function renderStorm(s) {
+            if(stormLayers[s.id]) layerGroup.removeLayer(stormLayers[s.id]);
+            const color = s.lv === 'sieubao' ? '#ff0000' : (s.lv === 'bao' ? '#ff9800' : '#ffeb3b');
+            
+            const marker = L.marker([s.y, s.x], {
+                icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar" style="border-color:${color}; background:${color}"></div>` })
+            });
+
+            const circle = L.circle([s.y, s.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.1 });
+            const elements = [marker, circle];
+            
+            if(s.ty) elements.push(L.polyline([[s.y, s.x], [s.ty, s.tx]], { color: color, weight: 1, dashArray: '5,5', opacity: 0.4 }));
+
+            const group = L.layerGroup(elements).addTo(layerGroup);
+            const delBtn = isAdmin ? `<br><button onclick="deleteStorm('${s.id}')" style="background:red; color:white; border:none; padding:3px 8px; cursor:pointer; border-radius:3px; margin-top:5px;">XÓA BÃO</button>` : "";
+            
+            marker.bindTooltip(`<b>${s.name}</b><br>Nhiệt độ: ${s.temp}°C<br>Ảnh hưởng: ${s.r}km${delBtn}`, { 
+                permanent: true, direction: 'top', interactive: true 
+            });
+            
+            stormLayers[s.id] = group;
+        }
+
+        // Xử lý Click 2 bước của Admin
+        map.on('click', e => {
+            if(!isAdmin) return;
+            if(step === 1) {
+                tempStorm = { 
+                    y: e.latlng.lat, x: e.latlng.lng, 
+                    name: document.getElementById('sName').value || "HỆ THỐNG MỚI",
+                    temp: document.getElementById('sTemp').value,
+                    lv: document.getElementById('sLevel').value,
+                    r: document.getElementById('sRadius').value
+                };
+                step = 2;
+                document.getElementById('statusHint').innerText = "VỊ TRÍ ĐÃ LƯU. CLICK TIẾP ĐỂ CHỌN HƯỚNG.";
+            } else {
+                tempStorm.ty = e.latlng.lat; tempStorm.tx = e.latlng.lng;
+                tempStorm.type = 'storm'; tempStorm.id = "STORM_" + Date.now();
+                pubnub.publish({ channel: 'meteorology_global_v2', message: tempStorm });
+                step = 1;
+                document.getElementById('statusHint').innerText = "* Click lần 1: Đặt vị trí bão\n* Click lần 2: Chọn hướng đi";
+            }
+        });
+
+        window.deleteStorm = (id) => {
+            pubnub.publish({ channel: 'meteorology_global_v2', message: { type: 'delete', id: id } });
+        };
+
+        window.sendGlobalMsg = () => {
+            const msg = document.getElementById('alertText').value;
+            pubnub.publish({ channel: 'meteorology_global_v2', message: { type: 'alert', txt: msg } });
+        };
+
+    </script>
+</body>
+</html>
