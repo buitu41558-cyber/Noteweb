@@ -3,191 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Weather - Lục Địa Huyền Bí</title>
+    <title>Fantasy Windy - Weather Radar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --primary-gold: #d4af37;
-            --glass-bg: rgba(20, 20, 30, 0.85);
+            --bg-dark: #111;
+            --panel-bg: rgba(30, 30, 30, 0.9);
+            --windy-blue: #32a1ff;
+            --windy-red: #ff4b4b;
         }
 
-        body {
-            margin: 0;
-            font-family: 'Georgia', serif;
-            background: #0a0a0c;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+
+        /* Map styling */
+        #map { width: 100%; height: 100%; background: #0b0e11; }
+
+        /* Windy UI Components */
+        .ui-overlay { position: absolute; z-index: 1000; pointer-events: none; width: 100%; height: 100%; }
+        .ui-overlay > * { pointer-events: auto; }
+
+        /* Search & Info Panel */
+        .top-left { top: 20px; left: 20px; position: absolute; }
+        .search-bar { 
+            background: var(--panel-bg); padding: 12px 20px; border-radius: 4px;
+            border-left: 4px solid var(--windy-red); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        .header {
-            text-align: center;
-            padding: 20px;
-            color: var(--primary-gold);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        /* Right Layer Menu */
+        .right-menu { 
+            right: 10px; top: 50%; transform: translateY(-50%); position: absolute;
+            background: var(--panel-bg); border-radius: 8px; padding: 10px;
+            display: flex; flex-direction: column; gap: 15px;
         }
+        .layer-item { text-align: center; cursor: pointer; font-size: 11px; opacity: 0.7; transition: 0.3s; }
+        .layer-item.active { opacity: 1; color: var(--windy-blue); }
+        .layer-icon { width: 30px; height: 30px; background: #444; margin-bottom: 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
 
-        .main-container {
-            position: relative;
-            width: 90%;
-            max-width: 1000px;
-            border: 2px solid var(--primary-gold);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        /* Bottom Timeline */
+        .timeline {
+            bottom: 30px; left: 50%; transform: translateX(-50%); position: absolute;
+            width: 80%; background: var(--panel-bg); padding: 15px; border-radius: 50px;
+            display: flex; align-items: center; gap: 20px;
         }
+        .play-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--windy-blue); color: white; cursor: pointer; }
+        .slider { flex-grow: 1; accent-color: var(--windy-blue); cursor: pointer; }
 
-        /* Hiển thị bản đồ */
-        .map-container {
-            width: 100%;
-            display: block;
+        /* Storm Animation Overlay */
+        .storm-marker {
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(50,161,255,0.1) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: rotateStorm 10s linear infinite;
         }
-
-        .map-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-            filter: sepia(30%) contrast(1.1);
-        }
-
-        /* Bảng điều khiển thời tiết */
-        .weather-overlay {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: var(--glass-bg);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid var(--primary-gold);
-            backdrop-filter: blur(5px);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-box h3 {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--primary-gold);
-            text-transform: uppercase;
-        }
-
-        .stat-box p {
-            margin: 5px 0 0;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .status-tag {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            background: rgba(212, 175, 55, 0.2);
-            margin-top: 5px;
-        }
-
-        /* Hiệu ứng hạt (Magic Particles) */
-        #canvas-snow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
+        @keyframes rotateStorm {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>DỰ BÁO THỜI TIẾT LIÊN MINH HUYỀN BÍ</h1>
-        <p>Ngày 14, Kỷ Nguyên Thứ 3</p>
-    </div>
+    <div id="map"></div>
 
-    <div class="main-container">
-        <div class="map-container">
-            <img src="https://i.ibb.co/p6njm03s/1778582329890.png" alt="Fantasy Map">
+    <div class="ui-overlay">
+        <div class="top-left">
+            <div class="search-bar">
+                <div style="font-weight: bold; font-size: 1.2rem;">LỤC ĐỊA ELDRIA</div>
+                <div style="font-size: 0.8rem; color: #aaa;">Dự báo bão: Áp thấp nhiệt đới vùng biển phía Đông</div>
+            </div>
         </div>
-        
-        <canvas id="canvas-snow"></canvas>
 
-        <div class="weather-overlay">
-            <div class="stat-box">
-                <h3>Vùng Đất</h3>
-                <p id="region">Thung Lũng Rồng</p>
-            </div>
-            <div class="stat-box">
-                <h3>Nhiệt Độ</h3>
-                <p id="temp">24°M</p> <!-- M là đơn vị Magic -->
-            </div>
-            <div class="stat-box">
-                <h3>Năng Lượng Mana</h3>
-                <p id="mana">Cực Cao</p>
-                <span class="status-tag">Bão Ma Thuật</span>
-            </div>
-            <div class="stat-box">
-                <h3>Dự Báo</h3>
-                <p id="forecast">Mưa Ánh Sáng</p>
-            </div>
+        <div class="right-menu">
+            <div class="layer-item active"><div class="layer-icon">💨</div>Gió</div>
+            <div class="layer-item"><div class="layer-icon">🌧️</div>Mưa</div>
+            <div class="layer-item"><div class="layer-icon">🌡️</div>Nhiệt độ</div>
+            <div class="layer-item"><div class="layer-icon">⛈️</div>Sét</div>
+        </div>
+
+        <div class="timeline">
+            <button class="play-btn">▶</button>
+            <div style="font-size: 12px; min-width: 60px;">THỨ BA 12</div>
+            <input type="range" class="slider" min="0" max="100" value="20">
+            <div style="font-size: 12px; min-width: 60px;">THỨ BẢY 16</div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Giả lập dữ liệu thay đổi ngẫu nhiên
-        const regions = ["Đảo Sương Mù", "Thành Phố Bay", "Rừng Nguyên Sinh", "Sa Mạc Cổ Đại"];
-        const forecasts = ["Nắng Hoàng Kim", "Mưa Axit Nhẹ", "Tuyết Đen", "Gió Lốc Mana"];
+        // 1. Thiết lập bản đồ giả tưởng
+        const map = L.map('map', {
+            crs: L.CRS.Simple, // Hệ tọa độ phẳng cho ảnh giả tưởng
+            minZoom: -2
+        });
 
-        function updateWeather() {
-            const temp = Math.floor(Math.random() * 50) - 10;
-            document.getElementById('temp').innerText = `${temp}°M`;
-            document.getElementById('region').innerText = regions[Math.floor(Math.random() * regions.length)];
-            document.getElementById('forecast').innerText = forecasts[Math.floor(Math.random() * forecasts.length)];
-        }
+        const bounds = [[0, 0], [1000, 1000]]; // Kích thước ảo
+        const image = L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
+        map.fitBounds(bounds);
 
-        // Cập nhật mỗi 5 giây
-        setInterval(updateWeather, 5000);
-
-        // Hiệu ứng hạt tuyết giả lập cho sinh động
-        const canvas = document.getElementById('canvas-snow');
-        const ctx = canvas.getContext('2d');
-        canvas.width = canvas.parentElement.offsetWidth;
-        canvas.height = canvas.parentElement.offsetHeight;
-
-        let particles = [];
-        for(let i=0; i<50; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                density: Math.random() * 1
+        // 2. Tạo hiệu ứng Bão (Storm Radar)
+        // Chúng ta tạo các vòng tròn đồng tâm mô phỏng radar bão chuyên nghiệp
+        function createStorm(lat, lng, color) {
+            const stormIcon = L.divIcon({
+                className: 'custom-storm',
+                html: `<div class="storm-marker" style="border: 2px dashed ${color}; opacity: 0.5"></div>`,
+                iconSize: [100, 100]
             });
+            L.marker([lat, lng], {icon: stormIcon}).addTo(map);
+            
+            // Thêm tâm bão
+            L.circle([lat, lng], {
+                radius: 20,
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.5
+            }).addTo(map).bindPopup("<b>Tâm bão cấp 12</b><br>Sức gió 120km/h");
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-            ctx.beginPath();
-            for(let i=0; i<particles.length; i++) {
-                let p = particles[i];
-                ctx.moveTo(p.x, p.y);
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2, true);
-            }
-            ctx.fill();
-            update();
-        }
+        // Đặt vài cơn bão lên các tọa độ trên map
+        createStorm(400, 600, '#32a1ff'); // Bão biển
+        createStorm(700, 300, '#ff4b4b'); // Áp thấp lục địa
 
-        function update() {
-            for(let i=0; i<particles.length; i++) {
-                let p = particles[i];
-                p.y += Math.cos(p.density) + 1;
-                p.x += Math.sin(p.density);
-                if(p.y > canvas.height) {
-                    particles[i] = {x: Math.random()*canvas.width, y: -10, radius: p.radius, density: p.density};
-                }
-            }
-        }
-        setInterval(draw, 33);
+        // 3. Hiệu ứng tương tác UI
+        document.querySelector('.play-btn').onclick = function() {
+            this.innerText = this.innerText === '▶' ? '⏸' : '▶';
+        };
+
+        // Ghi tọa độ khi click để bạn dễ dàng căn chỉnh bão sau này
+        map.on('click', function(e) {
+            console.log("Tọa độ click: ", e.latlng);
+        });
     </script>
 </body>
 </html>
