@@ -3,33 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather System - Admin Click</title>
+    <title>Weather Map - Interactive Direction</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; }
+        .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; border: 1px solid #333; }
         #map { width: 100%; height: 100%; background: #0b0e11; cursor: crosshair; }
 
-        /* Popup Admin ngay tại điểm click */
-        .admin-popup { color: #000; min-width: 150px; }
-        .admin-popup input { width: 100%; margin-bottom: 5px; padding: 5px; box-sizing: border-box; border: 1px solid #ccc; }
-        .dir-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
-        .dir-btn { background: #eee; border: 1px solid #ccc; padding: 4px 8px; cursor: pointer; font-size: 11px; flex: 1; text-align: center; }
-        .dir-btn:hover { background: #ddd; }
-        .dir-btn.active { background: #ff4b4b; color: white; border-color: #d32f2f; }
-        .save-btn { background: #000; color: #fff; border: none; width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; font-weight: bold; }
+        /* Marker & Line */
+        .storm-marker { width: 12px; height: 12px; background: red; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px red; }
+        .target-line { stroke: rgba(255, 0, 0, 0.6); stroke-dasharray: 5, 5; stroke-width: 2; }
 
-        /* Marker bão */
-        .storm-marker { width: 12px; height: 12px; background: red; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(255,0,0,0.8); }
+        /* Admin UI */
+        .admin-hint { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(255, 0, 0, 0.8); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: none; }
+        .login-btn { position: absolute; bottom: 10px; right: 10px; z-index: 1000; background: transparent; border: none; color: #333; cursor: pointer; font-size: 10px; }
         
-        .login-btn { position: absolute; bottom: 10px; right: 10px; z-index: 1000; background: #222; color: #444; border: none; padding: 5px; cursor: pointer; font-size: 10px; }
+        .popup-form input { width: 100px; padding: 5px; border: 1px solid #ccc; margin-bottom: 5px; display: block; }
+        .popup-form button { background: #d32f2f; color: white; border: none; padding: 5px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="map-container">
+        <div id="adminHint" class="admin-hint">BƯỚC 1: Click vị trí bão | BƯỚC 2: Click hướng bão đi</div>
         <div id="map"></div>
-        <button class="login-btn" onclick="login()">[Admin]</button>
+        <button class="login-btn" onclick="doLogin()">Admin</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -40,73 +38,88 @@
         map.fitBounds(bounds);
 
         let isAdmin = false;
-        let db = JSON.parse(localStorage.getItem('storm_db_v2')) || [];
-        let markers = [];
-        let selectedDir = "Tây";
+        let step = 1; // 1: Đặt bão, 2: Chọn hướng
+        let newStorm = { y: 0, x: 0, name: "", temp: 28 };
+        let db = JSON.parse(localStorage.getItem('storm_db_v3')) || [];
+        let layers = L.layerGroup().addTo(map);
 
-        function login() {
-            if(prompt("Mật khẩu quản trị:") === 'aihoi') {
+        function doLogin() {
+            if(prompt("Mật khẩu:") === 'aihoi') {
                 isAdmin = true;
-                alert("Đã vào chế độ Admin. Hãy Click vào bản đồ để thêm bão.");
+                document.getElementById('adminHint').style.display = 'block';
             }
         }
 
-        function renderMap() {
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            db.forEach((s, i) => {
-                const m = L.marker([s.y, s.x], {
-                    icon: L.divIcon({ className: 'storm-marker' })
-                }).addTo(map).bindTooltip(`<b>${s.name}</b><br>${s.temp}°C | Hướng: ${s.dir} <br><span style="color:red" onclick="deleteStorm(${i})">[Xóa]</span>`, { interactive: true, permanent: false });
-                markers.push(m);
-            });
-            localStorage.setItem('storm_db_v2', JSON.stringify(db));
+        function getDirectionName(y1, x1, y2, x2) {
+            const dy = y2 - y1;
+            const dx = x2 - x1;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            if (angle > -22.5 && angle <= 22.5) return "Đông";
+            if (angle > 22.5 && angle <= 67.5) return "Đông Bắc";
+            if (angle > 67.5 && angle <= 112.5) return "Bắc";
+            if (angle > 112.5 && angle <= 157.5) return "Tây Bắc";
+            if (angle > 157.5 || angle <= -157.5) return "Tây";
+            if (angle > -157.5 && angle <= -112.5) return "Tây Nam";
+            if (angle > -112.5 && angle <= -67.5) return "Nam";
+            return "Đông Nam";
         }
 
-        // Xử lý Click Map
+        function render() {
+            layers.clearLayers();
+            db.forEach((s, i) => {
+                // Tâm bão
+                L.marker([s.y, s.x], { icon: L.divIcon({ className: 'storm-marker' }) }).addTo(layers)
+                 .bindTooltip(`<b>${s.name}</b><br>${s.temp}°C<br>Hướng: ${s.dir}`, { permanent: true, direction: 'top' });
+
+                // Vẽ mũi tên hướng đi
+                if(s.ty && s.tx) {
+                    L.polyline([[s.y, s.x], [s.ty, s.tx]], { color: 'red', weight: 2, dashArray: '5,5', opacity: 0.5 }).addTo(layers);
+                    L.circle([s.ty, s.tx], { radius: 10, color: 'red', fillOpacity: 0.5 }).addTo(layers);
+                }
+                
+                // Nút xóa
+                L.circle([s.y, s.x], { radius: 30, stroke: false, fillOpacity: 0 }).addTo(layers)
+                 .on('contextmenu', () => { if(isAdmin) { db.splice(i, 1); render(); } });
+            });
+            localStorage.setItem('storm_db_v3', JSON.stringify(db));
+        }
+
         map.on('click', function(e) {
             if(!isAdmin) return;
 
-            const tempPopup = L.popup()
-                .setLatLng(e.latlng)
-                .setContent(`
-                    <div class="admin-popup">
-                        <strong>CÀI ĐẶT BÃO</strong>
-                        <input type="text" id="popName" placeholder="Tên bão...">
-                        <input type="number" id="popTemp" placeholder="Nhiệt độ" value="28">
-                        <div class="dir-row">
-                            <div class="dir-btn" onclick="updatePopDir('Tây', this)">Tây</div>
-                            <div class="dir-btn" onclick="updatePopDir('T.Bắc', this)">T.Bắc</div>
-                            <div class="dir-btn" onclick="updatePopDir('Bắc', this)">Bắc</div>
-                            <div class="dir-btn" onclick="updatePopDir('T.Nam', this)">T.Nam</div>
-                            <div class="dir-btn" onclick="updatePopDir('Nam', this)">Nam</div>
-                        </div>
-                        <button class="save-btn" onclick="saveStorm(${e.latlng.lat}, ${e.latlng.lng})">XÁC NHẬN</button>
+            if(step === 1) {
+                newStorm.y = e.latlng.lat;
+                newStorm.x = e.latlng.lng;
+                L.popup().setLatLng(e.latlng).setContent(`
+                    <div class="popup-form">
+                        <input type="text" id="n" placeholder="Tên bão">
+                        <input type="number" id="t" placeholder="Nhiệt độ" value="28">
+                        <button onclick="confirmStep1()">XÁC NHẬN VỊ TRÍ</button>
                     </div>
-                `)
-                .openOn(map);
+                `).openOn(map);
+            } else if(step === 2) {
+                const dir = getDirectionName(newStorm.y, newStorm.x, e.latlng.lat, e.latlng.lng);
+                db.push({ 
+                    y: newStorm.y, x: newStorm.x, 
+                    ty: e.latlng.lat, tx: e.latlng.lng, // Tọa độ điểm hướng đến
+                    name: newStorm.name, temp: newStorm.temp, dir: dir 
+                });
+                step = 1;
+                document.getElementById('adminHint').innerText = "BƯỚC 1: Click vị trí bão | BƯỚC 2: Click hướng bão đi";
+                render();
+                map.closePopup();
+            }
         });
 
-        window.updatePopDir = function(dir, btn) {
-            selectedDir = dir;
-            document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        };
-
-        window.saveStorm = function(lat, lng) {
-            const name = document.getElementById('popName').value || "UNNAMED";
-            const temp = document.getElementById('popTemp').value || 0;
-            db.push({ y: lat, x: lng, name: name, temp: temp, dir: selectedDir });
-            renderMap();
+        window.confirmStep1 = function() {
+            newStorm.name = document.getElementById('n').value || "BÃO_MỚI";
+            newStorm.temp = document.getElementById('t').value || 28;
+            step = 2;
+            document.getElementById('adminHint').innerText = "ĐÃ CHỌN VỊ TRÍ. CLICK ĐIỂM TIẾP THEO ĐỂ CHỌN HƯỚNG.";
             map.closePopup();
         };
 
-        window.deleteStorm = function(i) {
-            db.splice(i, 1);
-            renderMap();
-        };
-
-        renderMap();
+        render();
     </script>
 </body>
 </html>
