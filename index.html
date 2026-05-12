@@ -3,30 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Bão Di Động Real-time</title>
+    <title>Hệ Thống Bão Di Động - Fix Lỗi Hiển Thị</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
         .map-container { width: 100vw; height: 50vw; max-height: 100vh; max-width: 200vh; position: relative; margin: auto; top: 50%; transform: translateY(-50%); border: 2px solid #333; }
-        #map { width: 100%; height: 100%; background: #05070a; }
+        #map { width: 100%; height: 100%; background: #05070a; cursor: crosshair; }
 
-        /* Admin Panel */
         #adminPanel { 
             position: absolute; top: 0; left: -320px; width: 300px; height: 100%; 
             background: rgba(10, 10, 10, 0.98); border-right: 3px solid #ff4b4b; 
-            z-index: 4000; transition: 0.4s; color: #fff; padding: 20px; box-sizing: border-box;
+            z-index: 5000; transition: 0.3s; color: #fff; padding: 20px; box-sizing: border-box;
         }
         #adminPanel.active { left: 0; }
-        .toggle-panel {
-            position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
-            width: 40px; height: 60px; background: #ff4b4b; color: white; border: none; border-radius: 0 5px 5px 0; cursor: pointer; display: none;
-        }
+        .toggle-btn { position: absolute; right: -40px; top: 50%; width: 40px; height: 60px; background: #ff4b4b; border: none; border-radius: 0 5px 5px 0; cursor: pointer; display: none; color: white; font-weight: bold; }
 
-        .login-btn { position: absolute; bottom: 15px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.7); color: #ff4b4b; border: 1px solid #ff4b4b; padding: 6px 15px; cursor: pointer; border-radius: 20px; font-size: 11px; }
-        #statusHint { font-size: 11px; color: #ff4b4b; text-align: center; font-weight: bold; padding: 5px; border: 1px dashed #444; margin-top: 10px; }
-        
+        .login-btn { position: absolute; bottom: 15px; right: 20px; z-index: 1000; background: #222; color: #ff4b4b; border: 1px solid #ff4b4b; padding: 8px 15px; cursor: pointer; border-radius: 20px; font-weight: bold; }
+        #statusHint { font-size: 13px; color: #ff4b4b; text-align: center; font-weight: bold; padding: 10px; border: 1px dashed #555; margin-top: 10px; }
+
         .storm-marker { border-radius: 50%; border: 2px solid #fff; position: relative; }
-        .radar { position: absolute; inset: -15px; border: 2px solid inherit; border-radius: 50%; animation: pulse 2s infinite; opacity: 0.5; }
+        .radar { position: absolute; inset: -15px; border: 2px solid inherit; border-radius: 50%; animation: pulse 2s infinite; opacity: 0.8; }
         @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
     </style>
 </head>
@@ -34,19 +30,18 @@
 
     <div class="map-container">
         <div id="map"></div>
-        <button class="login-btn" onclick="login()">ADMIN</button>
+        <button class="login-btn" onclick="login()">KÍCH HOẠT ADMIN</button>
         <div id="adminPanel">
-            <button class="toggle-panel" id="tBtn" onclick="togglePanel()"> < </button>
-            <h2 style="color:#ff4b4b; font-size:16px; text-align:center;">HỆ THỐNG ĐIỀU HÀNH</h2>
-            <input type="text" id="sName" value="BÃO DI ĐỘNG" style="width:100%; background:#1a1a1a; color:#fff; border:1px solid #333; padding:8px; margin-bottom:10px;">
-            <select id="sType" style="width:100%; background:#1a1a1a; color:#fff; border:1px solid #333; padding:8px; margin-bottom:10px;">
+            <button class="toggle-btn" id="tBtn" onclick="togglePanel()"> < </button>
+            <h2 style="color:#ff4b4b; text-align:center;">QUẢN TRỊ VIÊN</h2>
+            <input type="text" id="sName" value="BÃO KHẨN CẤP" style="width:100%; padding:8px; margin-bottom:10px;">
+            <select id="sType" style="width:100%; padding:8px; margin-bottom:10px;">
                 <option value="sieubao">🔴 SIÊU BÃO</option>
                 <option value="bao">🟠 BÃO THƯỜNG</option>
-                <option value="apthap">🟡 ÁP THẤP</option>
             </select>
-            <input type="range" id="sRadius" min="10" max="80" value="30" style="width:100%;">
-            <div id="statusHint">ẤN ADMIN ĐỂ VẼ 3 ĐIỂM</div>
-            <button onclick="clearAll()" style="width:100%; padding:10px; background:red; color:white; border:none; margin-top:20px; cursor:pointer;">XÓA TẤT CẢ SERVER</button>
+            <input type="range" id="sRadius" min="10" max="100" value="30" style="width:100%;">
+            <div id="statusHint">ĐĂNG NHẬP ĐỂ VẼ</div>
+            <button onclick="clearAll()" style="width:100%; padding:10px; background:red; color:white; border:none; margin-top:20px; cursor:pointer; font-weight:bold;">XÓA TẤT CẢ SERVER</button>
         </div>
     </div>
 
@@ -57,7 +52,7 @@
         const pubnub = new PubNub({
             publishKey: 'pub-c-497793d9-a359-458b-967b-1b913840742d',
             subscribeKey: 'sub-c-17937446-ec8c-4f76-905c-3a8595085e6a',
-            uuid: "storm_master_" + Math.random().toString(36).substring(7)
+            uuid: "storm_user_" + Math.random().toString(36).substring(7)
         });
 
         const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
@@ -65,26 +60,29 @@
         L.imageOverlay('https://i.ibb.co/p6njm03s/1778582329890.png', bounds).addTo(map);
         map.fitBounds(bounds);
 
-        let isAdmin = false, step = 1, points = [];
-        let activeStorms = {}; // Lưu trữ object bão đang chạy
+        let isAdmin = false, step = 1, points = [], activeStorms = {};
         const layerGroup = L.layerGroup().addTo(map);
-        const colors = { sieubao: '#ff0000', bao: '#ffa500', apthap: '#ffff00' };
-
-        // Thời gian để bão đi hết lộ trình (ms thực tế)
-        // 1 ngày thật = 60 ngày ảo => bão tồn tại 2 ngày ảo = 48 phút thật (2880000 ms)
-        const LIFETIME = 2880000; 
+        const colors = { sieubao: '#ff0000', bao: '#ffa500' };
+        const LIFETIME = 2880000; // ~48 phút thật (2 ngày ảo)
 
         pubnub.addListener({
             message: (obj) => {
-                if(obj.message.action === 'add') activeStorms[obj.message.content.id] = obj.message.content;
-                if(obj.message.action === 'clear') { activeStorms = {}; layerGroup.clearLayers(); }
+                const data = obj.message;
+                if(data.action === 'add') {
+                    activeStorms[data.content.id] = data.content;
+                }
+                if(data.action === 'clear') {
+                    activeStorms = {};
+                    layerGroup.clearLayers();
+                }
             }
         });
-        pubnub.subscribe({ channels: ['moving_storm_v1'] });
+        pubnub.subscribe({ channels: ['moving_storm_v2'] });
 
-        pubnub.fetchMessages({ channels: ['moving_storm_v1'], count: 20 }, (s, res) => {
-            if (res && res.channels['moving_storm_v1']) {
-                res.channels['moving_storm_v1'].forEach(msg => {
+        // Load bão cũ từ server
+        pubnub.fetchMessages({ channels: ['moving_storm_v2'], count: 50 }, (s, res) => {
+            if (res && res.channels['moving_storm_v2']) {
+                res.channels['moving_storm_v2'].forEach(msg => {
                     if(msg.message.action === 'add') activeStorms[msg.message.content.id] = msg.message.content;
                 });
             }
@@ -95,6 +93,7 @@
                 isAdmin = true;
                 document.getElementById('adminPanel').classList.add('active');
                 document.getElementById('tBtn').style.display = 'flex';
+                document.getElementById('statusHint').innerText = "CLICK ĐIỂM 1: TÂM BÃO";
             }
         }
 
@@ -104,81 +103,69 @@
             document.getElementById('tBtn').innerText = p.classList.contains('active') ? '<' : '>';
         }
 
-        // Hàm tính vị trí hiện tại dựa trên thời gian
         function getCurrentPos(s) {
-            const now = Date.now();
-            const elapsed = now - s.startTime;
-            let progress = elapsed / LIFETIME; // 0 đến 1
+            const elapsed = Date.now() - s.startTime;
+            let progress = elapsed / LIFETIME;
+            if (progress >= 1) return null;
 
-            if (progress >= 1) return null; // Bão đã tan
-
-            // Chia làm 2 giai đoạn di chuyển (P1->P2 và P2->P3)
             if (progress < 0.5) {
-                let p = progress * 2; // scale về 0-1 cho đoạn 1
-                return {
-                    y: s.p1.y + (s.p2.y - s.p1.y) * p,
-                    x: s.p1.x + (s.p2.x - s.p1.x) * p
-                };
+                let p = progress * 2;
+                return { y: s.p1.y + (s.p2.y - s.p1.y) * p, x: s.p1.x + (s.p2.x - s.p1.x) * p };
             } else {
-                let p = (progress - 0.5) * 2; // scale về 0-1 cho đoạn 2
-                return {
-                    y: s.p2.y + (s.p3.y - s.p2.y) * p,
-                    x: s.p2.x + (s.p3.x - s.p2.x) * p
-                };
+                let p = (progress - 0.5) * 2;
+                return { y: s.p2.y + (s.p3.y - s.p2.y) * p, x: s.p2.x + (s.p3.x - s.p2.x) * p };
             }
         }
 
-        // Vòng lặp cập nhật vị trí bão (1 giây cập nhật 1 lần cho mượt)
-        setInterval(() => {
+        // Vòng lặp vẽ liên tục 60fps để bão trượt mượt mà
+        function updateMap() {
             layerGroup.clearLayers();
             for (let id in activeStorms) {
                 const s = activeStorms[id];
                 const pos = getCurrentPos(s);
-
-                if (!pos) {
-                    delete activeStorms[id]; // Xóa bão đã tan
-                    continue;
-                }
+                if (!pos) { delete activeStorms[id]; continue; }
 
                 const color = colors[s.type];
                 const marker = L.marker([pos.y, pos.x], {
                     icon: L.divIcon({ className: 'storm-marker', html: `<div class="radar" style="border-color:${color}"></div>`, iconSize:[16,16] })
                 }).addTo(layerGroup);
 
-                L.circle([pos.y, pos.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.1 }).addTo(layerGroup);
-                
-                // Vẽ lộ trình mờ phía sau
-                L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '5,10', opacity: 0.2 }).addTo(layerGroup);
-                
+                L.circle([pos.y, pos.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.15 }).addTo(layerGroup);
+                L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '5,10', opacity: 0.3 }).addTo(layerGroup);
                 marker.bindTooltip(`<b>${s.name}</b>`, { permanent: true, direction: 'top' });
             }
-        }, 1000);
+            requestAnimationFrame(updateMap);
+        }
+        updateMap();
 
         map.on('click', e => {
             if(!isAdmin) return;
-            points.push({ y: e.latlng.lat, x: e.latlng.lng });
-            document.getElementById('statusHint').innerText = `ĐÃ CHỌN ĐIỂM ${step}`;
-
+            const p = { y: e.latlng.lat, x: e.latlng.lng };
+            points.push(p);
+            
             if(step < 3) {
                 step++;
+                document.getElementById('statusHint').innerText = "CLICK ĐIỂM " + step;
             } else {
                 const newStorm = {
-                    id: "STORM_" + Date.now(),
+                    id: "ID_" + Date.now(),
                     startTime: Date.now(),
                     name: document.getElementById('sName').value,
                     type: document.getElementById('sType').value,
                     r: document.getElementById('sRadius').value,
                     p1: points[0], p2: points[1], p3: points[2]
                 };
-                pubnub.publish({ channel: 'moving_storm_v1', message: { action: 'add', content: newStorm } });
+                // Vẽ ngay lập tức trên máy mình
+                activeStorms[newStorm.id] = newStorm;
+                // Gửi lên server cho người khác
+                pubnub.publish({ channel: 'moving_storm_v2', message: { action: 'add', content: newStorm } });
+                
                 points = []; step = 1;
-                document.getElementById('statusHint').innerText = "BÃO ĐANG DI CHUYỂN...";
+                document.getElementById('statusHint').innerText = "ĐÃ TẠO BÃO! CHỌN TÂM MỚI";
             }
         });
 
-        function clearAll() {
-            if(confirm("Xóa sạch bão?")) pubnub.publish({ channel: 'moving_storm_v1', message: { action: 'clear' } });
-        }
+        function clearAll() { if(confirm("Xóa hết sạch?")) pubnub.publish({ channel: 'moving_storm_v2', message: { action: 'clear' } }); }
     </script>
 </body>
 </html>
