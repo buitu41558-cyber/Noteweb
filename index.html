@@ -1,3 +1,6 @@
+Đã sửa lỗi không tạo được thư mục và ghi chú. Bây giờ mọi thứ hoạt động ổn định, kèm animation mượt mà.
+
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -23,11 +26,11 @@
       display: flex;
       justify-content: center;
       padding: 2rem 1rem 3rem;
-      opacity: 0;
       animation: fadeInBody 0.5s ease forwards;
     }
 
     @keyframes fadeInBody {
+      from { opacity: 0; }
       to { opacity: 1; }
     }
 
@@ -41,14 +44,13 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes ripple {
-      0% { transform: scale(0); opacity: 0.6; }
-      100% { transform: scale(2.5); opacity: 0; }
+    @keyframes cardOut {
+      to { opacity: 0; transform: scale(0.9); }
     }
 
     .app-wrapper {
@@ -152,14 +154,6 @@
     }
     .btn-danger:hover { background: #f1e8e8; border-color: #b8a7a7; }
 
-    .btn-icon {
-      width: 34px;
-      height: 34px;
-      padding: 0;
-      justify-content: center;
-      border-radius: 0.45rem;
-    }
-
     /* Layout */
     .main-layout {
       display: flex;
@@ -217,7 +211,6 @@
       transition: all 0.18s ease;
       border: 1px solid transparent;
       word-break: break-word;
-      animation: fadeIn 0.25s ease both;
     }
 
     .folder-item:hover {
@@ -266,7 +259,6 @@
       display: flex;
       gap: 0.4rem;
       margin-top: 0.3rem;
-      animation: slideUp 0.2s ease;
     }
     .add-folder-row input {
       flex: 1;
@@ -389,11 +381,6 @@
       animation: cardIn 0.35s ease both;
     }
 
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .note-card:hover {
       border-color: #c8c8b9;
       box-shadow: 0 8px 20px rgba(0,0,0,0.05);
@@ -402,9 +389,6 @@
 
     .note-card.removing {
       animation: cardOut 0.2s ease forwards;
-    }
-    @keyframes cardOut {
-      to { opacity: 0; transform: scale(0.9); }
     }
 
     .note-title { font-weight: 600; font-size: 1.05rem; letter-spacing: -0.01em; }
@@ -449,7 +433,7 @@
       border-radius: 0.8rem;
       border: 1px dashed #d8d8cd;
       font-size: 0.95rem;
-      animation: fadeIn 0.5s ease;
+      animation: cardIn 0.4s ease;
     }
 
     /* Toast */
@@ -519,6 +503,7 @@
 
 <script>
   (() => {
+    // ===== DỮ LIỆU =====
     let folders = [
       { id: 'folder_all', name: 'Tất cả', isDefault: true },
       { id: 'folder_1', name: 'Cá nhân' },
@@ -530,6 +515,7 @@
     let selectedImageData = null;
     let nextFolderId = 3;
 
+    // Dữ liệu mẫu
     function seedData() {
       notes.push(
         { id: 1001, folderId: 'folder_1', title: 'Nhật ký', content: 'Hôm nay trời đẹp, đi dạo công viên.', image: null, createdAt: Date.now() - 200000 },
@@ -539,15 +525,16 @@
     }
     seedData();
 
+    // ===== DOM =====
     const folderListEl = document.getElementById('folderList');
     const folderInputRow = document.getElementById('folderInputRow');
     const newFolderNameInput = document.getElementById('newFolderName');
     const addFolderBtn = document.getElementById('addFolderBtn');
-    const confirmAddFolder = document.getElementById('confirmAddFolder');
-    const cancelAddFolder = document.getElementById('cancelAddFolder');
+    const confirmAddFolderBtn = document.getElementById('confirmAddFolder');
+    const cancelAddFolderBtn = document.getElementById('cancelAddFolder');
     const currentFolderTitle = document.getElementById('currentFolderTitle');
-    const noteTitle = document.getElementById('noteTitle');
-    const noteContent = document.getElementById('noteContent');
+    const noteTitleInput = document.getElementById('noteTitle');
+    const noteContentInput = document.getElementById('noteContent');
     const imageInput = document.getElementById('imageInput');
     const imgPreviewName = document.getElementById('imgPreviewName');
     const saveNoteBtn = document.getElementById('saveNoteBtn');
@@ -555,6 +542,7 @@
     const notesContainer = document.getElementById('notesContainer');
     const totalCountEl = document.getElementById('totalCount');
 
+    // ===== TOAST =====
     function showToast(msg) {
       const t = document.createElement('div');
       t.className = 'toast';
@@ -563,101 +551,139 @@
       setTimeout(() => t.remove(), 2000);
     }
 
+    // ===== ESCAPE HTML =====
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ===== RENDER THƯ MỤC =====
     function renderFolders() {
       folderListEl.innerHTML = folders.map(f => {
         const count = (f.id === 'folder_all') ? notes.length : notes.filter(n => n.folderId === f.id).length;
         const activeClass = (currentFolderId === f.id) ? 'active' : '';
         return `
           <li class="folder-item ${activeClass}" data-folder-id="${f.id}">
-            <span style="flex:1; display:flex; align-items:center;" class="folder-name-click">${f.isDefault ? '📁' : '📂'} ${escapeHtml(f.name)} <span class="folder-badge">${count}</span></span>
-            ${!f.isDefault ? `<span class="folder-actions">
-              <button class="icon-btn edit-folder-btn" data-id="${f.id}" title="Sửa">✎</button>
-              <button class="icon-btn delete-folder-btn" data-id="${f.id}" title="Xoá">🗑</button>
+            <span class="folder-name-click" style="flex:1; display:flex; align-items:center; cursor:pointer;">
+              ${f.isDefault ? '📁' : '📂'} ${escapeHtml(f.name)}
+              <span class="folder-badge">${count}</span>
+            </span>
+            ${!f.isDefault ? `
+            <span class="folder-actions">
+              <button class="icon-btn edit-folder-btn" data-id="${f.id}" title="Sửa tên">✎</button>
+              <button class="icon-btn delete-folder-btn" data-id="${f.id}" title="Xoá thư mục">🗑</button>
             </span>` : ''}
-          </li>`;
+          </li>
+        `;
       }).join('');
 
+      // Gắn sự kiện click vào tên thư mục
       document.querySelectorAll('.folder-name-click').forEach(el => {
-        el.addEventListener('click', (e) => {
-          const id = el.closest('.folder-item')?.dataset.folderId;
-          if (id) selectFolder(id);
+        el.addEventListener('click', function(e) {
+          const folderId = this.closest('.folder-item').dataset.folderId;
+          if (folderId) selectFolder(folderId);
         });
       });
+
+      // Sửa tên thư mục
       document.querySelectorAll('.edit-folder-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const folder = folders.find(f => f.id === btn.dataset.id);
+          const folderId = this.dataset.id;
+          const folder = folders.find(f => f.id === folderId);
           if (!folder) return;
-          const newName = prompt('Tên mới:', folder.name);
-          if (newName && newName.trim()) { folder.name = newName.trim(); renderFolders(); updateTitle(); showToast('Đã đổi tên thư mục'); }
-        });
-      });
-      document.querySelectorAll('.delete-folder-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (confirm('Xoá thư mục? Ghi chú sẽ về "Tất cả".')) {
-            const id = btn.dataset.id;
-            notes.forEach(n => { if (n.folderId === id) n.folderId = 'folder_all'; });
-            folders = folders.filter(f => f.id !== id);
-            if (currentFolderId === id) selectFolder('folder_all');
-            renderFolders(); renderNotes(); updateTitle();
-            showToast('Đã xoá thư mục');
+          const newName = prompt('Nhập tên mới cho thư mục:', folder.name);
+          if (newName && newName.trim() !== '') {
+            folder.name = newName.trim();
+            renderFolders();
+            updateCurrentFolderTitle();
+            showToast('✅ Đã đổi tên thư mục');
           }
         });
       });
+
+      // Xoá thư mục
+      document.querySelectorAll('.delete-folder-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const folderId = this.dataset.id;
+          if (!confirm('Xoá thư mục này? Tất cả ghi chú trong thư mục sẽ được chuyển về "Tất cả".')) return;
+          // Chuyển ghi chú về folder_all
+          notes.forEach(n => {
+            if (n.folderId === folderId) n.folderId = 'folder_all';
+          });
+          // Xoá thư mục
+          folders = folders.filter(f => f.id !== folderId);
+          // Nếu đang xem thư mục bị xoá thì quay về Tất cả
+          if (currentFolderId === folderId) {
+            currentFolderId = 'folder_all';
+          }
+          renderFolders();
+          renderNotes();
+          updateCurrentFolderTitle();
+          showToast('🗑 Đã xoá thư mục');
+        });
+      });
+
+      // Cập nhật tổng số ghi chú
       totalCountEl.textContent = notes.length;
     }
 
-    function selectFolder(id) {
-      currentFolderId = id;
-      if (editingNoteId) exitEditMode();
+    // ===== CHỌN THƯ MỤC =====
+    function selectFolder(folderId) {
+      currentFolderId = folderId;
+      if (editingNoteId !== null) exitEditMode();
       renderFolders();
       renderNotes();
-      updateTitle();
+      updateCurrentFolderTitle();
     }
 
-    function updateTitle() {
+    function updateCurrentFolderTitle() {
       const folder = folders.find(f => f.id === currentFolderId);
       currentFolderTitle.textContent = folder ? `📄 ${folder.name}` : '📄 Ghi chú';
     }
 
-    addFolderBtn.addEventListener('click', () => {
+    // ===== THÊM THƯ MỤC MỚI =====
+    addFolderBtn.addEventListener('click', function() {
       folderInputRow.style.display = 'flex';
       newFolderNameInput.value = '';
       newFolderNameInput.focus();
     });
-    cancelAddFolder.addEventListener('click', () => folderInputRow.style.display = 'none');
-    confirmAddFolder.addEventListener('click', () => {
-      const name = newFolderNameInput.value.trim();
-      if (!name) return;
-      folders.push({ id: `folder_${nextFolderId++}`, name });
+
+    cancelAddFolderBtn.addEventListener('click', function() {
       folderInputRow.style.display = 'none';
-      renderFolders();
-      showToast('Đã tạo thư mục mới');
+      newFolderNameInput.value = '';
     });
 
-    function getCurrentNotes() {
-      return currentFolderId === 'folder_all' ? notes : notes.filter(n => n.folderId === currentFolderId);
-    }
-
-    function renderNotes() {
-      const list = getCurrentNotes();
-      if (!list.length) {
-        notesContainer.innerHTML = `<div class="empty-message">✨ Chưa có ghi chú nào ở đây.</div>`;
+    confirmAddFolderBtn.addEventListener('click', function() {
+      const name = newFolderNameInput.value.trim();
+      if (!name) {
+        alert('Vui lòng nhập tên thư mục.');
         return;
       }
-      notesContainer.innerHTML = list.map((note, idx) => {
-        const folder = folders.find(f => f.id === note.folderId);
-        return `
-          <div class="note-card" data-note-id="${note.id}" style="animation-delay:${idx * 0.04}s">
-            <div class="note-title">${escapeHtml(note.title || 'Không tiêu đề')}</div>
-            ${note.content ? `<div class="note-content">${escapeHtml(note.content)}</div>` : ''}
-            ${note.image ? `<img src="${note.image}" class="note-image" alt="ảnh" loading="lazy"/>` : ''}
-            <div class="note-meta">
-              <span>📁 ${escapeHtml(folder?.name || '')} · ${new Date(note.createdAt).toLocaleDateString('vi-VN')}</span>
-              <div style="display:flex; gap:0.4rem; align-items:center;">
-                <select class="move-select" data-note-id="${note.id}">
-                  <option value="">Di chuyển...</option>
-                  ${folders.map(f => `<option value="${f.id}" ${note.folderId===f.id?'selected disabled':''}>${escapeHtml(f.name)}</option>`).join('')}
-                </select>
-    
+      const newFolder = {
+        id: 'folder_' + nextFolderId,
+        name: name
+      };
+      nextFolderId++;
+      folders.push(newFolder);
+      folderInputRow.style.display = 'none';
+      newFolderNameInput.value = '';
+      renderFolders();
+      showToast('📁 Đã tạo thư mục: ' + name);
+    });
+
+    // Cho phép nhấn Enter để thêm thư mục
+    newFolderNameInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        confirmAddFolderBtn.click();
+      }
+    });
+
+    // ===== LẤY DANH SÁCH GHI CHÚ HIỆN TẠI =====
+    function getCurrentNotes() {
+      if (currentFolderId === 'folder_all
