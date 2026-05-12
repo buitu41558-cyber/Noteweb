@@ -45,7 +45,6 @@
       50% { box-shadow: 0 0 18px currentColor, 0 0 30px currentColor; }
     }
 
-    /* Top bar siêu gọn */
     .top-bar {
       background: #10141c;
       padding: 0.4rem 0.9rem;
@@ -114,7 +113,6 @@
       font-weight: 600;
     }
 
-    /* Map */
     #map {
       flex: 1;
       width: 100%;
@@ -122,7 +120,6 @@
       background: #080a10 !important;
     }
 
-    /* Panel nhỏ góc dưới trái */
     .info-panel {
       position: absolute;
       bottom: 16px;
@@ -195,7 +192,6 @@
       border-radius: 50%;
       display: inline-block; }
 
-    /* Leaflet */
     .leaflet-container { background: #080a10 !important; }
     .leaflet-control-zoom a {
       background: #161b26 !important;
@@ -292,29 +288,30 @@
           zoomControl: true,
           attributionControl: false,
           maxBounds: [
-            [-80, -240],
-            [80, 240]
+            [-85, -250],
+            [85, 250]
           ],
           maxBoundsViscosity: 0.7,
+          crs: L.CRS.EPSG3857,
         });
 
-        // Ảnh bản đồ của bạn
+        // Ảnh bản đồ của bạn - sử dụng CRS chuẩn để không bị kéo dài
         imageOverlay = L.imageOverlay(
-          'https://i.ibb.co/p6njm03s/1778582329890.png',
+          'https://i.ibb.co/LDHTFYPk/Untitled115-20260512165224.png',
           [
-            [-82, -240],
-            [82, 240]
+            [-85.06, -180],
+            [85.06, 180]
           ], {
             opacity: 1,
             interactive: false,
           }
         ).addTo(map);
 
-        // Lớp mờ tham chiếu
+        // Lớp tham chiếu mờ nhẹ
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
           subdomains: 'abcd',
           maxZoom: 7,
-          opacity: 0.12,
+          opacity: 0.1,
         }).addTo(map);
 
         renderAll();
