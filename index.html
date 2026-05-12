@@ -3,302 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Notes - Hệ Thống Ghi Chú Cá Nhân</title>
+    <title>NOTE - Minimalist System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f1f5f9;
-            --primary: #38bdf8;
-            --accent: #818cf8;
-            --danger: #ef4444;
+            --bg: #f8fafc; --sidebar-bg: #ffffff; --text: #1e293b;
+            --primary: #6366f1; --border: #e2e8f0; --card: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --sidebar-bg: #1e293b; --text: #f1f5f9;
+            --primary: #818cf8; --border: #334155; --card: #1e293b;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
 
-        .container {
-            width: 100%;
-            max-width: 1000px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        h1 { font-size: 28px; margin: 0; color: var(--primary); }
-
-        /* Thanh tìm kiếm */
-        .search-box {
-            position: relative;
-            flex: 1;
-            margin: 0 20px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 40px;
-            background: var(--card-bg);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            color: white;
-            outline: none;
-        }
-
-        .search-box i { position: absolute; left: 15px; top: 14px; color: #64748b; }
-
-        /* Nút thêm mới */
-        .add-btn {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .add-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-
-        /* Lưới ghi chú */
-        .notes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .note-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px;
-            position: relative;
-            transition: 0.3s;
-            border: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .note-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-
-        .note-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--primary); border: none; background: transparent; width: 100%; color: inherit; outline: none; }
+        /* Sidebar */
+        aside { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; transition: 0.3s; }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; color: var(--primary); }
         
-        .note-content { font-size: 14px; line-height: 1.6; color: #cbd5e1; white-space: pre-wrap; margin-bottom: 20px; flex-grow: 1; }
+        .folder-list { flex: 1; overflow-y: auto; }
+        .folder-item { padding: 10px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 14px; transition: 0.2s; }
+        .folder-item:hover, .folder-item.active { background: var(--primary); color: white; }
+        .add-folder-btn { background: transparent; border: 1px dashed var(--border); color: var(--text); width: 100%; padding: 8px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 12px; }
 
-        .note-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: #64748b;
-            border-top: 1px solid #334155;
-            padding-top: 10px;
-        }
+        /* Main Content */
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .search-bar { background: var(--sidebar-bg); border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; width: 300px; display: flex; align-items: center; }
+        .search-bar input { border: none; background: transparent; color: var(--text); outline: none; margin-left: 10px; width: 100%; }
 
-        .actions { display: flex; gap: 10px; }
-        .actions i { cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .actions i:hover { color: white; }
-        .del-icon:hover { color: var(--danger) !important; }
+        .content-area { padding: 30px 40px; overflow-y: auto; flex: 1; }
+        .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
 
-        /* Modal nhập ghi chú */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+        /* Note Card */
+        .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; }
+        .note-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .note-card.pinned { border: 2px solid var(--primary); }
+        .note-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: none; }
+        .note-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+        .note-snippet { font-size: 13px; color: #64748b; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+        .note-card-footer { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; }
 
-        .modal-content {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 500px;
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-        }
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--card); width: 600px; max-width: 95%; padding: 30px; border-radius: 16px; position: relative; }
+        .modal-content input, .modal-content textarea { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        #imagePreview { max-height: 200px; width: 100%; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; }
 
-        .modal-content input, .modal-content textarea {
-            width: 100%;
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-        }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-ghost { background: transparent; color: var(--text); }
 
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        .save-btn { background: var(--primary); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .cancel-btn { background: #334155; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: white; }
+        .color-opt { width: 25px; height: 25px; border-radius: 50%; display: inline-block; cursor: pointer; margin-right: 5px; border: 2px solid transparent; }
+        .color-opt.active { border-color: var(--text); }
 
-        /* Màu sắc ghi chú */
-        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; cursor: pointer; border: 2px solid transparent; }
-        .color-dot.active { border-color: white; }
+        .floating-add { position: absolute; bottom: 30px; right: 30px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); }
     </style>
 </head>
-<body>
+<body data-theme="dark">
 
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid fa-note-sticky"></i> PRO NOTES</h1>
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Tìm ghi chú..." oninput="renderNotes()">
+    <aside>
+        <div class="logo">NOTE</div>
+        <div class="folder-list" id="folderList">
+            <div class="folder-item active" onclick="filterFolder('all')">
+                <span><i class="fa-solid fa-layer-group"></i> Tất cả</span>
             </div>
-            <button class="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i> THÊM MỚI</button>
+        </div>
+        <button class="add-folder-btn" onclick="addFolder()">+ Thư mục mới</button>
+        <div style="margin-top: 20px;">
+            <button class="btn-ghost" onclick="toggleTheme()" style="font-size: 14px;"><i class="fa-solid fa-moon"></i> Đổi màu nền</button>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Tìm ghi chú..." id="searchInp" oninput="renderNotes()">
+            </div>
+            <div id="folderTitle" style="font-weight: 600;">Tất cả ghi chú</div>
         </header>
 
-        <div class="notes-grid" id="notesGrid">
-            </div>
-    </div>
+        <div class="content-area">
+            <div class="notes-grid" id="notesGrid"></div>
+        </div>
+
+        <div class="floating-add" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i>
+        </div>
+    </main>
 
     <div class="modal" id="noteModal">
         <div class="modal-content">
-            <h2 id="modalTitle">Ghi chú mới</h2>
-            <input type="text" id="titleInput" placeholder="Tiêu đề...">
-            <textarea id="contentInput" rows="8" placeholder="Nội dung ghi chú..."></textarea>
+            <input type="text" id="titleInp" placeholder="Tiêu đề..." style="font-size: 20px; font-weight: 700; border: none; padding: 0;">
+            <textarea id="contentInp" rows="10" placeholder="Bắt đầu viết gì đó..." style="border: none; padding: 0; resize: none;"></textarea>
             
-            <label style="font-size: 12px; color: #888;">MÀU SẮC:</label>
-            <div id="colorPicker" style="margin: 10px 0 20px;">
-                <span class="color-dot active" style="background: #38bdf8;" data-color="#38bdf8"></span>
-                <span class="color-dot" style="background: #f87171;" data-color="#f87171"></span>
-                <span class="color-dot" style="background: #fbbf24;" data-color="#fbbf24"></span>
-                <span class="color-dot" style="background: #34d399;" data-color="#34d399"></span>
-                <span class="color-dot" style="background: #a78bfa;" data-color="#a78bfa"></span>
-            </div>
-
-            <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeModal()">HỦY</button>
-                <button class="save-btn" onclick="saveNote()">LƯU LẠI</button>
+            <img id="imagePreview">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <div id="colorPicker">
+                    <span class="color-opt" style="background: #6366f1;" data-color="#6366f1"></span>
+                    <span class="color-opt" style="background: #ec4899;" data-color="#ec4899"></span>
+                    <span class="color-opt" style="background: #22c55e;" data-color="#22c55e"></span>
+                    <span class="color-opt" style="background: #eab308;" data-color="#eab308"></span>
+                </div>
+                <div>
+                    <label for="imgUpload" style="cursor: pointer; margin-right: 15px; color: var(--primary);"><i class="fa-solid fa-image"></i> Thêm ảnh</label>
+                    <input type="file" id="imgUpload" hidden accept="image/*" onchange="handleImage(this)">
+                    <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+                    <button class="btn btn-primary" onclick="saveNote()">Lưu NOTE</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let notes = JSON.parse(localStorage.getItem('my_pro_notes')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes_v2')) || [];
+        let folders = JSON.parse(localStorage.getItem('folders_v2')) || ['Công việc', 'Cá nhân', 'Học tập'];
+        let currentFolder = 'all';
         let editId = null;
-        let selectedColor = "#38bdf8";
+        let tempImg = "";
+        let selectedColor = "#6366f1";
 
-        // Chọn màu
-        document.querySelectorAll('.color-dot').forEach(dot => {
-            dot.addEventListener('click', () => {
-                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-                dot.classList.add('active');
-                selectedColor = dot.getAttribute('data-color');
+        // Giao diện Thư mục
+        function renderFolders() {
+            const list = document.getElementById('folderList');
+            list.innerHTML = `<div class="folder-item ${currentFolder==='all'?'active':''}" onclick="filterFolder('all')"><span><i class="fa-solid fa-layer-group"></i> Tất cả</span></div>`;
+            folders.forEach(f => {
+                list.innerHTML += `
+                    <div class="folder-item ${currentFolder===f?'active':''}" onclick="filterFolder('${f}')">
+                        <span><i class="fa-solid fa-folder"></i> ${f}</span>
+                        <i class="fa-solid fa-xmark" style="font-size:10px" onclick="deleteFolder(event, '${f}')"></i>
+                    </div>`;
             });
-        });
+        }
+
+        function addFolder() {
+            const name = prompt("Tên thư mục:");
+            if(name && !folders.includes(name)) {
+                folders.push(name);
+                saveData();
+                renderFolders();
+            }
+        }
+
+        function deleteFolder(e, name) {
+            e.stopPropagation();
+            if(confirm(`Xóa thư mục "${name}" và các ghi chú bên trong?`)) {
+                folders = folders.filter(f => f !== name);
+                notes = notes.filter(n => n.folder !== name);
+                currentFolder = 'all';
+                saveData();
+                renderFolders();
+                renderNotes();
+            }
+        }
+
+        function filterFolder(f) {
+            currentFolder = f;
+            document.getElementById('folderTitle').innerText = f === 'all' ? 'Tất cả ghi chú' : f;
+            renderFolders();
+            renderNotes();
+        }
+
+        // Ghi chú
+        function handleImage(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                tempImg = e.target.result;
+                document.getElementById('imagePreview').src = tempImg;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
 
         function openModal(id = null) {
+            editId = id;
             const modal = document.getElementById('noteModal');
             modal.style.display = 'flex';
             if(id) {
-                const note = notes.find(n => n.id === id);
-                document.getElementById('titleInput').value = note.title;
-                document.getElementById('contentInput').value = note.content;
-                document.getElementById('modalTitle').innerText = "Chỉnh sửa ghi chú";
-                editId = id;
+                const n = notes.find(x => x.id === id);
+                document.getElementById('titleInp').value = n.title;
+                document.getElementById('contentInp').value = n.content;
+                tempImg = n.img || "";
+                if(tempImg) {
+                    document.getElementById('imagePreview').src = tempImg;
+                    document.getElementById('imagePreview').style.display = 'block';
+                }
             } else {
-                document.getElementById('titleInput').value = "";
-                document.getElementById('contentInput').value = "";
-                document.getElementById('modalTitle').innerText = "Ghi chú mới";
-                editId = null;
+                document.getElementById('titleInp').value = "";
+                document.getElementById('contentInp').value = "";
+                document.getElementById('imagePreview').style.display = 'none';
+                tempImg = "";
             }
         }
 
-        function closeModal() {
-            document.getElementById('noteModal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('noteModal').style.display = 'none'; }
 
         function saveNote() {
-            const title = document.getElementById('titleInput').value.trim();
-            const content = document.getElementById('contentInput').value.trim();
-
+            const title = document.getElementById('titleInp').value;
+            const content = document.getElementById('contentInp').value;
             if(!title && !content) return alert("Vui lòng nhập nội dung!");
 
             if(editId) {
-                const index = notes.findIndex(n => n.id === editId);
-                notes[index] = { ...notes[index], title, content, color: selectedColor, date: new Date().toLocaleString('vi-VN') };
+                const idx = notes.findIndex(x => x.id === editId);
+                notes[idx] = { ...notes[idx], title, content, img: tempImg, color: selectedColor };
             } else {
-                const newNote = {
+                notes.unshift({
                     id: Date.now(),
-                    title,
-                    content,
+                    title, content, img: tempImg,
                     color: selectedColor,
-                    date: new Date().toLocaleString('vi-VN')
-                };
-                notes.unshift(newNote);
+                    folder: currentFolder === 'all' ? 'Cá nhân' : currentFolder,
+                    pinned: false,
+                    date: new Date().toLocaleDateString()
+                });
             }
-
-            localStorage.setItem('my_pro_notes', JSON.stringify(notes));
+            saveData();
             renderNotes();
             closeModal();
         }
 
-        function deleteNote(id) {
+        function togglePin(e, id) {
+            e.stopPropagation();
+            const n = notes.find(x => x.id === id);
+            n.pinned = !n.pinned;
+            notes.sort((a,b) => b.pinned - a.pinned);
+            saveData();
+            renderNotes();
+        }
+
+        function deleteNote(e, id) {
+            e.stopPropagation();
             if(confirm("Xóa ghi chú này?")) {
-                notes = notes.filter(n => n.id !== id);
-                localStorage.setItem('my_pro_notes', JSON.stringify(notes));
+                notes = notes.filter(x => x.id !== id);
+                saveData();
                 renderNotes();
             }
         }
 
         function renderNotes() {
             const grid = document.getElementById('notesGrid');
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search = document.getElementById('searchInp').value.toLowerCase();
             grid.innerHTML = "";
 
-            const filteredNotes = notes.filter(n => 
-                n.title.toLowerCase().includes(search) || 
-                n.content.toLowerCase().includes(search)
+            let filtered = notes.filter(n => 
+                (currentFolder === 'all' || n.folder === currentFolder) &&
+                (n.title.toLowerCase().includes(search) || n.content.toLowerCase().includes(search))
             );
 
-            filteredNotes.forEach(note => {
+            filtered.forEach(n => {
                 const card = document.createElement('div');
-                card.className = 'note-card';
-                card.style.borderTop = `5px solid ${note.color}`;
-                
+                card.className = `note-card ${n.pinned?'pinned':''}`;
+                card.onclick = () => openModal(n.id);
                 card.innerHTML = `
-                    <div class="note-title" style="color: ${note.color}">${note.title || 'Không tiêu đề'}</div>
-                    <div class="note-content">${note.content}</div>
-                    <div class="note-footer">
-                        <span>${note.date}</span>
-                        <div class="actions">
-                            <i class="fa-solid fa-pen-to-square" onclick="openModal(${note.id})"></i>
-                            <i class="fa-solid fa-trash del-icon" onclick="deleteNote(${note.id})"></i>
-                        </div>
+                    <div style="position:absolute; top:10px; right:10px; display:flex; gap:10px; z-index:10">
+                        <i class="fa-solid fa-thumbtack" style="color:${n.pinned?varPrimary():'#ccc'}" onclick="togglePin(event, ${n.id})"></i>
+                        <i class="fa-solid fa-trash" style="color:#f87171" onclick="deleteNote(event, ${n.id})"></i>
+                    </div>
+                    ${n.img ? `<img src="${n.img}" class="note-img" style="display:block">` : ''}
+                    <div class="note-title" style="color:${n.color}">${n.title || 'Ghi chú không tiêu đề'}</div>
+                    <div class="note-snippet">${n.content}</div>
+                    <div class="note-card-footer">
+                        <span><i class="fa-solid fa-folder-open"></i> ${n.folder}</span>
+                        <span>${n.date}</span>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Khởi tạo lần đầu
-        renderNotes();
-
-        // Đóng modal khi bấm ra ngoài
-        window.onclick = function(event) {
-            const modal = document.getElementById('noteModal');
-            if (event.target == modal) closeModal();
+        function toggleTheme() {
+            const b = document.body;
+            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         }
+
+        function varPrimary() { return getComputedStyle(document.body).getPropertyValue('--primary').trim(); }
+        function saveData() {
+            localStorage.setItem('notes_v2', JSON.stringify(notes));
+            localStorage.setItem('folders_v2', JSON.stringify(folders));
+        }
+
+        // Khởi tạo
+        document.querySelectorAll('.color-opt').forEach(opt => {
+            opt.onclick = () => {
+                document.querySelectorAll('.color-opt').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                selectedColor = opt.dataset.color;
+            }
+        });
+
+        renderFolders();
+        renderNotes();
     </script>
 </body>
 </html>
