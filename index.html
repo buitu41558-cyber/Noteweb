@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Bão Di Động - Fix Lỗi Hiển Thị</title>
+    <title>Hệ Thống Bão - Fix Xóa 100%</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
@@ -30,18 +30,21 @@
 
     <div class="map-container">
         <div id="map"></div>
-        <button class="login-btn" onclick="login()">KÍCH HOẠT ADMIN</button>
+        <button class="login-btn" onclick="login()">ADMIN LOGIN</button>
         <div id="adminPanel">
             <button class="toggle-btn" id="tBtn" onclick="togglePanel()"> < </button>
-            <h2 style="color:#ff4b4b; text-align:center;">QUẢN TRỊ VIÊN</h2>
-            <input type="text" id="sName" value="BÃO KHẨN CẤP" style="width:100%; padding:8px; margin-bottom:10px;">
-            <select id="sType" style="width:100%; padding:8px; margin-bottom:10px;">
+            <h2 style="color:#ff4b4b; text-align:center;">QUẢN TRỊ BÃO</h2>
+            <input type="text" id="sName" value="BÃO KHẨN CẤP" style="width:100%; padding:8px; margin-bottom:10px; background:#1a1a1a; color:#fff; border:1px solid #444;">
+            <select id="sType" style="width:100%; padding:8px; margin-bottom:10px; background:#1a1a1a; color:#fff; border:1px solid #444;">
                 <option value="sieubao">🔴 SIÊU BÃO</option>
                 <option value="bao">🟠 BÃO THƯỜNG</option>
+                <option value="apthap">🟡 ÁP THẤP</option>
             </select>
-            <input type="range" id="sRadius" min="10" max="100" value="30" style="width:100%;">
-            <div id="statusHint">ĐĂNG NHẬP ĐỂ VẼ</div>
-            <button onclick="clearAll()" style="width:100%; padding:10px; background:red; color:white; border:none; margin-top:20px; cursor:pointer; font-weight:bold;">XÓA TẤT CẢ SERVER</button>
+            <label style="font-size:10px; color:#888;">BÁN KÍNH QUÉT</label>
+            <input type="range" id="sRadius" min="10" max="120" value="40" style="width:100%;">
+            <div id="statusHint">CHƯA ĐĂNG NHẬP</div>
+            
+            <button onclick="clearAllServer()" style="width:100%; padding:15px; background:red; color:white; border:none; margin-top:20px; cursor:pointer; font-weight:bold; border-radius:5px;">XÓA SẠCH SERVER</button>
         </div>
     </div>
 
@@ -49,10 +52,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // SỬ DỤNG KÊNH MỚI ĐỂ TRÁNH LỖI ĐỒNG BỘ CŨ
+        const CHANNEL_NAME = 'STORM_V_FINAL';
+
         const pubnub = new PubNub({
             publishKey: 'pub-c-497793d9-a359-458b-967b-1b913840742d',
             subscribeKey: 'sub-c-17937446-ec8c-4f76-905c-3a8595085e6a',
-            uuid: "storm_user_" + Math.random().toString(36).substring(7)
+            uuid: "admin_" + Math.random().toString(36).substring(7)
         });
 
         const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, attributionControl: false });
@@ -62,8 +68,8 @@
 
         let isAdmin = false, step = 1, points = [], activeStorms = {};
         const layerGroup = L.layerGroup().addTo(map);
-        const colors = { sieubao: '#ff0000', bao: '#ffa500' };
-        const LIFETIME = 2880000; // ~48 phút thật (2 ngày ảo)
+        const colors = { sieubao: '#ff0000', bao: '#ffa500', apthap: '#ffff00' };
+        const LIFETIME = 2880000; // 48 phút thực tế
 
         pubnub.addListener({
             message: (obj) => {
@@ -71,19 +77,21 @@
                 if(data.action === 'add') {
                     activeStorms[data.content.id] = data.content;
                 }
-                if(data.action === 'clear') {
+                if(data.action === 'clear_all') {
+                    console.log("Nhận lệnh xóa từ server...");
                     activeStorms = {};
                     layerGroup.clearLayers();
                 }
             }
         });
-        pubnub.subscribe({ channels: ['moving_storm_v2'] });
+        pubnub.subscribe({ channels: [CHANNEL_NAME] });
 
-        // Load bão cũ từ server
-        pubnub.fetchMessages({ channels: ['moving_storm_v2'], count: 50 }, (s, res) => {
-            if (res && res.channels['moving_storm_v2']) {
-                res.channels['moving_storm_v2'].forEach(msg => {
+        // Tải bão hiện tại từ server khi mới vào
+        pubnub.fetchMessages({ channels: [CHANNEL_NAME], count: 50 }, (s, res) => {
+            if (res && res.channels[CHANNEL_NAME]) {
+                res.channels[CHANNEL_NAME].forEach(msg => {
                     if(msg.message.action === 'add') activeStorms[msg.message.content.id] = msg.message.content;
+                    if(msg.message.action === 'clear_all') activeStorms = {}; 
                 });
             }
         });
@@ -107,7 +115,6 @@
             const elapsed = Date.now() - s.startTime;
             let progress = elapsed / LIFETIME;
             if (progress >= 1) return null;
-
             if (progress < 0.5) {
                 let p = progress * 2;
                 return { y: s.p1.y + (s.p2.y - s.p1.y) * p, x: s.p1.x + (s.p2.x - s.p1.x) * p };
@@ -117,7 +124,6 @@
             }
         }
 
-        // Vòng lặp vẽ liên tục 60fps để bão trượt mượt mà
         function updateMap() {
             layerGroup.clearLayers();
             for (let id in activeStorms) {
@@ -131,7 +137,7 @@
                 }).addTo(layerGroup);
 
                 L.circle([pos.y, pos.x], { radius: parseInt(s.r), color: color, weight: 1, fillOpacity: 0.15 }).addTo(layerGroup);
-                L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '5,10', opacity: 0.3 }).addTo(layerGroup);
+                L.polyline([[s.p1.y, s.p1.x], [s.p2.y, s.p2.x], [s.p3.y, s.p3.x]], { color: color, weight: 1, dashArray: '5,10', opacity: 0.2 }).addTo(layerGroup);
                 marker.bindTooltip(`<b>${s.name}</b>`, { permanent: true, direction: 'top' });
             }
             requestAnimationFrame(updateMap);
@@ -140,32 +146,42 @@
 
         map.on('click', e => {
             if(!isAdmin) return;
-            const p = { y: e.latlng.lat, x: e.latlng.lng };
-            points.push(p);
-            
+            points.push({ y: e.latlng.lat, x: e.latlng.lng });
             if(step < 3) {
                 step++;
                 document.getElementById('statusHint').innerText = "CLICK ĐIỂM " + step;
             } else {
                 const newStorm = {
-                    id: "ID_" + Date.now(),
+                    id: "STORM_" + Date.now(),
                     startTime: Date.now(),
                     name: document.getElementById('sName').value,
                     type: document.getElementById('sType').value,
                     r: document.getElementById('sRadius').value,
                     p1: points[0], p2: points[1], p3: points[2]
                 };
-                // Vẽ ngay lập tức trên máy mình
-                activeStorms[newStorm.id] = newStorm;
-                // Gửi lên server cho người khác
-                pubnub.publish({ channel: 'moving_storm_v2', message: { action: 'add', content: newStorm } });
-                
+                pubnub.publish({ channel: CHANNEL_NAME, message: { action: 'add', content: newStorm } });
                 points = []; step = 1;
-                document.getElementById('statusHint').innerText = "ĐÃ TẠO BÃO! CHỌN TÂM MỚI";
+                document.getElementById('statusHint').innerText = "BÃO ĐÃ LÊN! CHỌN TÂM MỚI";
             }
         });
 
-        function clearAll() { if(confirm("Xóa hết sạch?")) pubnub.publish({ channel: 'moving_storm_v2', message: { action: 'clear' } }); }
+        // HÀM XÓA CẢI TIẾN
+        function clearAllServer() {
+            if(confirm("Xác nhận xóa sạch bão trên tất cả các máy?")) {
+                activeStorms = {}; // Xóa tại chỗ máy mình
+                layerGroup.clearLayers();
+                // Gửi lệnh xóa cho toàn bộ máy khác
+                pubnub.publish({ 
+                    channel: CHANNEL_NAME, 
+                    message: { action: 'clear_all' } 
+                }, (status, response) => {
+                    if (!status.error) {
+                        alert("Đã xóa sạch dữ liệu trên Server!");
+                        document.getElementById('statusHint').innerText = "HỆ THỐNG TRỐNG";
+                    }
+                });
+            }
+        }
     </script>
 </body>
 </html>
