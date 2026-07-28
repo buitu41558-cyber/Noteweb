@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victoria Football - Quản Lý & Mô Phỏng Bóng Đá</title>
+    <!-- Font Inter & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK (Compat Version cho CDN trực tiếp) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* === CSS STYLES - SWISS & MODERN MINIMALIST DESIGN === */
+        :root {
+            --bg-main: #0a111e;
+            --bg-card: #121c2d;
+            --bg-card-hover: #1a273d;
+            --emerald-primary: #059669;
+            --emerald-dark: #046c4e;
+            --emerald-light: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --accent-gold: #f59e0b;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Navigation */
+        header {
+            background-color: #070d17;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand i {
+            color: var(--emerald-light);
+            font-size: 1.5rem;
+        }
+
+        .brand h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .brand span {
+            color: var(--emerald-light);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-main);
+            padding: 0.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.active, .nav-btn:hover {
+            background-color: var(--emerald-primary);
+            color: #fff;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .squad-ovr-badge {
+            background-color: var(--bg-card);
+            border: 1px solid var(--emerald-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--emerald-light);
+        }
+
+        .btn-admin {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-admin.logged-in {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        /* Banner cảnh báo DB */
+        #db-status-banner {
+            background: #854d0e;
+            color: #fef08a;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            text-align: center;
+            display: none;
+        }
+
+        /* Main Content Container */
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Grid Layouts & Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--emerald-primary);
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            background-color: var(--emerald-primary);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--emerald-dark);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+            color: #fff;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Dynamic Squad Pitch (Sân bóng quản lý đội hình) */
+        .pitch-container {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            background: #0d2818;
+            border: 2px solid #1b432c;
+            border-radius: 12px;
+            overflow: hidden;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 80px);
+        }
+
+        .pitch-lines {
+            position: absolute;
+            inset: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+            pointer-events: none;
+        }
+
+        .pitch-center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+
+        .pitch-center-line {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            right: 15px;
+            height: 2px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Player Nodes on Pitch */
+        .player-slot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .player-card-mini {
+            width: 55px;
+            height: 70px;
+            background: var(--bg-card);
+            border: 2px solid var(--emerald-primary);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .player-card-mini:hover {
+            transform: scale(1.1);
+        }
+
+        .player-card-mini .ovr-pos {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+
+        .player-card-mini .pos { color: var(--emerald-light); }
+
+        .player-card-mini img, .player-avatar-placeholder {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .player-name-label {
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+            white-space: nowrap;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Player Inventory Table / Cards */
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            max-height: 550px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .player-card-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .player-card-item:hover {
+            border-color: var(--emerald-primary);
+        }
+
+        .player-card-top {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .player-card-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.25rem;
+            background: var(--bg-main);
+            padding: 0.4rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-lbl { color: var(--text-muted); font-size: 0.6rem; }
+        .stat-val { font-weight: 700; color: var(--text-main); }
+
+        /* Simulation Canvas & Ticker */
+        .sim-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #matchCanvas {
+            background-color: #0d2818;
+            border: 2px solid #1b432c;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            aspect-ratio: 16/10;
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .match-score-board {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            font-weight: 800;
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            color: var(--emerald-light);
+            background: var(--bg-main);
+            padding: 0.2rem 1rem;
+            border-radius: 6px;
+        }
+
+        .commentary-log {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            width: 100%;
+            max-width: 800px;
+            height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 0.4rem;
+        }
+
+        .log-entry { padding-bottom: 0.25rem; border-bottom: 1px dashed #1e293b; }
+        .log-entry.goal { color: var(--accent-gold); font-weight: 700; }
+
+        /* Tournament Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .table th, .table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem;}
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-body {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 450px;
+            padding: 1.5rem;
+        }
+
+        /* Admin only UI visibility */
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: block !important; }
+        body.is-admin .admin-only-flex { display: flex !important; }
+    </style>
+</head>
+<body>
+
+    <div id="db-status-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i> Chưa cấu hình Firebase! Hệ thống đang hoạt động ở chế độ dữ liệu tạm thời. Để đồng bộ Online DB, hãy cập nhật <code>firebaseConfig</code> trong mã nguồn.
+    </div>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="brand">
+            <i class="fa-solid fa-futbol"></i>
+            <h1>Victoria <span>Football</span></h1>
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('squad')"><i class="fa-solid fa-users-line"></i> Đội Hình</button>
+            <button class="nav-btn" onclick="switchTab('inventory')"><i class="fa-solid fa-address-card"></i> Kho Cầu Thủ</button>
+            <button class="nav-btn" onclick="switchTab('simulation')"><i class="fa-solid fa-gamepad"></i> Mô Phỏng Trận Đấu</button>
+            <button class="nav-btn" onclick="switchTab('tournament')"><i class="fa-solid fa-trophy"></i> Giải Đấu</button>
+        </nav>
+        <div class="user-actions">
+            <div class="squad-ovr-badge">OVR Đội Hình: <span id="squad-ovr-val">0</span></div>
+            <button id="btn-admin-toggle" class="btn-admin" onclick="toggleAdminModal()">
+                <i class="fa-solid fa-lock"></i> <span id="admin-btn-text">Admin Login</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- TAB 1: SQUAD MANAGEMENT -->
+        <section id="tab-squad" class="tab-content active">
+            <div class="grid-2">
+                <!-- Sân bóng trực quan -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-diagram-project"></i> Sơ Đồ Đội Hình Chính</div>
+                        <select id="formation-select" class="form-control" style="width: auto;" onchange="changeFormation(this.value)">
+                            <option value="4-3-3">4-3-3</option>
+                            <option value="4-4-2">4-4-2</option>
+                            <option value="4-2-3-1">4-2-3-1</option>
+                        </select>
+                    </div>
+                    <div class="pitch-container" id="squad-pitch">
+                        <div class="pitch-lines"></div>
+                        <div class="pitch-center-line"></div>
+                        <div class="pitch-center-circle"></div>
+                        <!-- Cầu thủ sẽ được tạo bằng JS -->
+                    </div>
+                </div>
+
+                <!-- Danh sách Cầu thủ dự bị & Đổi cầu thủ -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-list-check"></i> Cầu Thủ Dự Bị / Thay Người</div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted)">Nhấp vị trí trên sân để chọn cầu thủ vào</span>
+                    </div>
+                    <div class="player-grid" id="bench-list">
+                        <!-- Danh sách cầu thủ ngoài đội hình chính -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: PLAYER INVENTORY & ADMIN CREATION -->
+        <section id="tab-inventory" class="tab-content">
+            <div class="grid-2">
+                <!-- Admin Panel Tạo Cầu Thủ -->
+                <div class="card admin-only">
+                    <div class="card-header">
+                        <div class="card-title" style="color: var(--accent-gold)"><i class="fa-solid fa-user-plus"></i> Admin: Tạo Cầu Thủ Mới</div>
+                    </div>
+                    <form id="create-player-form" onsubmit="handleCreatePlayer(event)">
+                        <div class="form-group">
+                            <label>Tên Cầu Thủ</label>
+                            <input type="text" id="p-name" class="form-control" placeholder="VD: Cristiano Ronaldo" required>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label>Vị Trí</label>
+                                <select id="p-pos" class="form-control">
+                                    <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
+                                    <option value="CAM">CAM</option><option value="CM">CM</option><option value="CDM">CDM</option>
+                                    <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option>
+                                    <option value="GK">GK</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Chỉ số OVR</label>
+                                <input type="number" id="p-ovr" class="form-control" min="50" max="99" value="85" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Ảnh URL (Tùy chọn)</label>
+                                <input type="text" id="p-photo" class="form-control" placeholder="https://...">
+                            </div>
+                        </div>
+         
