@@ -31,7 +31,7 @@
       ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
     </style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+<body class="min-h-screen flex flex-col md:flex-row overflow-x-hidden overflow-y-auto">
 
     <!-- SIDEBAR -->
     <aside class="w-full md:w-60 bg-sideBg flex flex-col justify-between p-4 shrink-0 border-r border-gray-700">
@@ -62,7 +62,7 @@
             </nav>
         </div>
 
-        <div class="pt-3 border-t border-gray-700">
+        <div class="pt-3 border-t border-gray-700 mt-4 md:mt-0">
             <div id="admin-status" class="text-[11px] text-gray-400 mb-2 flex items-center justify-between">
                 <span>Quyền: <strong id="role-label" class="text-gray-200">Người chơi</strong></span>
                 <span id="db-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
@@ -74,7 +74,7 @@
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 overflow-y-auto p-4 bg-mainBg">
+    <main class="flex-1 p-4 bg-mainBg overflow-y-auto min-h-screen">
 
         <!-- TAB 1: DASHBOARD -->
         <section id="tab-dashboard" class="tab-content space-y-4">
@@ -138,7 +138,6 @@
 
         <!-- TAB 3: MATCH SIMULATION -->
         <section id="tab-match" class="tab-content hidden space-y-3">
-            <!-- CHỌN ĐỘI BÓNG ĐỐI ĐẦU -->
             <div class="bg-sideBg p-3 rounded border border-gray-700 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-3 flex-wrap">
                     <div class="flex items-center gap-2">
@@ -168,7 +167,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
-                <div class="lg:col-span-3 bg-sideBg p-2 rounded border border-gray-700 flex items-center justify-center">
+                <div class="lg:col-span-3 bg-sideBg p-2 rounded border border-gray-700 flex items-center justify-center overflow-x-auto">
                     <canvas id="matchCanvas" width="800" height="480" class="w-full max-w-[800px] bg-pitchBg rounded"></canvas>
                 </div>
 
@@ -191,7 +190,7 @@
         </section>
 
         <!-- TAB 5: ADMIN PANEL -->
-        <section id="tab-admin" class="tab-content hidden space-y-4">
+        <section id="tab-admin" class="tab-content hidden space-y-4 pb-12">
             <h2 class="text-base font-bold text-white">Bảng Quản trị Admin</h2>
 
             <div id="admin-lock-msg" class="bg-sideBg p-6 rounded border border-gray-700 text-center">
@@ -236,7 +235,7 @@
                             <div><label class="text-[10px] text-gray-400">PHY</label><input type="number" id="p-phy" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
                         </div>
 
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center flex-wrap gap-2">
                             <input type="file" id="p-avatar" accept="image/*" class="text-xs text-gray-300">
                             <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded text-xs transition">Thêm Cầu thủ</button>
                         </div>
@@ -245,9 +244,9 @@
 
                 <div class="bg-sideBg p-4 rounded border border-gray-700 space-y-3">
                     <h3 class="font-semibold text-white text-xs">Danh sách Cầu thủ trg Kho</h3>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
                         <table class="w-full text-left text-xs text-gray-300">
-                            <thead class="bg-gray-800 text-gray-400">
+                            <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10">
                                 <tr>
                                     <th class="p-2">Cầu thủ</th>
                                     <th class="p-2">Vị trí</th>
@@ -657,16 +656,13 @@
             });
         }
 
-        // --- ENGINE MÔ PHỎNG TRẬN ĐẤU (NÂNG CẤP VA CHẠM & TRỌNG TÀI) ---
         let simCanvas, simCtx, simInterval = null, simTime = 0, simRunning = false;
         let ball = { x: 400, y: 240, vx: 0, vy: 0 };
-        let referee = { x: 400, y: 200, color: "#facc15" }; // NPC Trọng Tài màu vàng chanh
+        let referee = { x: 400, y: 200, color: "#facc15" };
         let teamA_players = [], teamB_players = [];
         let scoreA = 0, scoreB = 0;
 
-        function updateMatchTeams() {
-            resetMatchSim();
-        }
+        function updateMatchTeams() { resetMatchSim(); }
 
         function initMatchCanvas() {
             simCanvas = document.getElementById('matchCanvas');
@@ -769,7 +765,6 @@
 
             const allPlayers = [...teamA_players, ...teamB_players];
 
-            // 1. Di chuyển cầu thủ hướng về bóng
             allPlayers.forEach(p => {
                 let dx = ball.x - p.x;
                 let dy = ball.y - p.y;
@@ -784,7 +779,6 @@
                 p.y += p.vy;
             });
 
-            // 2. XỬ LÝ VA CHẠM (Chống đi xuyên qua nhau)
             for (let i = 0; i < allPlayers.length; i++) {
                 for (let j = i + 1; j < allPlayers.length; j++) {
                     let p1 = allPlayers[i];
@@ -807,7 +801,6 @@
                 }
             }
 
-            // 3. TRỌNG TÀI DI CHUYỂN (Chạy bám theo góc nhìn trận đấu)
             let refDx = ball.x + 30 - referee.x;
             let refDy = ball.y - 30 - referee.y;
             let refDist = Math.sqrt(refDx * refDx + refDy * refDy);
@@ -816,7 +809,6 @@
                 referee.y += (refDy / refDist) * 2;
             }
 
-            // 4. Di chuyển Bóng & Chạm bóng
             ball.x += ball.vx; ball.y += ball.vy;
             ball.vx *= 0.85; ball.vy *= 0.85;
 
@@ -839,7 +831,6 @@
                 }
             });
 
-            // 5. Tính Bàn Thắng & Va chạm biên
             if (ball.x <= 15 && ball.y >= 190 && ball.y <= 290) {
                 scoreB++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
                 logMatchEvent("<b>VÀO!</b> Đội Khách đã ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
@@ -851,16 +842,13 @@
             if (ball.x < 15 || ball.x > 785) ball.vx *= -1;
             if (ball.y < 15 || ball.y > 465) ball.vy *= -1;
 
-            // 6. Vẽ lại Sân, Cầu thủ, Trọng tài
             drawPitch();
 
-            // Vẽ Trọng tài (Áo vàng chanh + chữ REF)
             simCtx.fillStyle = referee.color;
             simCtx.beginPath(); simCtx.arc(referee.x, referee.y, 6, 0, Math.PI * 2); simCtx.fill();
             simCtx.fillStyle = "#000000"; simCtx.font = "8px sans-serif";
             simCtx.fillText("REF", referee.x - 7, referee.y - 8);
 
-            // Vẽ Cầu thủ 2 đội
             teamA_players.forEach(p => {
                 simCtx.fillStyle = p.color;
                 simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
@@ -870,7 +858,6 @@
                 simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
             });
 
-            // Vẽ Bóng
             simCtx.fillStyle = "#ffffff"; simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 4, 0, Math.PI * 2); simCtx.fill();
 
             if (mins >= 90) {
