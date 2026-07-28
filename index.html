@@ -11,111 +11,106 @@
         theme: {
           extend: {
             colors: {
-              emeraldDark: '#062c1b',
-              navyDark: '#0f172a',
-              cardBg: '#1e293b',
-              accentGreen: '#10b981'
+              mainBg: '#111827',
+              sideBg: '#1f2937',
+              cardBg: '#374151',
+              accentGreen: '#059669',
+              pitchBg: '#275231'
             }
           }
         }
       }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <!-- Firebase SDK (CDN) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-      body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
-      .field-pitch { background: #15803d; border: 4px solid #ffffff; position: relative; border-radius: 8px; }
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+      body { background-color: #111827; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+      .field-pitch { background: #275231; border: 2px solid #ffffff; position: relative; border-radius: 6px; }
+      ::-webkit-scrollbar { width: 5px; height: 5px; }
+      ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
     <!-- SIDEBAR -->
-    <aside class="w-full md:w-64 bg-emeraldDark flex flex-col justify-between p-4 shrink-0 border-r border-slate-800">
+    <aside class="w-full md:w-60 bg-sideBg flex flex-col justify-between p-4 shrink-0 border-r border-gray-700">
         <div>
-            <div class="flex items-center gap-3 mb-8">
-                <div class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-xl text-white">VF</div>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-gray-600 rounded flex items-center justify-center font-bold text-base text-white">VF</div>
                 <div>
-                    <h1 class="font-bold text-lg text-white leading-tight">Victoria Football</h1>
-                    <p class="text-xs text-slate-400">Manager & Simulator</p>
+                    <h1 class="font-bold text-sm text-white leading-tight">Victoria Football</h1>
+                    <p class="text-[11px] text-gray-400">Trang Quản Lý</p>
                 </div>
             </div>
 
             <nav class="space-y-1">
-                <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition text-emerald-400 bg-slate-800/80" id="btn-dashboard">
-                    <i class="fa-solid fa-chart-pie w-5"></i> Tổng quan & Đội bóng
+                <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded text-xs font-medium hover:bg-gray-700 transition text-white bg-gray-700" id="btn-dashboard">
+                    <i class="fa-solid fa-chart-pie w-4"></i> Tổng quan
                 </button>
-                <button onclick="switchTab('squad')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition text-slate-300" id="btn-squad">
-                    <i class="fa-solid fa-users-line w-5"></i> Quản lý Đội hình
+                <button onclick="switchTab('squad')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded text-xs font-medium hover:bg-gray-700 transition text-gray-300" id="btn-squad">
+                    <i class="fa-solid fa-users-line w-4"></i> Đội hình
                 </button>
-                <button onclick="switchTab('match')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition text-slate-300" id="btn-match">
-                    <i class="fa-solid fa-gamepad w-5"></i> Mô phỏng Trận đấu
+                <button onclick="switchTab('match')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded text-xs font-medium hover:bg-gray-700 transition text-gray-300" id="btn-match">
+                    <i class="fa-solid fa-gamepad w-4"></i> Mô phỏng Trận đấu
                 </button>
-                <button onclick="switchTab('tournament')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition text-slate-300" id="btn-tournament">
-                    <i class="fa-solid fa-trophy w-5"></i> Giải đấu
+                <button onclick="switchTab('tournament')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded text-xs font-medium hover:bg-gray-700 transition text-gray-300" id="btn-tournament">
+                    <i class="fa-solid fa-trophy w-4"></i> Giải đấu
                 </button>
-                <button onclick="switchTab('admin')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition text-slate-300" id="btn-admin">
-                    <i class="fa-solid fa-user-gear w-5"></i> Bảng Admin
+                <button onclick="switchTab('admin')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded text-xs font-medium hover:bg-gray-700 transition text-gray-300" id="btn-admin">
+                    <i class="fa-solid fa-user-gear w-4"></i> Bảng Admin
                 </button>
             </nav>
         </div>
 
-        <div class="pt-4 border-t border-slate-800/80">
-            <div id="admin-status" class="text-xs text-slate-400 mb-2 flex items-center justify-between">
-                <span>Quyền: <strong id="role-label" class="text-slate-200">Người chơi</strong></span>
-                <span id="db-status-dot" class="w-2 h-2 rounded-full bg-emerald-500" title="Kêt nối Local/Cloud"></span>
+        <div class="pt-3 border-t border-gray-700">
+            <div id="admin-status" class="text-[11px] text-gray-400 mb-2 flex items-center justify-between">
+                <span>Quyền: <strong id="role-label" class="text-gray-200">Người chơi</strong></span>
+                <span id="db-status-dot" class="w-2 h-2 rounded-full bg-gray-500" title="Trạng thái kết nối"></span>
             </div>
-            <button id="auth-btn" onclick="toggleAdminLogin()" class="w-full bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-md font-medium transition text-slate-200 flex items-center justify-center gap-2">
+            <button id="auth-btn" onclick="toggleAdminLogin()" class="w-full bg-gray-800 hover:bg-gray-700 text-xs py-1.5 rounded font-medium transition text-gray-200 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-lock"></i> Đăng nhập Admin
             </button>
         </div>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-navyDark">
+    <main class="flex-1 overflow-y-auto p-4 bg-mainBg">
 
-        <!-- TAB 1: DASHBOARD & TEAM SELECT -->
-        <section id="tab-dashboard" class="tab-content space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Tổng quan Giải đấu & Chọn Đội</h2>
-            </div>
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content space-y-4">
+            <h2 class="text-base font-bold text-white">Tổng quan & Chọn Đội</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-cardBg p-4 rounded-xl border border-slate-700">
-                    <div class="text-xs text-slate-400">Đội bóng hiện tại</div>
-                    <div class="text-lg font-bold text-emerald-400 mt-1" id="dash-my-team">Chưa chọn đội</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="bg-sideBg p-3 rounded border border-gray-700">
+                    <div class="text-[11px] text-gray-400">Đội bóng hiện tại</div>
+                    <div class="text-sm font-bold text-emerald-500 mt-1" id="dash-my-team">Chưa chọn</div>
                 </div>
-                <div class="bg-cardBg p-4 rounded-xl border border-slate-700">
-                    <div class="text-xs text-slate-400">Chỉ số OVR Đội hình</div>
-                    <div class="text-lg font-bold text-white mt-1" id="dash-team-ovr">0</div>
+                <div class="bg-sideBg p-3 rounded border border-gray-700">
+                    <div class="text-[11px] text-gray-400">Chỉ số OVR Đội hình</div>
+                    <div class="text-sm font-bold text-white mt-1" id="dash-team-ovr">0</div>
                 </div>
-                <div class="bg-cardBg p-4 rounded-xl border border-slate-700">
-                    <div class="text-xs text-slate-400">Tổng số Cầu thủ khả dụng</div>
-                    <div class="text-lg font-bold text-white mt-1" id="dash-total-players">0</div>
+                <div class="bg-sideBg p-3 rounded border border-gray-700">
+                    <div class="text-[11px] text-gray-400">Tổng Cầu thủ</div>
+                    <div class="text-sm font-bold text-white mt-1" id="dash-total-players">0</div>
                 </div>
             </div>
 
-            <div class="bg-cardBg p-5 rounded-xl border border-slate-700">
-                <h3 class="font-semibold text-white mb-4">Danh sách Đội bóng (Chọn đội để điều hành)</h3>
-                <div id="teams-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <!-- Teams render dynamically -->
+            <div class="bg-sideBg p-4 rounded border border-gray-700">
+                <h3 class="font-semibold text-white text-xs mb-3">Danh sách Đội bóng</h3>
+                <div id="teams-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 </div>
             </div>
         </section>
 
         <!-- TAB 2: SQUAD MANAGEMENT -->
-        <section id="tab-squad" class="tab-content hidden space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-white">Quản lý Đội hình chính</h2>
-                    <p class="text-xs text-slate-400">Sơ đồ chiến thuật & Thay đổi cầu thủ</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-xs text-slate-400">Sơ đồ:</label>
-                    <select id="formation-select" onchange="changeFormation()" class="bg-slate-800 text-sm text-white px-3 py-1.5 rounded-lg border border-slate-700 outline-none">
+        <section id="tab-squad" class="tab-content hidden space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-base font-bold text-white">Quản lý Đội hình</h2>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-400">Sơ đồ:</label>
+                    <select id="formation-select" onchange="changeFormation()" class="bg-gray-800 text-xs text-white px-2 py-1 rounded border border-gray-700 outline-none">
                         <option value="4-3-3">4-3-3</option>
                         <option value="4-2-3-1">4-2-3-1</option>
                         <option value="4-4-2">4-4-2</option>
@@ -123,173 +118,145 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Field Representation -->
-                <div class="lg:col-span-2 bg-cardBg p-4 rounded-xl border border-slate-700 flex flex-col items-center">
-                    <div id="squad-pitch" class="field-pitch w-full h-[450px] max-w-[650px] overflow-hidden relative">
-                        <!-- Pitch lines -->
-                        <div class="absolute inset-x-0 top-1/2 border-t-2 border-white/60"></div>
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 border-2 border-white/60 rounded-full"></div>
-                        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 border-b-2 border-x-2 border-white/60"></div>
-                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-20 border-t-2 border-x-2 border-white/60"></div>
-                        <!-- Player Slots Container -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2 bg-sideBg p-3 rounded border border-gray-700 flex justify-center">
+                    <div id="squad-pitch" class="field-pitch w-full h-[420px] max-w-[600px] overflow-hidden relative">
+                        <div class="absolute inset-x-0 top-1/2 border-t border-white/40"></div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/40 rounded-full"></div>
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-16 border-b border-x border-white/40"></div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-40 h-16 border-t border-x border-white/40"></div>
                         <div id="formation-slots" class="absolute inset-0"></div>
                     </div>
                 </div>
 
-                <!-- Squad List / Bench -->
-                <div class="bg-cardBg p-4 rounded-xl border border-slate-700 space-y-3">
-                    <h3 class="font-semibold text-white text-sm">Kho Cầu thủ Đội bóng</h3>
-                    <div id="squad-inventory" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                        <!-- Player items render dynamically -->
+                <div class="bg-sideBg p-3 rounded border border-gray-700 space-y-2">
+                    <h3 class="font-semibold text-white text-xs">Kho Cầu thủ Đội bóng</h3>
+                    <div id="squad-inventory" class="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- TAB 3: MATCH SIMULATION -->
-        <section id="tab-match" class="tab-content hidden space-y-4">
-            <div class="bg-cardBg p-4 rounded-xl border border-slate-700 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex items-center gap-4">
+        <section id="tab-match" class="tab-content hidden space-y-3">
+            <div class="bg-sideBg p-3 rounded border border-gray-700 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <img id="sim-home-logo" src="" class="w-8 h-8 object-contain rounded-full bg-slate-800" alt="">
-                        <span id="sim-home-name" class="font-bold text-white text-sm">Đội A</span>
+                        <img id="sim-home-logo" src="" class="w-6 h-6 object-contain rounded bg-gray-800" alt="">
+                        <span id="sim-home-name" class="font-bold text-white text-xs">Đội A</span>
                     </div>
-                    <span id="sim-score" class="text-2xl font-black text-emerald-400 bg-slate-900 px-4 py-1 rounded-lg">0 - 0</span>
+                    <span id="sim-score" class="text-base font-bold text-white bg-gray-800 px-3 py-0.5 rounded">0 - 0</span>
                     <div class="flex items-center gap-2">
-                        <span id="sim-away-name" class="font-bold text-white text-sm">Đội B</span>
-                        <img id="sim-away-logo" src="" class="w-8 h-8 object-contain rounded-full bg-slate-800" alt="">
+                        <span id="sim-away-name" class="font-bold text-white text-xs">Đội B</span>
+                        <img id="sim-away-logo" src="" class="w-6 h-6 object-contain rounded bg-gray-800" alt="">
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <div class="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 font-mono text-emerald-400 text-sm font-bold" id="sim-timer">
+                <div class="flex items-center gap-2">
+                    <div class="bg-gray-800 px-2.5 py-1 rounded border border-gray-700 font-mono text-gray-200 text-xs" id="sim-timer">
                         00:00 (Hiệp 1)
                     </div>
-                    <button id="sim-start-btn" onclick="toggleMatchSim()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition">
+                    <button id="sim-start-btn" onclick="toggleMatchSim()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded text-xs transition">
                         Bắt đầu
                     </button>
-                    <button onclick="resetMatchSim()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg text-sm transition">
+                    <button onclick="resetMatchSim()" class="bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded text-xs transition">
                         Đặt lại
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <!-- 2D Pitch Canvas -->
-                <div class="lg:col-span-3 bg-cardBg p-3 rounded-xl border border-slate-700 flex items-center justify-center">
-                    <canvas id="matchCanvas" width="800" height="500" class="w-full max-w-[800px] bg-green-700 rounded-lg shadow-inner"></canvas>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <div class="lg:col-span-3 bg-sideBg p-2 rounded border border-gray-700 flex items-center justify-center">
+                    <canvas id="matchCanvas" width="800" height="480" class="w-full max-w-[800px] bg-pitchBg rounded"></canvas>
                 </div>
 
-                <!-- Match Feed / Event Logs -->
-                <div class="bg-cardBg p-4 rounded-xl border border-slate-700 flex flex-col h-[500px]">
-                    <h3 class="font-semibold text-white text-sm mb-3 border-b border-slate-700 pb-2">Diễn biến Trận đấu</h3>
-                    <div id="sim-logs" class="flex-1 overflow-y-auto space-y-2 text-xs text-slate-300 font-mono">
-                        <div class="text-slate-500 italic">Sẵn sàng bắt đầu trận đấu...</div>
+                <div class="bg-sideBg p-3 rounded border border-gray-700 flex flex-col h-[480px]">
+                    <h3 class="font-semibold text-white text-xs mb-2 border-b border-gray-700 pb-1">Diễn biến</h3>
+                    <div id="sim-logs" class="flex-1 overflow-y-auto space-y-1.5 text-[11px] text-gray-300 font-mono">
+                        <div class="text-gray-500 italic">Sẵn sàng bắt đầu...</div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- TAB 4: TOURNAMENT -->
-        <section id="tab-tournament" class="tab-content hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Quản lý Giải đấu</h2>
-            </div>
-            <div id="tournament-container" class="bg-cardBg p-5 rounded-xl border border-slate-700">
-                <p class="text-sm text-slate-400">Lịch thi đấu & Cặp đấu được quản lý bởi Admin.</p>
-                <div id="fixtures-list" class="mt-4 space-y-3">
-                    <!-- Fixtures list -->
+        <section id="tab-tournament" class="tab-content hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Giải đấu</h2>
+            <div id="tournament-container" class="bg-sideBg p-4 rounded border border-gray-700">
+                <p class="text-xs text-gray-400">Lịch thi đấu & Kết quả giải đấu.</p>
+                <div id="fixtures-list" class="mt-3 space-y-2">
                 </div>
             </div>
         </section>
 
         <!-- TAB 5: ADMIN PANEL -->
-        <section id="tab-admin" class="tab-content hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Bảng Điều khiển Admin</h2>
+        <section id="tab-admin" class="tab-content hidden space-y-4">
+            <h2 class="text-base font-bold text-white">Bảng Quản trị Admin</h2>
+
+            <div id="admin-lock-msg" class="bg-sideBg p-6 rounded border border-gray-700 text-center">
+                <i class="fa-solid fa-lock text-3xl text-gray-500 mb-2"></i>
+                <h3 class="text-sm font-bold text-white mb-1">Cần đăng nhập Admin</h3>
+                <p class="text-xs text-gray-400">Vui lòng nhập mật khẩu admin ở góc trái để thao tác.</p>
             </div>
 
-            <div id="admin-lock-msg" class="bg-cardBg p-8 rounded-xl border border-slate-700 text-center">
-                <i class="fa-solid fa-lock text-4xl text-slate-500 mb-3"></i>
-                <h3 class="text-lg font-bold text-white mb-1">Cần quyền Admin</h3>
-                <p class="text-xs text-slate-400 mb-4">Nhập mật khẩu Admin ở góc dưới Sidebar để mở khóa tính năng này.</p>
-            </div>
-
-            <div id="admin-panel-content" class="hidden space-y-6">
-                <!-- Team Creator -->
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-700 space-y-4">
-                    <h3 class="font-semibold text-white">Tạo Đội bóng mới</h3>
-                    <form onsubmit="handleCreateTeam(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input type="text" id="team-name-input" placeholder="Tên Đội bóng" required class="bg-slate-900 border border-slate-700 text-sm text-white px-3 py-2 rounded-lg outline-none">
+            <div id="admin-panel-content" class="hidden space-y-4">
+                <div class="bg-sideBg p-4 rounded border border-gray-700 space-y-3">
+                    <h3 class="font-semibold text-white text-xs">Tạo Đội bóng</h3>
+                    <form onsubmit="handleCreateTeam(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <input type="text" id="team-name-input" placeholder="Tên Đội bóng" required class="bg-gray-800 border border-gray-700 text-xs text-white px-3 py-1.5 rounded outline-none">
                         <div>
-                            <label class="text-xs text-slate-400 block mb-1">Logo Đội (Tải tệp):</label>
-                            <input type="file" id="team-logo-input" accept="image/*" required class="text-xs text-slate-300">
+                            <input type="file" id="team-logo-input" accept="image/*" required class="text-xs text-gray-300">
                         </div>
-                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition">Tạo Đội bóng</button>
+                        <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white font-medium px-3 py-1.5 rounded text-xs transition">Tạo Đội bóng</button>
                     </form>
                 </div>
 
-                <!-- Player Creator (FC Mobile Stats) -->
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-700 space-y-4">
-                    <h3 class="font-semibold text-white">Thêm Cầu thủ vào Kho dữ liệu</h3>
-                    <form onsubmit="handleCreatePlayer(event)" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="p-name" placeholder="Tên cầu thủ" required class="bg-slate-900 border border-slate-700 text-sm text-white px-3 py-2 rounded-lg outline-none">
-                            <select id="p-pos" class="bg-slate-900 border border-slate-700 text-sm text-white px-3 py-2 rounded-lg outline-none">
-                                <option value="ST">ST</option>
-                                <option value="RW">RW</option>
-                                <option value="LW">LW</option>
-                                <option value="CAM">CAM</option>
-                                <option value="CM">CM</option>
-                                <option value="CDM">CDM</option>
-                                <option value="CB">CB</option>
-                                <option value="LB">LB</option>
-                                <option value="RB">RB</option>
-                                <option value="GK">GK</option>
+                <div class="bg-sideBg p-4 rounded border border-gray-700 space-y-3">
+                    <h3 class="font-semibold text-white text-xs">Thêm Cầu thủ vào Kho</h3>
+                    <form onsubmit="handleCreatePlayer(event)" class="space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <input type="text" id="p-name" placeholder="Tên cầu thủ" required class="bg-gray-800 border border-gray-700 text-xs text-white px-3 py-1.5 rounded outline-none">
+                            <select id="p-pos" class="bg-gray-800 border border-gray-700 text-xs text-white px-2 py-1.5 rounded outline-none">
+                                <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
+                                <option value="CAM">CAM</option><option value="CM">CM</option><option value="CDM">CDM</option>
+                                <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option><option value="GK">GK</option>
                             </select>
-                            <select id="p-team" required class="bg-slate-900 border border-slate-700 text-sm text-white px-3 py-2 rounded-lg outline-none">
+                            <select id="p-team" required class="bg-gray-800 border border-gray-700 text-xs text-white px-2 py-1.5 rounded outline-none">
                                 <option value="">-- Chọn Đội bóng --</option>
                             </select>
                         </div>
 
-                        <!-- FC Mobile Stats Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                            <div><label class="text-xs text-slate-400">PAC (Tốc độ)</label><input type="number" id="p-pac" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
-                            <div><label class="text-xs text-slate-400">SHO (Sút)</label><input type="number" id="p-sho" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
-                            <div><label class="text-xs text-slate-400">PAS (Truyền)</label><input type="number" id="p-pas" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
-                            <div><label class="text-xs text-slate-400">DRI (Rê bóng)</label><input type="number" id="p-dri" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
-                            <div><label class="text-xs text-slate-400">DEF (Phòng thủ)</label><input type="number" id="p-def" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
-                            <div><label class="text-xs text-slate-400">PHY (Thể lực)</label><input type="number" id="p-phy" value="75" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2 rounded-lg"></div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                            <div><label class="text-[10px] text-gray-400">PAC</label><input type="number" id="p-pac" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
+                            <div><label class="text-[10px] text-gray-400">SHO</label><input type="number" id="p-sho" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
+                            <div><label class="text-[10px] text-gray-400">PAS</label><input type="number" id="p-pas" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
+                            <div><label class="text-[10px] text-gray-400">DRI</label><input type="number" id="p-dri" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
+                            <div><label class="text-[10px] text-gray-400">DEF</label><input type="number" id="p-def" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
+                            <div><label class="text-[10px] text-gray-400">PHY</label><input type="number" id="p-phy" value="75" min="1" max="99" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-1 rounded"></div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">Ảnh đại diện cầu thủ:</label>
-                                <input type="file" id="p-avatar" accept="image/*" class="text-xs text-slate-300">
-                            </div>
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-2 rounded-lg text-sm transition">Thêm Cầu thủ</button>
+                        <div class="flex justify-between items-center">
+                            <input type="file" id="p-avatar" accept="image/*" class="text-xs text-gray-300">
+                            <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white font-medium px-4 py-1.5 rounded text-xs transition">Thêm Cầu thủ</button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Global Player Database Table -->
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-700 space-y-4">
-                    <h3 class="font-semibold text-white">Danh sách Cầu thủ trg Kho</h3>
+                <div class="bg-sideBg p-4 rounded border border-gray-700 space-y-3">
+                    <h3 class="font-semibold text-white text-xs">Danh sách Cầu thủ trg Kho</h3>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-300">
-                            <thead class="bg-slate-800 text-slate-400 uppercase">
+                        <table class="w-full text-left text-xs text-gray-300">
+                            <thead class="bg-gray-800 text-gray-400">
                                 <tr>
                                     <th class="p-2">Cầu thủ</th>
                                     <th class="p-2">Vị trí</th>
                                     <th class="p-2">Đội</th>
                                     <th class="p-2">OVR</th>
-                                    <th class="p-2">Chỉ số (PAC/SHO/PAS/DRI/DEF/PHY)</th>
-                                    <th class="p-2">Hành động</th>
+                                    <th class="p-2">PAC/SHO/PAS/DRI/DEF/PHY</th>
+                                    <th class="p-2">Xóa</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-players-table" class="divide-y divide-slate-800">
-                                <!-- Rendered dynamically -->
+                            <tbody id="admin-players-table" class="divide-y divide-gray-700">
                             </tbody>
                         </table>
                     </div>
@@ -300,34 +267,26 @@
     </main>
 
     <!-- ADMIN LOGIN MODAL -->
-    <div id="login-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-cardBg p-6 rounded-xl border border-slate-700 max-w-sm w-full space-y-4">
-            <h3 class="font-bold text-white text-base">Đăng nhập Quản trị viên</h3>
-            <input type="password" id="admin-pass-input" placeholder="Nhập mật khẩu admin" class="w-full bg-slate-900 border border-slate-700 text-sm text-white p-2.5 rounded-lg outline-none">
+    <div id="login-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-sideBg p-5 rounded border border-gray-700 max-w-sm w-full space-y-3">
+            <h3 class="font-bold text-white text-sm">Đăng nhập Admin</h3>
+            <input type="password" id="admin-pass-input" placeholder="Mật khẩu (mặc định: admin123)" class="w-full bg-gray-800 border border-gray-700 text-xs text-white p-2 rounded outline-none">
             <div class="flex justify-end gap-2">
-                <button onclick="closeAdminLogin()" class="px-4 py-2 text-xs text-slate-400 hover:text-white">Hủy</button>
-                <button onclick="submitAdminLogin()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-medium">Đăng nhập</button>
+                <button onclick="closeAdminLogin()" class="px-3 py-1 text-xs text-gray-400">Hủy</button>
+                <button onclick="submitAdminLogin()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded text-xs">Đăng nhập</button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        // FIREBASE CONFIG (Tớ đã cấu hình sẵn khung, cậu dán key Firebase vào đây nhé)
         const firebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            databaseURL: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "", authDomain: "", databaseURL: "",
+            projectId: "", storageBucket: "", messagingSenderId: "", appId: ""
         };
 
         let db = null;
         let isFirebaseActive = false;
 
-        // Initialize Firebase fallback gracefully
         try {
             if (firebaseConfig.databaseURL) {
                 firebase.initializeApp(firebaseConfig);
@@ -335,36 +294,28 @@
                 isFirebaseActive = true;
                 document.getElementById('db-status-dot').className = "w-2 h-2 rounded-full bg-emerald-500";
             } else {
-                document.getElementById('db-status-dot').className = "w-2 h-2 rounded-full bg-amber-500";
+                document.getElementById('db-status-dot').className = "w-2 h-2 rounded-full bg-gray-500";
             }
-        } catch (e) {
-            console.log("Firebase not configured, fallback to LocalStorage.");
-        }
+        } catch (e) {}
 
-        // GLOBAL APP STATE
         let state = {
             isAdmin: false,
             currentTeamId: null,
             teams: [],
             players: [],
-            squad: Array(11).fill(null), // 11 starter slots
+            squad: Array(11).fill(null),
             formation: "4-3-3"
         };
 
-        // INITIALIZATION
         window.onload = function() {
             loadData();
             renderApp();
             initMatchCanvas();
         };
 
-        // DATA PERSISTENCE
         function saveData() {
             if (isFirebaseActive && db) {
-                db.ref('victoria_data').set({
-                    teams: state.teams,
-                    players: state.players
-                });
+                db.ref('victoria_data').set({ teams: state.teams, players: state.players });
             } else {
                 localStorage.setItem('victoria_teams', JSON.stringify(state.teams));
                 localStorage.setItem('victoria_players', JSON.stringify(state.players));
@@ -387,23 +338,21 @@
             }
         }
 
-        // NAVIGATION & TAB SWITCHING
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-800/80', 'text-emerald-400');
-                btn.classList.add('text-slate-300');
+                btn.classList.remove('bg-gray-700', 'text-white');
+                btn.classList.add('text-gray-300');
             });
             const activeBtn = document.getElementById('btn-' + tabId);
             if(activeBtn) {
-                activeBtn.classList.add('bg-slate-800/80', 'text-emerald-400');
-                activeBtn.classList.remove('text-slate-300');
+                activeBtn.classList.add('bg-gray-700', 'text-white');
+                activeBtn.classList.remove('text-gray-300');
             }
         }
 
-        // AUTHENTICATION
         function toggleAdminLogin() {
             if (state.isAdmin) {
                 state.isAdmin = false;
@@ -443,14 +392,13 @@
                 adminContent.classList.remove('hidden');
             } else {
                 roleLabel.textContent = "Người chơi";
-                roleLabel.className = "text-slate-200";
+                roleLabel.className = "text-gray-200";
                 authBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Đăng nhập Admin`;
                 adminLockMsg.classList.remove('hidden');
                 adminContent.classList.add('hidden');
             }
         }
 
-        // TEAM & PLAYER CREATION (ADMIN)
         function handleCreateTeam(e) {
             e.preventDefault();
             const name = document.getElementById('team-name-input').value;
@@ -459,15 +407,8 @@
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    const newTeam = {
-                        id: 'team_' + Date.now(),
-                        name: name,
-                        logo: evt.target.result
-                    };
-                    state.teams.push(newTeam);
-                    saveData();
-                    renderApp();
-                    e.target.reset();
+                    state.teams.push({ id: 'team_' + Date.now(), name, logo: evt.target.result });
+                    saveData(); renderApp(); e.target.reset();
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             }
@@ -485,41 +426,25 @@
             const dri = parseInt(document.getElementById('p-dri').value) || 0;
             const def = parseInt(document.getElementById('p-def').value) || 0;
             const phy = parseInt(document.getElementById('p-phy').value) || 0;
-
             const ovr = Math.round((pac + sho + pas + dri + def + phy) / 6);
 
             const fileInput = document.getElementById('p-avatar');
-            let avatarData = '';
-
-            const savePlayerObj = (avatarUrl) => {
-                const newPlayer = {
-                    id: 'p_' + Date.now(),
-                    name, pos, teamId, ovr,
-                    pac, sho, pas, dri, def, phy,
-                    avatar: avatarUrl
-                };
-                state.players.push(newPlayer);
-                saveData();
-                renderApp();
-                e.target.reset();
+            const savePlayer = (avatar) => {
+                state.players.push({ id: 'p_' + Date.now(), name, pos, teamId, ovr, pac, sho, pas, dri, def, phy, avatar });
+                saveData(); renderApp(); e.target.reset();
             };
 
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(evt) {
-                    savePlayerObj(evt.target.result);
-                };
+                reader.onload = (evt) => savePlayer(evt.target.result);
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                savePlayerObj('');
-            }
+            } else { savePlayer(''); }
         }
 
         function deletePlayer(id) {
             if (!state.isAdmin) return;
             state.players = state.players.filter(p => p.id !== id);
-            saveData();
-            renderApp();
+            saveData(); renderApp();
         }
 
         function selectTeam(teamId) {
@@ -527,9 +452,7 @@
             renderApp();
         }
 
-        // RENDERING UI
         function renderApp() {
-            // Dashboard teams
             const teamsGrid = document.getElementById('teams-grid');
             teamsGrid.innerHTML = '';
             const pTeamSelect = document.getElementById('p-team');
@@ -538,22 +461,20 @@
             state.teams.forEach(t => {
                 const isSelected = t.id === state.currentTeamId;
                 teamsGrid.innerHTML += `
-                    <div class="card p-4 flex flex-col items-center justify-between gap-3 ${isSelected ? 'border-emerald-500 border-2' : ''}">
-                        <img src="${t.logo}" class="w-16 h-16 object-contain rounded-full bg-slate-800 p-1" alt="">
+                    <div class="p-3 flex flex-col items-center gap-2 bg-gray-800 rounded border ${isSelected ? 'border-emerald-500' : 'border-gray-700'}">
+                        <img src="${t.logo}" class="w-12 h-12 object-contain rounded bg-gray-900 p-1" alt="">
                         <div class="text-center">
-                            <div class="font-bold text-white text-sm">${t.name}</div>
-                            <div class="text-xs text-slate-400">${state.players.filter(p=>p.teamId === t.id).length} Cầu thủ</div>
+                            <div class="font-bold text-white text-xs">${t.name}</div>
+                            <div class="text-[10px] text-gray-400">${state.players.filter(p=>p.teamId === t.id).length} cầu thủ</div>
                         </div>
-                        <button onclick="selectTeam('${t.id}')" class="w-full ${isSelected ? 'bg-emerald-600' : 'bg-slate-800 hover:bg-slate-700'} text-white text-xs py-1.5 rounded-lg font-medium transition">
+                        <button onclick="selectTeam('${t.id}')" class="w-full ${isSelected ? 'bg-emerald-700' : 'bg-gray-700 hover:bg-gray-600'} text-white text-xs py-1 rounded transition">
                             ${isSelected ? 'Đã chọn' : 'Chọn đội'}
                         </button>
                     </div>
                 `;
-
                 pTeamSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
             });
 
-            // Update Header/Dash Info
             const currentTeam = state.teams.find(t => t.id === state.currentTeamId);
             document.getElementById('dash-my-team').textContent = currentTeam ? currentTeam.name : 'Chưa chọn';
             document.getElementById('dash-total-players').textContent = state.players.length;
@@ -568,26 +489,23 @@
             state.players.forEach(p => {
                 const team = state.teams.find(t => t.id === p.teamId);
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/50">
+                    <tr>
                         <td class="p-2 flex items-center gap-2 font-medium text-white">
-                            <div class="w-6 h-6 rounded-full bg-slate-700 overflow-hidden flex items-center justify-center shrink-0">
-                                ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-xs"></i>'}
+                            <div class="w-5 h-5 rounded bg-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+                                ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-[10px]"></i>'}
                             </div>
                             ${p.name}
                         </td>
-                        <td class="p-2 font-bold text-emerald-400">${p.pos}</td>
+                        <td class="p-2 font-bold text-gray-300">${p.pos}</td>
                         <td class="p-2">${team ? team.name : 'N/A'}</td>
-                        <td class="p-2 font-bold text-amber-400">${p.ovr}</td>
-                        <td class="p-2 text-slate-400">${p.pac}/${p.sho}/${p.pas}/${p.dri}/${p.def}/${p.phy}</td>
-                        <td class="p-2">
-                            <button onclick="deletePlayer('${p.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
-                        </td>
+                        <td class="p-2 font-bold text-emerald-400">${p.ovr}</td>
+                        <td class="p-2 text-gray-400">${p.pac}/${p.sho}/${p.pas}/${p.dri}/${p.def}/${p.phy}</td>
+                        <td class="p-2"><button onclick="deletePlayer('${p.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>
                 `;
             });
         }
 
-        // FORMATION & SQUAD MANAGEMENT
         const formationCoords = {
             "4-3-3": [
                 {top: '85%', left: '50%', pos: 'GK'},
@@ -619,7 +537,6 @@
             const slotsContainer = document.getElementById('formation-slots');
             slotsContainer.innerHTML = '';
             const coords = formationCoords[state.formation];
-
             let activeTeamPlayers = state.players.filter(p => p.teamId === state.currentTeamId);
 
             coords.forEach((coord, index) => {
@@ -627,40 +544,34 @@
                 slotsContainer.innerHTML += `
                     <div style="top: ${coord.top}; left: ${coord.left};" 
                          onclick="unassignSlot(${index})"
-                         class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer group">
-                        <div class="w-10 h-10 rounded-full bg-slate-900/90 border-2 ${assignedPlayer ? 'border-amber-400' : 'border-dashed border-white/60'} flex items-center justify-center overflow-hidden shadow-lg">
-                            ${assignedPlayer && assignedPlayer.avatar ? `<img src="${assignedPlayer.avatar}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-white">${coord.pos}</span>`}
+                         class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer">
+                        <div class="w-8 h-8 rounded-full bg-gray-900 border ${assignedPlayer ? 'border-amber-400' : 'border-dashed border-white/60'} flex items-center justify-center overflow-hidden">
+                            ${assignedPlayer && assignedPlayer.avatar ? `<img src="${assignedPlayer.avatar}" class="w-full h-full object-cover">` : `<span class="text-[10px] text-white font-bold">${coord.pos}</span>`}
                         </div>
-                        <div class="bg-slate-900/90 px-1.5 py-0.5 rounded text-[10px] text-white font-semibold mt-1 whitespace-nowrap border border-slate-700">
+                        <div class="bg-gray-900/90 px-1 py-0.5 rounded text-[9px] text-white mt-0.5 whitespace-nowrap">
                             ${assignedPlayer ? `${assignedPlayer.name} (${assignedPlayer.ovr})` : coord.pos}
                         </div>
                     </div>
                 `;
             });
 
-            // Calculate Squad OVR
-            let totalOvr = 0;
-            let count = 0;
-            state.squad.forEach(p => {
-                if (p) { totalOvr += p.ovr; count++; }
-            });
-            const squadOvr = count > 0 ? Math.round(totalOvr / count) : 0;
-            document.getElementById('dash-team-ovr').textContent = squadOvr;
+            let totalOvr = 0, count = 0;
+            state.squad.forEach(p => { if (p) { totalOvr += p.ovr; count++; } });
+            document.getElementById('dash-team-ovr').textContent = count > 0 ? Math.round(totalOvr / count) : 0;
 
-            // Render Inventory / Bench
             const inventory = document.getElementById('squad-inventory');
             inventory.innerHTML = '';
             activeTeamPlayers.forEach(p => {
                 const isAssigned = state.squad.some(s => s && s.id === p.id);
                 inventory.innerHTML += `
-                    <div class="p-2 rounded-lg bg-slate-800 flex items-center justify-between ${isAssigned ? 'opacity-40' : 'hover:bg-slate-700 cursor-pointer'}"
+                    <div class="p-2 rounded bg-gray-800 flex items-center justify-between ${isAssigned ? 'opacity-40' : 'hover:bg-gray-700 cursor-pointer'}"
                          onclick="${isAssigned ? '' : `assignToSquad('${p.id}')`}">
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-amber-400 text-xs w-6">${p.ovr}</span>
-                            <span class="text-xs font-semibold text-emerald-400">${p.pos}</span>
+                            <span class="font-bold text-gray-300 text-xs">${p.ovr}</span>
+                            <span class="text-xs text-emerald-400 font-semibold">${p.pos}</span>
                             <span class="text-xs text-white">${p.name}</span>
                         </div>
-                        <span class="text-[10px] text-slate-400">${isAssigned ? 'Đang đá' : '+ Thêm'}</span>
+                        <span class="text-[10px] text-gray-400">${isAssigned ? 'Đang đá' : '+ Thêm'}</span>
                     </div>
                 `;
             });
@@ -669,14 +580,9 @@
         function assignToSquad(playerId) {
             const player = state.players.find(p => p.id === playerId);
             if (!player) return;
-
-            // Find empty slot
             const emptyIndex = state.squad.findIndex(s => s === null);
-            if (emptyIndex !== -1) {
-                state.squad[emptyIndex] = player;
-            } else {
-                state.squad[0] = player; // Replace first
-            }
+            if (emptyIndex !== -1) state.squad[emptyIndex] = player;
+            else state.squad[0] = player;
             renderSquadSection();
         }
 
@@ -685,15 +591,10 @@
             renderSquadSection();
         }
 
-        // MATCH SIMULATION ENGINE 2D
-        let simCanvas, simCtx;
-        let simInterval = null;
-        let simTime = 0; // seconds (0 to 90 mins scaled)
-        let simRunning = false;
-
-        let ball = { x: 400, y: 250, vx: 0, vy: 0 };
-        let teamA_players = [];
-        let teamB_players = [];
+        // MATCH SIMULATION ENGINE
+        let simCanvas, simCtx, simInterval = null, simTime = 0, simRunning = false;
+        let ball = { x: 400, y: 240, vx: 0, vy: 0 };
+        let teamA_players = [], teamB_players = [];
         let scoreA = 0, scoreB = 0;
 
         function initMatchCanvas() {
@@ -703,49 +604,25 @@
         }
 
         function drawPitch() {
-            // Pitch background
-            simCtx.fillStyle = "#15803d";
-            simCtx.fillRect(0, 0, 800, 500);
+            simCtx.fillStyle = "#275231";
+            simCtx.fillRect(0, 0, 800, 480);
+            simCtx.strokeStyle = "rgba(255,255,255,0.7)";
+            simCtx.lineWidth = 2;
 
-            // Lines
-            simCtx.strokeStyle = "rgba(255,255,255,0.8)";
-            simCtx.lineWidth = 3;
+            simCtx.strokeRect(15, 15, 770, 450);
+            simCtx.beginPath(); simCtx.moveTo(400, 15); simCtx.lineTo(400, 465); simCtx.stroke();
+            simCtx.beginPath(); simCtx.arc(400, 240, 50, 0, Math.PI * 2); simCtx.stroke();
 
-            // Outer
-            simCtx.strokeRect(20, 20, 760, 460);
-            // Halfway
-            simCtx.beginPath();
-            simCtx.moveTo(400, 20);
-            simCtx.lineTo(400, 480);
-            simCtx.stroke();
-            // Center circle
-            simCtx.beginPath();
-            simCtx.arc(400, 250, 60, 0, Math.PI * 2);
-            simCtx.stroke();
-
-            // Goals
             simCtx.fillStyle = "#ffffff";
-            simCtx.fillRect(10, 200, 10, 100); // Left Goal
-            simCtx.fillRect(780, 200, 10, 100); // Right Goal
+            simCtx.fillRect(5, 190, 10, 100);
+            simCtx.fillRect(785, 190, 10, 100);
         }
 
         function setupSimPlayers() {
-            teamA_players = [];
-            teamB_players = [];
-
+            teamA_players = []; teamB_players = [];
             for(let i = 0; i < 11; i++) {
-                teamA_players.push({
-                    x: 100 + Math.random() * 250,
-                    y: 50 + Math.random() * 400,
-                    color: "#ef4444",
-                    vx: 0, vy: 0
-                });
-                teamB_players.push({
-                    x: 450 + Math.random() * 250,
-                    y: 50 + Math.random() * 400,
-                    color: "#3b82f6",
-                    vx: 0, vy: 0
-                });
+                teamA_players.push({ x: 100 + Math.random() * 250, y: 40 + Math.random() * 400, color: "#dc2626" });
+                teamB_players.push({ x: 450 + Math.random() * 250, y: 40 + Math.random() * 400, color: "#2563eb" });
             }
         }
 
@@ -764,99 +641,70 @@
 
         function resetMatchSim() {
             clearInterval(simInterval);
-            simRunning = false;
-            simTime = 0;
-            scoreA = 0; scoreB = 0;
-            ball = { x: 400, y: 250, vx: 0, vy: 0 };
+            simRunning = false; simTime = 0; scoreA = 0; scoreB = 0;
+            ball = { x: 400, y: 240, vx: 0, vy: 0 };
             document.getElementById('sim-score').textContent = "0 - 0";
             document.getElementById('sim-timer').textContent = "00:00 (Hiệp 1)";
             document.getElementById('sim-start-btn').textContent = "Bắt đầu";
-            document.getElementById('sim-logs').innerHTML = `<div class="text-slate-500 italic">Trận đấu đã khởi tạo lại.</div>`;
+            document.getElementById('sim-logs').innerHTML = `<div class="text-gray-500 italic">Trận đấu đã đặt lại.</div>`;
             drawPitch();
         }
 
         function logMatchEvent(msg) {
             const logs = document.getElementById('sim-logs');
             const minute = Math.floor(simTime / 60);
-            logs.innerHTML = `<div><span class="text-amber-400 font-bold">[${minute}']</span> ${msg}</div>` + logs.innerHTML;
+            logs.innerHTML = `<div><span class="text-gray-400">[${minute}']</span> ${msg}</div>` + logs.innerHTML;
         }
 
         function updateMatchSim() {
-            simTime += 5; // time step
+            simTime += 5;
             const mins = Math.floor(simTime / 60);
             const secs = simTime % 60;
             document.getElementById('sim-timer').textContent = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs} ${mins > 45 ? '(Hiệp 2)' : '(Hiệp 1)'}`;
 
-            // AI Movement towards ball
             [...teamA_players, ...teamB_players].forEach(p => {
-                let dx = ball.x - p.x;
-                let dy = ball.y - p.y;
+                let dx = ball.x - p.x, dy = ball.y - p.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 10) {
-                    p.x += (dx / dist) * (2 + Math.random() * 3);
-                    p.y += (dy / dist) * (2 + Math.random() * 3);
+                if (dist > 8) {
+                    p.x += (dx / dist) * (2 + Math.random() * 2);
+                    p.y += (dy / dist) * (2 + Math.random() * 2);
                 }
             });
 
-            // Ball Physics / Random Kick
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            ball.vx *= 0.9;
-            ball.vy *= 0.9;
+            ball.x += ball.vx; ball.y += ball.vy;
+            ball.vx *= 0.88; ball.vy *= 0.88;
 
-            // Random pass or shot when player reaches ball
-            [...teamA_players, ...teamB_players].forEach((p, idx) => {
-                let dx = ball.x - p.x;
-                let dy = ball.y - p.y;
-                if (Math.sqrt(dx*dx + dy*dy) < 15) {
-                    ball.vx = (Math.random() - 0.5) * 20;
-                    ball.vy = (Math.random() - 0.5) * 20;
+            [...teamA_players, ...teamB_players].forEach(p => {
+                let dx = ball.x - p.x, dy = ball.y - p.y;
+                if (Math.sqrt(dx*dx + dy*dy) < 12) {
+                    ball.vx = (Math.random() - 0.5) * 18;
+                    ball.vy = (Math.random() - 0.5) * 18;
 
-                    // Event Random Trigger
-                    if (Math.random() < 0.05) {
-                        const events = ["Sút xa trúng xà ngang!", "Pha rê bóng lắt léo!", "Phạm lỗi - Đá phạt trực tiếp!", "Phạt góc!"];
+                    if (Math.random() < 0.04) {
+                        const events = ["Sút xa nguy hiểm!", "Rê bóng vượt qua hậu vệ", "Đá phạt trực tiếp", "Phạt góc"];
                         logMatchEvent(events[Math.floor(Math.random()*events.length)]);
                     }
                 }
             });
 
-            // Goal check
-            if (ball.x <= 20 && ball.y >= 200 && ball.y <= 300) {
-                scoreB++;
-                document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("VÀOOOOOO! Đội B đã ghi bàn!");
-                ball = { x: 400, y: 250, vx: 0, vy: 0 };
-            } else if (ball.x >= 780 && ball.y >= 200 && ball.y <= 300) {
-                scoreA++;
-                document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("VÀOOOOOO! Đội A đã ghi bàn!");
-                ball = { x: 400, y: 250, vx: 0, vy: 0 };
+            if (ball.x <= 15 && ball.y >= 190 && ball.y <= 290) {
+                scoreB++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
+                logMatchEvent("VÀO! Đội B ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
+            } else if (ball.x >= 785 && ball.y >= 190 && ball.y <= 290) {
+                scoreA++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
+                logMatchEvent("VÀO! Đội A ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
             }
 
-            // Boundary collision
-            if (ball.x < 20 || ball.x > 780) ball.vx *= -1;
-            if (ball.y < 20 || ball.y > 480) ball.vy *= -1;
+            if (ball.x < 15 || ball.x > 785) ball.vx *= -1;
+            if (ball.y < 15 || ball.y > 465) ball.vy *= -1;
 
-            // Render
             drawPitch();
-
-            // Draw players
-            teamA_players.forEach(p => {
-                simCtx.fillStyle = p.color;
-                simCtx.beginPath(); simCtx.arc(p.x, p.y, 8, 0, Math.PI*2); simCtx.fill();
-            });
-            teamB_players.forEach(p => {
-                simCtx.fillStyle = p.color;
-                simCtx.beginPath(); simCtx.arc(p.x, p.y, 8, 0, Math.PI*2); simCtx.fill();
-            });
-
-            // Draw Ball
-            simCtx.fillStyle = "#ffffff";
-            simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 5, 0, Math.PI*2); simCtx.fill();
+            teamA_players.forEach(p => { simCtx.fillStyle = p.color; simCtx.beginPath(); simCtx.arc(p.x, p.y, 7, 0, Math.PI*2); simCtx.fill(); });
+            teamB_players.forEach(p => { simCtx.fillStyle = p.color; simCtx.beginPath(); simCtx.arc(p.x, p.y, 7, 0, Math.PI*2); simCtx.fill(); });
+            simCtx.fillStyle = "#ffffff"; simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 4, 0, Math.PI*2); simCtx.fill();
 
             if (mins >= 90) {
-                clearInterval(simInterval);
-                simRunning = false;
+                clearInterval(simInterval); simRunning = false;
                 logMatchEvent("Hết giờ! Trận đấu kết thúc.");
             }
         }
