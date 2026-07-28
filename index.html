@@ -656,26 +656,27 @@
             });
         }
 
-        // --- MÔ PHỎNG TRẬN ĐẤU CẢI TIẾN ---
-        let simCanvas, simCtx, simInterval = null, simTime = 0, simRunning = false;
-        let ball = { x: 400, y: 240, vx: 0, vy: 0 };
+        // --- MÔ PHỎNG TRẬN ĐẤU REAL-TIME 60FPS VỚI AI ĐỘNG ---
+        let simCanvas, simCtx, animFrameId = null;
+        let simTime = 0, lastTickTime = 0, simRunning = false;
+        let ball = { x: 400, y: 240, vx: 0, vy: 0, holder: null };
         let referee = { x: 400, y: 200, color: "#facc15" };
         let teamA_players = [], teamB_players = [];
         let scoreA = 0, scoreB = 0;
-        let setPieceTimer = 0; 
+        let setPieceTimer = 0;
 
         const tacticalPositionsA = [
-            { x: 30, y: 240 }, 
-            { x: 120, y: 80 }, { x: 100, y: 170 }, { x: 100, y: 310 }, { x: 120, y: 400 }, 
-            { x: 220, y: 140 }, { x: 180, y: 240 }, { x: 220, y: 340 }, 
-            { x: 320, y: 80 }, { x: 340, y: 240 }, { x: 320, y: 400 }  
+            { x: 30, y: 240, role: 'GK' }, 
+            { x: 120, y: 80, role: 'DEF' }, { x: 100, y: 170, role: 'DEF' }, { x: 100, y: 310, role: 'DEF' }, { x: 120, y: 400, role: 'DEF' }, 
+            { x: 220, y: 140, role: 'MID' }, { x: 180, y: 240, role: 'MID' }, { x: 220, y: 340, role: 'MID' }, 
+            { x: 320, y: 80, role: 'ATT' }, { x: 340, y: 240, role: 'ATT' }, { x: 320, y: 400, role: 'ATT' }  
         ];
 
         const tacticalPositionsB = [
-            { x: 770, y: 240 }, 
-            { x: 680, y: 80 }, { x: 700, y: 170 }, { x: 700, y: 310 }, { x: 680, y: 400 },
-            { x: 580, y: 140 }, { x: 620, y: 240 }, { x: 580, y: 340 },
-            { x: 480, y: 80 }, { x: 460, y: 240 }, { x: 480, y: 400 }
+            { x: 770, y: 240, role: 'GK' }, 
+            { x: 680, y: 80, role: 'DEF' }, { x: 700, y: 170, role: 'DEF' }, { x: 700, y: 310, role: 'DEF' }, { x: 680, y: 400, role: 'DEF' },
+            { x: 580, y: 140, role: 'MID' }, { x: 620, y: 240, role: 'MID' }, { x: 580, y: 340, role: 'MID' },
+            { x: 480, y: 80, role: 'ATT' }, { x: 460, y: 240, role: 'ATT' }, { x: 480, y: 400, role: 'ATT' }
         ];
 
         function updateMatchTeams() { resetMatchSim(); }
@@ -699,6 +700,7 @@
             simCtx.beginPath(); simCtx.moveTo(400, 15); simCtx.lineTo(400, 465); simCtx.stroke();
             simCtx.beginPath(); simCtx.arc(400, 240, 50, 0, Math.PI * 2); simCtx.stroke();
 
+            // Khung thành 2 bên
             simCtx.fillStyle = "#ffffff";
             simCtx.fillRect(5, 190, 10, 100);
             simCtx.fillRect(785, 190, 10, 100);
@@ -715,6 +717,7 @@
                 p.y = tacticalPositionsB[idx].y;
                 p.vx = 0; p.vy = 0;
             });
+            ball.holder = null;
         }
 
         function setupSimPlayers() {
@@ -740,29 +743,35 @@
 
             teamA_players = pA.slice(0, 11).map((p, idx) => ({
                 id: p.id, name: p.name, pos: p.pos,
+                role: tacticalPositionsA[idx].role,
                 homeX: tacticalPositionsA[idx].x,
                 homeY: tacticalPositionsA[idx].y,
                 x: tacticalPositionsA[idx].x,
                 y: tacticalPositionsA[idx].y,
-                vx: 0, vy: 0, radius: 8, color: "#dc2626"
+                speed: 1.2 + (p.pac / 100) * 1.3,
+                passStat: p.pas, shoStat: p.sho,
+                vx: 0, vy: 0, radius: 7, color: "#dc2626", team: 'A'
             }));
 
             teamB_players = pB.slice(0, 11).map((p, idx) => ({
                 id: p.id, name: p.name, pos: p.pos,
+                role: tacticalPositionsB[idx].role,
                 homeX: tacticalPositionsB[idx].x,
                 homeY: tacticalPositionsB[idx].y,
                 x: tacticalPositionsB[idx].x,
                 y: tacticalPositionsB[idx].y,
-                vx: 0, vy: 0, radius: 8, color: "#2563eb"
+                speed: 1.2 + (p.pac / 100) * 1.3,
+                passStat: p.pas, shoStat: p.sho,
+                vx: 0, vy: 0, radius: 7, color: "#2563eb", team: 'B'
             }));
 
             referee.x = 400; referee.y = 200;
-            ball = { x: 400, y: 240, vx: 0, vy: 0 };
+            ball = { x: 400, y: 240, vx: 0, vy: 0, holder: null };
             return true;
         }
 
         function triggerSetPiece(type, player, side) {
-            setPieceTimer = 20;
+            setPieceTimer = 90; // ~1.5s delay
             resetPlayersToTactical();
 
             if (type === 'penalty') {
@@ -778,16 +787,16 @@
             } else if (type === 'corner') {
                 ball = side === 'A' ? { x: 780, y: 20, vx: 0, vy: 0 } : { x: 20, y: 20, vx: 0, vy: 0 };
                 player.x = ball.x; player.y = ball.y;
-                logMatchEvent(`<b>PHẠT GÓC!</b> <b>${player.name}</b> chuẩn bị thực hiện quả đá phạt góc.`);
+                logMatchEvent(`<b>PHẠT GÓC!</b> <b>${player.name}</b> chuẩn bị treo bóng vào trong.`);
             } else if (type === 'freekick') {
-                logMatchEvent(`<b>ĐÁ PHẠT!</b> Cầu thủ hai đội vây quanh vị trí phạm lỗi của <b>${player.name}</b>.`);
+                logMatchEvent(`<b>ĐÁ PHẠT!</b> Trọng tài thổi phạt phạm lỗi của <b>${player.name}</b>.`);
             }
         }
 
         function toggleMatchSim() {
             if (simRunning) {
-                clearInterval(simInterval);
                 simRunning = false;
+                if (animFrameId) cancelAnimationFrame(animFrameId);
                 document.getElementById('sim-start-btn').textContent = "Tiếp tục";
             } else {
                 if (simTime === 0) {
@@ -795,15 +804,17 @@
                     if (!ready) return;
                 }
                 simRunning = true;
+                lastTickTime = performance.now();
                 document.getElementById('sim-start-btn').textContent = "Tạm dừng";
-                simInterval = setInterval(updateMatchSim, 100);
+                animFrameId = requestAnimationFrame(gameLoop);
             }
         }
 
         function resetMatchSim() {
-            clearInterval(simInterval);
-            simRunning = false; simTime = 0; scoreA = 0; scoreB = 0; setPieceTimer = 0;
-            ball = { x: 400, y: 240, vx: 0, vy: 0 };
+            simRunning = false;
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            simTime = 0; scoreA = 0; scoreB = 0; setPieceTimer = 0;
+            ball = { x: 400, y: 240, vx: 0, vy: 0, holder: null };
             document.getElementById('sim-score').textContent = "0 - 0";
             document.getElementById('sim-timer').textContent = "00:00 (Hiệp 1)";
             document.getElementById('sim-start-btn').textContent = "Bắt đầu";
@@ -817,21 +828,42 @@
             logs.innerHTML = `<div><span class="text-gray-400">[${minute}']</span> ${msg}</div>` + logs.innerHTML;
         }
 
-        function updateMatchSim() {
-            simTime += 5;
-            const mins = Math.floor(simTime / 60);
-            const secs = simTime % 60;
-            document.getElementById('sim-timer').textContent = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs} ${mins > 45 ? '(Hiệp 2)' : '(Hiệp 1)'}`;
+        function gameLoop(now) {
+            if (!simRunning) return;
 
-            const allPlayers = [...teamA_players, ...teamB_players];
+            // Cập nhật đồng hồ trận đấu mỗi second real-time
+            if (now - lastTickTime >= 350) {
+                simTime += 1;
+                lastTickTime = now;
+                const mins = Math.floor(simTime / 60);
+                const secs = simTime % 60;
+                document.getElementById('sim-timer').textContent = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs} ${mins > 45 ? '(Hiệp 2)' : '(Hiệp 1)'}`;
 
+                if (mins >= 90) {
+                    simRunning = false;
+                    logMatchEvent("<b>HẾT GIỜ!</b> Trận đấu chính thức kết thúc.");
+                    drawPitch();
+                    renderSimEntities();
+                    return;
+                }
+            }
+
+            updatePhysicsAndAI();
+            drawPitch();
+            renderSimEntities();
+
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function updatePhysicsAndAI() {
             if (setPieceTimer > 0) {
                 setPieceTimer--;
-                drawPitch();
-                renderSimEntities();
                 return;
             }
 
+            const allPlayers = [...teamA_players, ...teamB_players];
+
+            // 1. Xác định ng gần bóng nhất 2 đội
             let closestA = teamA_players[0], minDistA = 9999;
             teamA_players.forEach(p => {
                 let d = Math.hypot(ball.x - p.x, ball.y - p.y);
@@ -844,47 +876,51 @@
                 if (d < minDistB) { minDistB = d; closestB = p; }
             });
 
-            teamA_players.forEach(p => {
-                let targetX = p.homeX + (ball.x - 400) * 0.3;
-                let targetY = p.homeY + (ball.y - 240) * 0.2;
+            // 2. Di chuyển AI linh hoạt theo trục dọc sân bóng (Shifting Formation)
+            const ballShiftX = (ball.x - 400) * 0.45;
+            const ballShiftY = (ball.y - 240) * 0.25;
 
-                if (p === closestA && minDistA < 180) {
-                    targetX = ball.x; targetY = ball.y;
+            teamA_players.forEach(p => {
+                let targetX = p.homeX + ballShiftX;
+                let targetY = p.homeY + ballShiftY;
+
+                // Nếu là GK
+                if (p.role === 'GK') {
+                    targetX = Math.min(60, Math.max(25, ball.x * 0.1));
+                    targetY = 190 + (ball.y / 480) * 100;
+                } 
+                // Cầu thủ săn bóng / Pressing
+                else if (p === closestA) {
+                    targetX = ball.x;
+                    targetY = ball.y;
                 }
 
-                let dx = targetX - p.x, dy = targetY - p.y;
-                let dist = Math.hypot(dx, dy);
-                if (dist > 5) {
-                    p.vx = (dx / dist) * 2.2;
-                    p.vy = (dy / dist) * 2.2;
-                } else { p.vx = 0; p.vy = 0; }
-                p.x += p.vx; p.y += p.vy;
+                movePlayerSmoothly(p, targetX, targetY);
             });
 
             teamB_players.forEach(p => {
-                let targetX = p.homeX + (ball.x - 400) * 0.3;
-                let targetY = p.homeY + (ball.y - 240) * 0.2;
+                let targetX = p.homeX + ballShiftX;
+                let targetY = p.homeY + ballShiftY;
 
-                if (p === closestB && minDistB < 180) {
-                    targetX = ball.x; targetY = ball.y;
+                if (p.role === 'GK') {
+                    targetX = Math.max(740, Math.min(775, 740 + (ball.x - 400) * 0.1));
+                    targetY = 190 + (ball.y / 480) * 100;
+                } else if (p === closestB) {
+                    targetX = ball.x;
+                    targetY = ball.y;
                 }
 
-                let dx = targetX - p.x, dy = targetY - p.y;
-                let dist = Math.hypot(dx, dy);
-                if (dist > 5) {
-                    p.vx = (dx / dist) * 2.2;
-                    p.vy = (dy / dist) * 2.2;
-                } else { p.vx = 0; p.vy = 0; }
-                p.x += p.vx; p.y += p.vy;
+                movePlayerSmoothly(p, targetX, targetY);
             });
 
+            // 3. Xử lý va chạm giữa các cầu thủ
             for (let i = 0; i < allPlayers.length; i++) {
                 for (let j = i + 1; j < allPlayers.length; j++) {
                     let p1 = allPlayers[i], p2 = allPlayers[j];
                     let dx = p2.x - p1.x, dy = p2.y - p1.y;
                     let dist = Math.hypot(dx, dy);
-                    if (dist < 16 && dist > 0) {
-                        let overlap = 16 - dist;
+                    if (dist < 15 && dist > 0) {
+                        let overlap = 15 - dist;
                         p1.x -= (dx / dist) * overlap * 0.5;
                         p1.y -= (dy / dist) * overlap * 0.5;
                         p2.x += (dx / dist) * overlap * 0.5;
@@ -893,78 +929,128 @@
                 }
             }
 
-            let refDx = ball.x + 20 - referee.x, refDy = ball.y - 20 - referee.y;
+            // 4. Trọng tài di chuyển giữ khoảng cách
+            let refDx = ball.x + 30 - referee.x, refDy = ball.y - 30 - referee.y;
             let refDist = Math.hypot(refDx, refDy);
-            if (refDist > 15) { referee.x += (refDx / refDist) * 1.8; referee.y += (refDy / refDist) * 1.8; }
+            if (refDist > 30) {
+                referee.x += (refDx / refDist) * 1.2;
+                referee.y += (refDy / refDist) * 1.2;
+            }
 
-            ball.x += ball.vx; ball.y += ball.vy;
-            ball.vx *= 0.88; ball.vy *= 0.88;
-
+            // 5. Cầu thủ tranh chấp / Chuyền bóng / Sút
             allPlayers.forEach(p => {
-                let dx = ball.x - p.x, dy = ball.y - p.y;
-                if (Math.hypot(dx, dy) < 12) {
-                    const isTeamA = teamA_players.includes(p);
-                    const targetGoalX = isTeamA ? 785 : 15;
+                let distToBall = Math.hypot(ball.x - p.x, ball.y - p.y);
+                if (distToBall < 10) {
+                    ball.holder = p;
+                    const isTeamA = p.team === 'A';
+                    const goalTargetX = isTeamA ? 785 : 15;
+                    const distToGoal = Math.abs(p.x - goalTargetX);
 
-                    if (Math.abs(ball.x - targetGoalX) < 180) {
-                        ball.vx = (targetGoalX - ball.x) * 0.15;
-                        ball.vy = (240 - ball.y + (Math.random() - 0.5) * 80) * 0.15;
-                    } else {
-                        ball.vx = (Math.random() - 0.5) * 16;
-                        ball.vy = (Math.random() - 0.5) * 16;
+                    // Sút môn khi gần khung thành
+                    if (distToGoal < 220 && Math.random() < 0.03) {
+                        let power = 5 + (p.shoStat / 100) * 4;
+                        ball.vx = isTeamA ? power : -power;
+                        ball.vy = (240 - ball.y + (Math.random() - 0.5) * 60) * 0.08;
+                        logMatchEvent(`<b>SÚT!</b> <b>${p.name}</b> dứt điểm căng về phía khung thành!`);
+                    }
+                    // Chuyền bóng cho đồng đội
+                    else if (Math.random() < 0.04) {
+                        const teammates = (isTeamA ? teamA_players : teamB_players).filter(t => t !== p);
+                        const targetTeammate = teammates[Math.floor(Math.random() * teammates.length)];
+                        let tDx = targetTeammate.x - p.x, tDy = targetTeammate.y - p.y;
+                        let tDist = Math.hypot(tDx, tDy);
+                        let passSpeed = 4 + (p.passStat / 100) * 2;
+                        ball.vx = (tDx / tDist) * passSpeed;
+                        ball.vy = (tDy / tDist) * passSpeed;
+                    }
+                    // Rê bóng
+                    else {
+                        ball.vx = (isTeamA ? 1.5 : -1.5) + (Math.random() - 0.5);
+                        ball.vy = (Math.random() - 0.5) * 1.2;
                     }
 
-                    if (Math.random() < 0.04) {
+                    // Ngẫu nhiên tình huống cố định
+                    if (Math.random() < 0.003) {
                         const rand = Math.random();
-                        if (rand < 0.25) {
-                            triggerSetPiece('penalty', p, isTeamA ? 'A' : 'B');
-                        } else if (rand < 0.55) {
-                            triggerSetPiece('corner', p, isTeamA ? 'A' : 'B');
-                        } else {
-                            triggerSetPiece('freekick', p, isTeamA ? 'A' : 'B');
-                        }
+                        if (rand < 0.2) triggerSetPiece('penalty', p, isTeamA ? 'A' : 'B');
+                        else if (rand < 0.6) triggerSetPiece('corner', p, isTeamA ? 'A' : 'B');
+                        else triggerSetPiece('freekick', p, isTeamA ? 'A' : 'B');
                     }
                 }
             });
 
+            // Quán tính & Vật lý Trái bóng
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            ball.vx *= 0.95;
+            ball.vy *= 0.95;
+
+            // Xử lý Ghi bàn
             if (ball.x <= 15 && ball.y >= 190 && ball.y <= 290) {
                 scoreB++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("<b>VÀO!</b> Đội Khách mở tỷ số/sút tung lưới.");
-                resetPlayersToTactical(); ball = { x: 400, y: 240, vx: 0, vy: 0 }; setPieceTimer = 20;
+                logMatchEvent("<b>VÀO!</b> Đội Khách vươn lên dẫn trước!");
+                resetPlayersToTactical(); ball = { x: 400, y: 240, vx: 0, vy: 0, holder: null }; setPieceTimer = 90;
             } else if (ball.x >= 785 && ball.y >= 190 && ball.y <= 290) {
                 scoreA++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("<b>VÀO!</b> Đội Nhà ghi bàn đẳng cấp.");
-                resetPlayersToTactical(); ball = { x: 400, y: 240, vx: 0, vy: 0 }; setPieceTimer = 20;
+                logMatchEvent("<b>VÀO!</b> Bàn thắng tuyệt đẹp cho Đội Nhà!");
+                resetPlayersToTactical(); ball = { x: 400, y: 240, vx: 0, vy: 0, holder: null }; setPieceTimer = 90;
             }
 
-            if (ball.x < 15 || ball.x > 785) ball.vx *= -1;
-            if (ball.y < 15 || ball.y > 465) ball.vy *= -1;
+            // Nảy tường
+            if (ball.x < 15 || ball.x > 785) ball.vx *= -0.8;
+            if (ball.y < 15 || ball.y > 465) ball.vy *= -0.8;
+        }
 
-            drawPitch();
-            renderSimEntities();
+        function movePlayerSmoothly(p, targetX, targetY) {
+            let dx = targetX - p.x;
+            let dy = targetY - p.y;
+            let dist = Math.hypot(dx, dy);
 
-            if (mins >= 90) {
-                clearInterval(simInterval); simRunning = false;
-                logMatchEvent("<b>HẾT GIỜ!</b> Trận đấu chính thức kết thúc.");
+            if (dist > 3) {
+                p.vx = (dx / dist) * p.speed;
+                p.vy = (dy / dist) * p.speed;
+            } else {
+                p.vx *= 0.5;
+                p.vy *= 0.5;
             }
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Giới hạn trong sân
+            p.x = Math.max(20, Math.min(780, p.x));
+            p.y = Math.max(20, Math.min(460, p.y));
         }
 
         function renderSimEntities() {
             if (!simCtx) return;
-            simCtx.fillStyle = referee.color;
-            simCtx.beginPath(); simCtx.arc(referee.x, referee.y, 6, 0, Math.PI * 2); simCtx.fill();
 
+            // Trọng tài
+            simCtx.fillStyle = referee.color;
+            simCtx.beginPath(); simCtx.arc(referee.x, referee.y, 5, 0, Math.PI * 2); simCtx.fill();
+
+            // Đội Nhà A
             teamA_players.forEach(p => {
                 simCtx.fillStyle = p.color;
                 simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
+                simCtx.fillStyle = "#ffffff";
+                simCtx.font = "9px sans-serif";
+                simCtx.fillText(p.name.substring(0, 3), p.x - 8, p.y - 9);
             });
+
+            // Đội Khách B
             teamB_players.forEach(p => {
                 simCtx.fillStyle = p.color;
                 simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
+                simCtx.fillStyle = "#ffffff";
+                simCtx.font = "9px sans-serif";
+                simCtx.fillText(p.name.substring(0, 3), p.x - 8, p.y - 9);
             });
 
+            // Trái bóng
             simCtx.fillStyle = "#ffffff";
             simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 4, 0, Math.PI * 2); simCtx.fill();
+            simCtx.strokeStyle = "#000000"; simCtx.lineWidth = 1; simCtx.stroke();
         }
     </script>
 </body>
