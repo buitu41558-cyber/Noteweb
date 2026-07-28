@@ -116,7 +116,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <!-- Pitch container -->
                 <div class="lg:col-span-2 bg-sideBg p-3 rounded border border-gray-700 flex justify-center">
                     <div id="squad-pitch" class="field-pitch w-full h-[450px] max-w-[600px] overflow-hidden relative">
                         <div class="absolute inset-x-0 top-1/2 border-t border-white/40"></div>
@@ -127,7 +126,6 @@
                     </div>
                 </div>
 
-                <!-- Player Inventory -->
                 <div class="bg-sideBg p-3 rounded border border-gray-700 space-y-2">
                     <div class="flex justify-between items-center mb-1">
                         <h3 class="font-semibold text-white text-xs">Kho Cầu thủ Đội bóng</h3>
@@ -140,16 +138,19 @@
 
         <!-- TAB 3: MATCH SIMULATION -->
         <section id="tab-match" class="tab-content hidden space-y-3">
+            <!-- CHỌN ĐỘI BÓNG ĐỐI ĐẦU -->
             <div class="bg-sideBg p-3 rounded border border-gray-700 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     <div class="flex items-center gap-2">
-                        <img id="sim-home-logo" src="" class="w-6 h-6 object-contain rounded bg-gray-800" alt="">
-                        <span id="sim-home-name" class="font-bold text-white text-xs">Đội A</span>
+                        <select id="sim-team-a-select" onchange="updateMatchTeams()" class="bg-gray-800 text-xs text-white p-1 rounded border border-gray-700">
+                            <option value="">-- Chọn Đội Nhà --</option>
+                        </select>
                     </div>
                     <span id="sim-score" class="text-base font-bold text-white bg-gray-800 px-3 py-0.5 rounded">0 - 0</span>
                     <div class="flex items-center gap-2">
-                        <span id="sim-away-name" class="font-bold text-white text-xs">Đội B</span>
-                        <img id="sim-away-logo" src="" class="w-6 h-6 object-contain rounded bg-gray-800" alt="">
+                        <select id="sim-team-b-select" onchange="updateMatchTeams()" class="bg-gray-800 text-xs text-white p-1 rounded border border-gray-700">
+                            <option value="">-- Chọn Đội Khách --</option>
+                        </select>
                     </div>
                 </div>
 
@@ -172,9 +173,9 @@
                 </div>
 
                 <div class="bg-sideBg p-3 rounded border border-gray-700 flex flex-col h-[480px]">
-                    <h3 class="font-semibold text-white text-xs mb-2 border-b border-gray-700 pb-1">Diễn biến</h3>
+                    <h3 class="font-semibold text-white text-xs mb-2 border-b border-gray-700 pb-1">Diễn biến Trận đấu</h3>
                     <div id="sim-logs" class="flex-1 overflow-y-auto space-y-1.5 text-[11px] text-gray-300 font-mono">
-                        <div class="text-gray-500 italic">Sẵn sàng bắt đầu...</div>
+                        <div class="text-gray-500 italic">Vui lòng chọn 2 đội đủ 11 cầu thủ r bấm Bắt đầu...</div>
                     </div>
                 </div>
             </div>
@@ -304,7 +305,7 @@
             players: [],
             squad: Array(11).fill(null),
             formation: "4-3-3",
-            selectedPlayerId: null // Lưu ID cầu thủ đang được chọn để xếp
+            selectedPlayerId: null
         };
 
         window.onload = function() {
@@ -460,6 +461,14 @@
             const pTeamSelect = document.getElementById('p-team');
             pTeamSelect.innerHTML = '<option value="">-- Chọn Đội bóng --</option>';
 
+            const simTeamA = document.getElementById('sim-team-a-select');
+            const simTeamB = document.getElementById('sim-team-b-select');
+            const valA = simTeamA.value;
+            const valB = simTeamB.value;
+
+            simTeamA.innerHTML = '<option value="">-- Chọn Đội Nhà --</option>';
+            simTeamB.innerHTML = '<option value="">-- Chọn Đội Khách --</option>';
+
             state.teams.forEach(t => {
                 const isSelected = t.id === state.currentTeamId;
                 teamsGrid.innerHTML += `
@@ -475,7 +484,12 @@
                     </div>
                 `;
                 pTeamSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                simTeamA.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                simTeamB.innerHTML += `<option value="${t.id}">${t.name}</option>`;
             });
+
+            simTeamA.value = valA;
+            simTeamB.value = valB;
 
             const currentTeam = state.teams.find(t => t.id === state.currentTeamId);
             document.getElementById('dash-my-team').textContent = currentTeam ? currentTeam.name : 'Chưa chọn';
@@ -535,22 +549,19 @@
             renderSquadSection();
         }
 
-        // Chọn/Bỏ chọn cầu thủ ở kho
         function selectPlayerForPosition(id) {
             if (state.selectedPlayerId === id) {
-                state.selectedPlayerId = null; // Click lại thì hủy chọn
+                state.selectedPlayerId = null;
             } else {
-                state.selectedPlayerId = id; // Đánh dấu cầu thủ đc chọn
+                state.selectedPlayerId = id;
             }
             renderSquadSection();
         }
 
-        // Xếp cầu thủ vào vị trí khi click slot trên sân
         function handleSlotClick(slotIndex) {
             const coords = formationCoords[state.formation];
             const slotPos = coords[slotIndex].pos;
 
-            // Nếu đang có cầu thủ ở slot này -> Click vào để gỡ ra
             if (!state.selectedPlayerId) {
                 if (state.squad[slotIndex]) {
                     state.squad[slotIndex] = null;
@@ -562,7 +573,6 @@
             const player = state.players.find(p => p.id === state.selectedPlayerId);
             if (!player) return;
 
-            // LOGIC GK NGHIÊM NGẶT
             if (slotPos === 'GK' && player.pos !== 'GK') {
                 alert('Cầu thủ này k phải GK, k thể đá vị trí GK!');
                 return;
@@ -572,15 +582,13 @@
                 return;
             }
 
-            // Xóa cầu thủ khỏi vị trí cũ nếu đã ở trên sân
             const oldIndex = state.squad.findIndex(s => s && s.id === player.id);
             if (oldIndex !== -1) {
                 state.squad[oldIndex] = null;
             }
 
-            // Gán cầu thủ vào slot mới
             state.squad[slotIndex] = player;
-            state.selectedPlayerId = null; // Reset chọn sau khi gán xong
+            state.selectedPlayerId = null;
             renderSquadSection();
         }
 
@@ -590,11 +598,8 @@
             const coords = formationCoords[state.formation];
             let activeTeamPlayers = state.players.filter(p => p.teamId === state.currentTeamId);
 
-            // Render Slots trên Sân
             coords.forEach((coord, index) => {
                 const assignedPlayer = state.squad[index];
-                
-                // Hiển thị vị trí sơ đồ - tên cầu thủ (Vị trí thật)
                 let labelText = coord.pos;
                 if (assignedPlayer) {
                     labelText = `${coord.pos} - ${assignedPlayer.name} (${assignedPlayer.pos})`;
@@ -616,16 +621,13 @@
                 `;
             });
 
-            // Tính OVR Đội hình
             let totalOvr = 0, count = 0;
             state.squad.forEach(p => { if (p) { totalOvr += p.ovr; count++; } });
             document.getElementById('dash-team-ovr').textContent = count > 0 ? Math.round(totalOvr / count) : 0;
 
-            // Cập nhật gợi ý đang chọn
             const selectedPlayer = state.players.find(p => p.id === state.selectedPlayerId);
             document.getElementById('selected-player-tip').textContent = selectedPlayer ? `Đang chọn: ${selectedPlayer.name} (Click vị trí trên sân)` : '';
 
-            // Render Kho Cầu thủ
             const inventory = document.getElementById('squad-inventory');
             inventory.innerHTML = '';
             activeTeamPlayers.forEach(p => {
@@ -655,11 +657,16 @@
             });
         }
 
-        // MATCH SIMULATION ENGINE 2D
+        // --- ENGINE MÔ PHỎNG TRẬN ĐẤU (NÂNG CẤP VA CHẠM & TRỌNG TÀI) ---
         let simCanvas, simCtx, simInterval = null, simTime = 0, simRunning = false;
         let ball = { x: 400, y: 240, vx: 0, vy: 0 };
+        let referee = { x: 400, y: 200, color: "#facc15" }; // NPC Trọng Tài màu vàng chanh
         let teamA_players = [], teamB_players = [];
         let scoreA = 0, scoreB = 0;
+
+        function updateMatchTeams() {
+            resetMatchSim();
+        }
 
         function initMatchCanvas() {
             simCanvas = document.getElementById('matchCanvas');
@@ -683,11 +690,42 @@
         }
 
         function setupSimPlayers() {
-            teamA_players = []; teamB_players = [];
-            for(let i = 0; i < 11; i++) {
-                teamA_players.push({ x: 100 + Math.random() * 250, y: 40 + Math.random() * 400, color: "#dc2626" });
-                teamB_players.push({ x: 450 + Math.random() * 250, y: 40 + Math.random() * 400, color: "#2563eb" });
+            const teamAId = document.getElementById('sim-team-a-select').value;
+            const teamBId = document.getElementById('sim-team-b-select').value;
+
+            if (!teamAId || !teamBId) {
+                alert("Cậu phải chọn đủ 2 đội bóng thi đấu đã!");
+                return false;
             }
+            if (teamAId === teamBId) {
+                alert("Vui lòng chọn 2 đội khác nhau!");
+                return false;
+            }
+
+            const pA = state.players.filter(p => p.teamId === teamAId);
+            const pB = state.players.filter(p => p.teamId === teamBId);
+
+            if (pA.length < 11 || pB.length < 11) {
+                alert(`Chưa đủ cầu thủ! Đội A có ${pA.length}/11, Đội B có ${pB.length}/11 cầu thủ. Vào Bảng Admin thêm đủ 11 người mỗi đội nhé!`);
+                return false;
+            }
+
+            teamA_players = pA.slice(0, 11).map((p, idx) => ({
+                id: p.id, name: p.name,
+                x: 100 + (idx % 3) * 80 + Math.random() * 20,
+                y: 50 + Math.floor(idx / 3) * 80 + Math.random() * 20,
+                vx: 0, vy: 0, radius: 8, color: "#dc2626"
+            }));
+
+            teamB_players = pB.slice(0, 11).map((p, idx) => ({
+                id: p.id, name: p.name,
+                x: 480 + (idx % 3) * 80 + Math.random() * 20,
+                y: 50 + Math.floor(idx / 3) * 80 + Math.random() * 20,
+                vx: 0, vy: 0, radius: 8, color: "#2563eb"
+            }));
+
+            referee.x = 400; referee.y = 200;
+            return true;
         }
 
         function toggleMatchSim() {
@@ -696,7 +734,10 @@
                 simRunning = false;
                 document.getElementById('sim-start-btn').textContent = "Tiếp tục";
             } else {
-                if (simTime === 0) setupSimPlayers();
+                if (simTime === 0) {
+                    const ready = setupSimPlayers();
+                    if (!ready) return;
+                }
                 simRunning = true;
                 document.getElementById('sim-start-btn').textContent = "Tạm dừng";
                 simInterval = setInterval(updateMatchSim, 100);
@@ -726,50 +767,115 @@
             const secs = simTime % 60;
             document.getElementById('sim-timer').textContent = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs} ${mins > 45 ? '(Hiệp 2)' : '(Hiệp 1)'}`;
 
-            [...teamA_players, ...teamB_players].forEach(p => {
-                let dx = ball.x - p.x, dy = ball.y - p.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 8) {
-                    p.x += (dx / dist) * (2 + Math.random() * 2);
-                    p.y += (dy / dist) * (2 + Math.random() * 2);
+            const allPlayers = [...teamA_players, ...teamB_players];
+
+            // 1. Di chuyển cầu thủ hướng về bóng
+            allPlayers.forEach(p => {
+                let dx = ball.x - p.x;
+                let dy = ball.y - p.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 10) {
+                    p.vx = (dx / dist) * (2 + Math.random() * 2);
+                    p.vy = (dy / dist) * (2 + Math.random() * 2);
+                } else {
+                    p.vx *= 0.5; p.vy *= 0.5;
                 }
+                p.x += p.vx;
+                p.y += p.vy;
             });
 
+            // 2. XỬ LÝ VA CHẠM (Chống đi xuyên qua nhau)
+            for (let i = 0; i < allPlayers.length; i++) {
+                for (let j = i + 1; j < allPlayers.length; j++) {
+                    let p1 = allPlayers[i];
+                    let p2 = allPlayers[j];
+                    let dx = p2.x - p1.x;
+                    let dy = p2.y - p1.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = p1.radius + p2.radius;
+
+                    if (dist < minDist && dist > 0) {
+                        let overlap = minDist - dist;
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+
+                        p1.x -= nx * overlap * 0.5;
+                        p1.y -= ny * overlap * 0.5;
+                        p2.x += nx * overlap * 0.5;
+                        p2.y += ny * overlap * 0.5;
+                    }
+                }
+            }
+
+            // 3. TRỌNG TÀI DI CHUYỂN (Chạy bám theo góc nhìn trận đấu)
+            let refDx = ball.x + 30 - referee.x;
+            let refDy = ball.y - 30 - referee.y;
+            let refDist = Math.sqrt(refDx * refDx + refDy * refDy);
+            if (refDist > 15) {
+                referee.x += (refDx / refDist) * 2;
+                referee.y += (refDy / refDist) * 2;
+            }
+
+            // 4. Di chuyển Bóng & Chạm bóng
             ball.x += ball.vx; ball.y += ball.vy;
-            ball.vx *= 0.88; ball.vy *= 0.88;
+            ball.vx *= 0.85; ball.vy *= 0.85;
 
-            [...teamA_players, ...teamB_players].forEach(p => {
-                let dx = ball.x - p.x, dy = ball.y - p.y;
-                if (Math.sqrt(dx*dx + dy*dy) < 12) {
-                    ball.vx = (Math.random() - 0.5) * 18;
-                    ball.vy = (Math.random() - 0.5) * 18;
+            allPlayers.forEach(p => {
+                let dx = ball.x - p.x;
+                let dy = ball.y - p.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 12) {
+                    ball.vx = (Math.random() - 0.5) * 20;
+                    ball.vy = (Math.random() - 0.5) * 20;
 
-                    if (Math.random() < 0.04) {
-                        const events = ["Sút xa nguy hiểm!", "Rê bóng qua người", "Đá phạt trực tiếp", "Phạt góc"];
-                        logMatchEvent(events[Math.floor(Math.random()*events.length)]);
+                    if (Math.random() < 0.03) {
+                        const events = [
+                            `<b>${p.name}</b> sút xa nguy hiểm!`,
+                            `<b>${p.name}</b> rê bóng qua người mượt mà`,
+                            `Trọng tài thổi phạt lỗi của <b>${p.name}</b>`,
+                            `Phạt góc nghiêng về phía <b>${p.name}</b>`
+                        ];
+                        logMatchEvent(events[Math.floor(Math.random() * events.length)]);
                     }
                 }
             });
 
+            // 5. Tính Bàn Thắng & Va chạm biên
             if (ball.x <= 15 && ball.y >= 190 && ball.y <= 290) {
                 scoreB++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("VÀO! Đội B ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
+                logMatchEvent("<b>VÀO!</b> Đội Khách đã ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
             } else if (ball.x >= 785 && ball.y >= 190 && ball.y <= 290) {
                 scoreA++; document.getElementById('sim-score').textContent = `${scoreA} - ${scoreB}`;
-                logMatchEvent("VÀO! Đội A ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
+                logMatchEvent("<b>VÀO!</b> Đội Nhà đã ghi bàn."); ball = { x: 400, y: 240, vx: 0, vy: 0 };
             }
 
             if (ball.x < 15 || ball.x > 785) ball.vx *= -1;
             if (ball.y < 15 || ball.y > 465) ball.vy *= -1;
 
+            // 6. Vẽ lại Sân, Cầu thủ, Trọng tài
             drawPitch();
-            teamA_players.forEach(p => { simCtx.fillStyle = p.color; simCtx.beginPath(); simCtx.arc(p.x, p.y, 7, 0, Math.PI*2); simCtx.fill(); });
-            teamB_players.forEach(p => { simCtx.fillStyle = p.color; simCtx.beginPath(); simCtx.arc(p.x, p.y, 7, 0, Math.PI*2); simCtx.fill(); });
-            simCtx.fillStyle = "#ffffff"; simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 4, 0, Math.PI*2); simCtx.fill();
+
+            // Vẽ Trọng tài (Áo vàng chanh + chữ REF)
+            simCtx.fillStyle = referee.color;
+            simCtx.beginPath(); simCtx.arc(referee.x, referee.y, 6, 0, Math.PI * 2); simCtx.fill();
+            simCtx.fillStyle = "#000000"; simCtx.font = "8px sans-serif";
+            simCtx.fillText("REF", referee.x - 7, referee.y - 8);
+
+            // Vẽ Cầu thủ 2 đội
+            teamA_players.forEach(p => {
+                simCtx.fillStyle = p.color;
+                simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
+            });
+            teamB_players.forEach(p => {
+                simCtx.fillStyle = p.color;
+                simCtx.beginPath(); simCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); simCtx.fill();
+            });
+
+            // Vẽ Bóng
+            simCtx.fillStyle = "#ffffff"; simCtx.beginPath(); simCtx.arc(ball.x, ball.y, 4, 0, Math.PI * 2); simCtx.fill();
 
             if (mins >= 90) {
                 clearInterval(simInterval); simRunning = false;
-                logMatchEvent("Hết giờ! Trận đấu kết thúc.");
+                logMatchEvent("<b>HẾT GIỜ!</b> Trọng tài cất còi kết thúc trận đấu.");
             }
         }
     </script>
