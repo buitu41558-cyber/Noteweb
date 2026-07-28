@@ -246,7 +246,7 @@
             gap: 15px;
         }
 
-        /* Squad Management & Pitch Pitch View */
+        /* Squad Management & Pitch View */
         .squad-container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -306,11 +306,16 @@
             align-items: center;
             cursor: pointer;
             z-index: 10;
+            transition: transform 0.2s ease;
+        }
+
+        .player-slot:hover {
+            transform: translate(-50%, -50%) scale(1.1);
         }
 
         .player-card-mini {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             background-color: var(--bg-card);
             border: 2px solid var(--accent-emerald);
@@ -318,9 +323,14 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             background-size: cover;
             background-position: center;
+        }
+
+        .player-card-mini.empty-slot {
+            border: 2px dashed var(--text-muted);
+            background: rgba(15, 23, 42, 0.7);
         }
 
         .player-card-mini i {
@@ -329,18 +339,19 @@
         }
 
         .player-slot-name {
-            background-color: rgba(11, 19, 43, 0.85);
-            padding: 2px 6px;
+            background-color: rgba(11, 19, 43, 0.9);
+            padding: 2px 8px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 700;
             margin-top: 4px;
             white-space: nowrap;
             border: 1px solid var(--border-color);
+            color: #ffffff;
         }
 
         .player-slot-pos {
-            font-size: 9px;
+            font-size: 10px;
             color: var(--accent-emerald);
             font-weight: 800;
         }
@@ -558,7 +569,6 @@
                     <i class="fa-solid fa-gamepad"></i> Mô phỏng Trận đấu
                 </button>
             </li>
-            <!-- Dedicated Admin Tab (Easy access on Mobile) -->
             <li class="nav-item" style="margin-top: auto;">
                 <button id="adminTabBtn" class="admin-btn-highlight" onclick="switchTab('admin')">
                     <i class="fa-solid fa-user-gear"></i> <span id="adminTabLabel">Đăng nhập Admin</span>
@@ -613,9 +623,7 @@
                     </div>
                 </div>
 
-                <div id="teamsContainer" class="grid-cards">
-                    <!-- Dynamic Team Cards Rendered Here -->
-                </div>
+                <div id="teamsContainer" class="grid-cards"></div>
             </div>
 
             <!-- TAB 3: SQUAD MANAGEMENT -->
@@ -623,7 +631,7 @@
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <label style="font-weight: 600;">Đội bóng:</label>
-                        <select id="squadTeamSelect" class="form-control" style="width: 180px;" onchange="loadTeamSquad()"></select>
+                        <select id="squadTeamSelect" class="form-control" style="width: 200px;" onchange="loadTeamSquad()"></select>
                     </div>
 
                     <div style="display:flex; align-items:center; gap:8px;">
@@ -707,9 +715,8 @@
                 </div>
             </div>
 
-            <!-- TAB 5: ADMIN PANEL (LOCKED BEHIND PASSWORD) -->
+            <!-- TAB 5: ADMIN PANEL -->
             <div id="tab-admin" class="tab-panel">
-                <!-- Locked View -->
                 <div id="adminLockedView" class="card" style="max-width: 450px; margin: 40px auto; text-align: center;">
                     <i class="fa-solid fa-lock" style="font-size: 40px; color: var(--accent-emerald); margin-bottom: 15px;"></i>
                     <h3 style="margin-bottom: 10px;">Đăng nhập Quyền Admin</h3>
@@ -725,7 +732,6 @@
                     </button>
                 </div>
 
-                <!-- Unlocked View -->
                 <div id="adminUnlockedView" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h3>Bảng Quản trị Hệ thống</h3>
@@ -760,7 +766,6 @@
     </main>
 
     <!-- MODALS SECTION -->
-    <!-- Create Team Modal -->
     <div class="modal-overlay" id="createTeamModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -783,7 +788,6 @@
         </div>
     </div>
 
-    <!-- Create Player Modal -->
     <div class="modal-overlay" id="createPlayerModal">
         <div class="modal-box" style="max-width: 600px;">
             <div class="modal-header">
@@ -804,6 +808,7 @@
                 <div class="form-group">
                     <label>Vị trí Chuyên môn:</label>
                     <select id="playerPositionSelect" class="form-control">
+                        <option value="GK">GK (Thủ môn)</option>
                         <option value="ST">ST (Tiền đạo cắm)</option>
                         <option value="RW">RW (Tiền đạo cánh phải)</option>
                         <option value="LW">LW (Tiền đạo cánh trái)</option>
@@ -813,7 +818,6 @@
                         <option value="CB">CB (Trung vệ)</option>
                         <option value="LB">LB (Hậu vệ trái)</option>
                         <option value="RB">RB (Hậu vệ phải)</option>
-                        <option value="GK">GK (Thủ môn)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -836,7 +840,6 @@
         </div>
     </div>
 
-    <!-- Firebase Config Modal -->
     <div class="modal-overlay" id="firebaseConfigModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -855,16 +858,68 @@
         </div>
     </div>
 
-    <!-- Select Player Slot Modal -->
     <div class="modal-overlay" id="selectSlotPlayerModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h3>Chọn Cầu thủ vào Vị trí</h3>
+                <h3 id="selectSlotTitle">Chọn Cầu thủ vào Vị trí</h3>
                 <button class="modal-close" onclick="closeModal('selectSlotPlayerModal')">&times;</button>
             </div>
             <div id="slotPlayerSelectList" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;"></div>
         </div>
     </div>
+
+    <!-- DEFAULT MOCK DATA FOR FIRST TIME INITIALIZATION -->
+    <script>
+        const INITIAL_TEST_DATA = {
+            teams: {
+                "team_victoria": {
+                    id: "team_victoria",
+                    name: "Victoria FC",
+                    code: "VIC",
+                    logo: "https://cdn-icons-png.flaticon.com/512/824/824722.png",
+                    formation: "4-3-3",
+                    startingSlots: ["p_vic_1", "p_vic_2", "p_vic_3", "p_vic_4", "p_vic_5", "p_vic_6", "p_vic_7", "p_vic_8", "p_vic_9", "p_vic_10", "p_vic_11"]
+                },
+                "team_dragon": {
+                    id: "team_dragon",
+                    name: "Dragon Star FC",
+                    code: "DGS",
+                    logo: "https://cdn-icons-png.flaticon.com/512/1165/1165187.png",
+                    formation: "4-3-3",
+                    startingSlots: ["p_dgs_1", "p_dgs_2", "p_dgs_3", "p_dgs_4", "p_dgs_5", "p_dgs_6", "p_dgs_7", "p_dgs_8", "p_dgs_9", "p_dgs_10", "p_dgs_11"]
+                }
+            },
+            players: {
+                // Victoria FC Players
+                "p_vic_1": { id: "p_vic_1", name: "D. De Gea", teamId: "team_victoria", position: "GK", ovr: 85, stats: { pac: 60, sho: 40, pas: 75, dri: 65, def: 88, phy: 80 } },
+                "p_vic_2": { id: "p_vic_2", name: "L. Shaw", teamId: "team_victoria", position: "LB", ovr: 82, stats: { pac: 80, sho: 65, pas: 78, dri: 80, def: 81, phy: 82 } },
+                "p_vic_3": { id: "p_vic_3", name: "R. Varane", teamId: "team_victoria", position: "CB", ovr: 84, stats: { pac: 81, sho: 45, pas: 68, dri: 66, def: 86, phy: 83 } },
+                "p_vic_4": { id: "p_vic_4", name: "L. Martinez", teamId: "team_victoria", position: "CB", ovr: 84, stats: { pac: 77, sho: 50, pas: 76, dri: 78, def: 85, phy: 85 } },
+                "p_vic_5": { id: "p_vic_5", name: "D. Dalot", teamId: "team_victoria", position: "RB", ovr: 80, stats: { pac: 82, sho: 62, pas: 76, dri: 78, def: 77, phy: 78 } },
+                "p_vic_6": { id: "p_vic_6", name: "Casemiro", teamId: "team_victoria", position: "CDM", ovr: 87, stats: { pac: 65, sho: 73, pas: 76, dri: 74, def: 88, phy: 89 } },
+                "p_vic_7": { id: "p_vic_7", name: "C. Eriksen", teamId: "team_victoria", position: "CM", ovr: 83, stats: { pac: 62, sho: 78, pas: 88, dri: 80, def: 64, phy: 65 } },
+                "p_vic_8": { id: "p_vic_8", name: "B. Fernandes", teamId: "team_victoria", position: "CM", ovr: 88, stats: { pac: 75, sho: 84, pas: 89, dri: 83, def: 68, phy: 76 } },
+                "p_vic_9": { id: "p_vic_9", name: "M. Rashford", teamId: "team_victoria", position: "LW", ovr: 85, stats: { pac: 90, sho: 84, pas: 78, dri: 84, def: 42, phy: 76 } },
+                "p_vic_10": { id: "p_vic_10", name: "W. Weghorst", teamId: "team_victoria", position: "ST", ovr: 79, stats: { pac: 68, sho: 78, pas: 70, dri: 72, def: 52, phy: 86 } },
+                "p_vic_11": { id: "p_vic_11", name: "Antony", teamId: "team_victoria", position: "RW", ovr: 82, stats: { pac: 84, sho: 76, pas: 75, dri: 86, def: 46, phy: 68 } },
+                "p_vic_12": { id: "p_vic_12", name: "A. Martial", teamId: "team_victoria", position: "ST", ovr: 80, stats: { pac: 81, sho: 79, pas: 72, dri: 82, def: 35, phy: 70 } },
+
+                // Dragon Star FC Players
+                "p_dgs_1": { id: "p_dgs_1", name: "A. Becker", teamId: "team_dragon", position: "GK", ovr: 89, stats: { pac: 60, sho: 40, pas: 85, dri: 70, def: 90, phy: 84 } },
+                "p_dgs_2": { id: "p_dgs_2", name: "A. Robertson", teamId: "team_dragon", position: "LB", ovr: 85, stats: { pac: 83, sho: 62, pas: 81, dri: 80, def: 82, phy: 81 } },
+                "p_dgs_3": { id: "p_dgs_3", name: "V. van Dijk", teamId: "team_dragon", position: "CB", ovr: 89, stats: { pac: 78, sho: 60, pas: 71, dri: 72, def: 91, phy: 86 } },
+                "p_dgs_4": { id: "p_dgs_4", name: "I. Konate", teamId: "team_dragon", position: "CB", ovr: 81, stats: { pac: 76, sho: 40, pas: 62, dri: 65, def: 82, phy: 84 } },
+                "p_dgs_5": { id: "p_dgs_5", name: "T. Alexander-Arnold", teamId: "team_dragon", position: "RB", ovr: 86, stats: { pac: 76, sho: 69, pas: 90, dri: 80, def: 77, phy: 73 } },
+                "p_dgs_6": { id: "p_dgs_6", name: "Fabinho", teamId: "team_dragon", position: "CDM", ovr: 84, stats: { pac: 64, sho: 66, pas: 78, dri: 77, def: 85, phy: 83 } },
+                "p_dgs_7": { id: "p_dgs_7", name: "J. Henderson", teamId: "team_dragon", position: "CM", ovr: 81, stats: { pac: 70, sho: 72, pas: 80, dri: 76, def: 78, phy: 80 } },
+                "p_dgs_8": { id: "p_dgs_8", name: "Thiago A.", teamId: "team_dragon", position: "CM", ovr: 85, stats: { pac: 62, sho: 72, pas: 89, dri: 89, def: 72, phy: 68 } },
+                "p_dgs_9": { id: "p_dgs_9", name: "L. Diaz", teamId: "team_dragon", position: "LW", ovr: 84, stats: { pac: 91, sho: 80, pas: 75, dri: 87, def: 40, phy: 74 } },
+                "p_dgs_10": { id: "p_dgs_10", name: "D. Nunez", teamId: "team_dragon", position: "ST", ovr: 82, stats: { pac: 89, sho: 81, pas: 68, dri: 77, def: 42, phy: 85 } },
+                "p_dgs_11": { id: "p_dgs_11", name: "M. Salah", teamId: "team_dragon", position: "RW", ovr: 89, stats: { pac: 90, sho: 88, pas: 81, dri: 88, def: 45, phy: 75 } }
+            },
+            matchesCount: 0
+        };
+    </script>
 
     <!-- FIREBASE SDK & APPLICATION CORE LOGIC -->
     <script type="module">
@@ -898,10 +953,12 @@
                 const dbRef = ref(window.appState.firebaseDb, 'victoria_data');
                 onValue(dbRef, (snapshot) => {
                     const data = snapshot.val();
-                    if (data) {
-                        window.appState.teams = data.teams || {};
+                    if (data && data.teams && Object.keys(data.teams).length > 0) {
+                        window.appState.teams = data.teams;
                         window.appState.players = data.players || {};
                         window.appState.matchesCount = data.matchesCount || 0;
+                    } else {
+                        loadDefaultMockData();
                     }
                     updateUiComponents();
                     document.getElementById('firebaseStatus').innerHTML = `<i class="fa-solid fa-circle" style="color: var(--accent-emerald); font-size: 10px;"></i> Firebase Realtime Connected`;
@@ -910,6 +967,13 @@
                 document.getElementById('firebaseStatus').innerHTML = `<i class="fa-solid fa-circle" style="color: var(--border-color); font-size: 10px;"></i> Local Offline Mode`;
                 loadLocalStorageFallback();
             }
+        }
+
+        function loadDefaultMockData() {
+            window.appState.teams = JSON.parse(JSON.stringify(INITIAL_TEST_DATA.teams));
+            window.appState.players = JSON.parse(JSON.stringify(INITIAL_TEST_DATA.players));
+            window.appState.matchesCount = 0;
+            window.syncToDatabase();
         }
 
         window.syncToDatabase = function() {
@@ -933,9 +997,15 @@
             const local = localStorage.getItem('victoria_data');
             if (local) {
                 const data = JSON.parse(local);
-                window.appState.teams = data.teams || {};
-                window.appState.players = data.players || {};
-                window.appState.matchesCount = data.matchesCount || 0;
+                if (data.teams && Object.keys(data.teams).length > 0) {
+                    window.appState.teams = data.teams;
+                    window.appState.players = data.players || {};
+                    window.appState.matchesCount = data.matchesCount || 0;
+                } else {
+                    loadDefaultMockData();
+                }
+            } else {
+                loadDefaultMockData();
             }
             updateUiComponents();
         }
@@ -1056,17 +1126,13 @@
             const teamsContainer = document.getElementById('teamsContainer');
             teamsContainer.innerHTML = '';
 
-            if (teamsList.length === 0) {
-                teamsContainer.innerHTML = `<p style="color: var(--text-muted);">Chưa có đội bóng nào. Vào tab Admin để tạo ngay nhé!</p>`;
-            }
-
             teamsList.forEach(team => {
                 const teamPlayers = playersList.filter(p => p.teamId === team.id);
                 const teamCard = document.createElement('div');
                 teamCard.className = 'card';
                 teamCard.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <img src="${team.logo || 'https://via.placeholder.com/60'}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg-main);" />
+                        <img src="${team.logo || 'https://via.placeholder.com/60'}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: var(--bg-main);" />
                         <div>
                             <h4 style="font-size: 18px; font-weight: 700;">${team.name} (${team.code})</h4>
                             <p style="font-size: 13px; color: var(--text-muted);">${teamPlayers.length} cầu thủ trg đội</p>
@@ -1092,8 +1158,15 @@
             });
 
             const squadTeamSelect = document.getElementById('squadTeamSelect');
-            squadTeamSelect.innerHTML = teamsList.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            if (teamsList.length > 0) {
+                squadTeamSelect.innerHTML = teamsList.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                if (!window.appState.activeTeamId || !window.appState.teams[window.appState.activeTeamId]) {
+                    window.appState.activeTeamId = teamsList[0].id;
+                }
+                squadTeamSelect.value = window.appState.activeTeamId;
+            }
 
+            renderSquadBoard();
             updateAdminStateUi();
         }
 
@@ -1120,7 +1193,7 @@
 
             if (!name || !code) return alert("Cậu điền đủ thông tin giúp tớ nhé!");
 
-            let logoBase64 = "https://via.placeholder.com/60";
+            let logoBase64 = "https://cdn-icons-png.flaticon.com/512/824/824722.png";
             if (logoFile) {
                 logoBase64 = await convertFileToBase64(logoFile);
             }
@@ -1232,11 +1305,11 @@
                 slot.className = 'player-slot';
                 slot.style.top = `${c.top}%`;
                 slot.style.left = `${c.left}%`;
-                slot.onclick = () => openSelectPlayerSlotModal(index);
+                slot.onclick = () => openSelectPlayerSlotModal(index, c.pos);
 
                 slot.innerHTML = `
-                    <div class="player-card-mini" style="${player && player.photo ? `background-image: url('${player.photo}');` : ''}">
-                        ${!player || !player.photo ? `<i class="fa-solid fa-user"></i>` : ''}
+                    <div class="player-card-mini ${!player ? 'empty-slot' : ''}" style="${player && player.photo ? `background-image: url('${player.photo}');` : ''}">
+                        ${!player ? `<i class="fa-solid fa-plus"></i>` : (!player.photo ? `<i class="fa-solid fa-user"></i>` : '')}
                     </div>
                     <div class="player-slot-name">${player ? player.name : 'Chưa chọn'}</div>
                     <div class="player-slot-pos">${c.pos} ${player ? `(${player.ovr})` : ''}</div>
@@ -1251,37 +1324,67 @@
             const benchPlayers = allTeamPlayers.filter(p => !team.startingSlots.includes(p.id));
             
             const benchList = document.getElementById('benchPlayerList');
-            benchList.innerHTML = benchPlayers.map(p => `
-                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 8px 12px; border-radius: 6px;">
-                    <div>
-                        <div style="font-weight: 700; font-size: 13px;">${p.name}</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">${p.position} | PAC: ${p.stats.pac} SHO: ${p.stats.sho}</div>
+            if (benchPlayers.length === 0) {
+                benchList.innerHTML = `<p style="font-size: 12px; color: var(--text-muted);">Tất cả cầu thủ đều đã ở trên sân chính.</p>`;
+            } else {
+                benchList.innerHTML = benchPlayers.map(p => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 8px 12px; border-radius: 6px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 13px;">${p.name}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${p.position} | PAC: ${p.stats.pac} SHO: ${p.stats.sho}</div>
+                        </div>
+                        <span style="font-weight: 800; color: var(--accent-emerald);">OVR ${p.ovr}</span>
                     </div>
-                    <span style="font-weight: 800; color: var(--accent-emerald);">OVR ${p.ovr}</span>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
-        function openSelectPlayerSlotModal(slotIndex) {
+        function openSelectPlayerSlotModal(slotIndex, slotPosition) {
             window.appState.selectedSlotIndex = slotIndex;
             const teamId = window.appState.activeTeamId;
+            const isGkSlot = (slotPosition === 'GK');
+
+            const allTeamPlayers = Object.values(window.appState.players).filter(p => p.teamId === teamId);
             
-            const players = Object.values(window.appState.players).filter(p => p.teamId === teamId);
+            // POSITION FILTER LOGIC
+            const eligiblePlayers = allTeamPlayers.filter(p => {
+                if (isGkSlot) {
+                    return p.position === 'GK';
+                } else {
+                    return p.position !== 'GK';
+                }
+            });
+
+            document.getElementById('selectSlotTitle').innerText = isGkSlot 
+                ? `Chọn Thủ môn (GK)` 
+                : `Chọn Cầu thủ Vị trí ${slotPosition} (Không phải GK)`;
+
             const list = document.getElementById('slotPlayerSelectList');
 
-            list.innerHTML = `
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="assignPlayerToSlot(null)">
-                    <i class="fa-solid fa-xmark"></i> Bỏ trống vị trí này
-                </button>
-            ` + players.map(p => `
-                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 10px; border-radius: 6px; cursor: pointer;" onclick="assignPlayerToSlot('${p.id}')">
-                    <div>
-                        <span style="font-weight: 700;">[${p.position}] ${p.name}</span>
-                        <div style="font-size: 11px; color: var(--text-muted);">OVR: ${p.ovr}</div>
+            if (eligiblePlayers.length === 0) {
+                list.innerHTML = `
+                    <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 10px;">
+                        ${isGkSlot ? 'Không có cầu thủ GK nào trg đội!' : 'Không có cầu thủ ngoài sân nào khả dụng!'}
+                    </p>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="assignPlayerToSlot(null)">
+                        <i class="fa-solid fa-xmark"></i> Bỏ trống vị trí này
+                    </button>
+                `;
+            } else {
+                list.innerHTML = `
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="assignPlayerToSlot(null)">
+                        <i class="fa-solid fa-xmark"></i> Bỏ trống vị trí này
+                    </button>
+                ` + eligiblePlayers.map(p => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 10px; border-radius: 6px; cursor: pointer;" onclick="assignPlayerToSlot('${p.id}')">
+                        <div>
+                            <span style="font-weight: 700;">[${p.position}] ${p.name}</span>
+                            <div style="font-size: 11px; color: var(--text-muted);">OVR: ${p.ovr}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right"></i>
                     </div>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </div>
-            `).join('');
+                `).join('');
+            }
 
             openModal('selectSlotPlayerModal');
         }
