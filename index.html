@@ -582,7 +582,7 @@
         <div class="top-bar">
             <h2 id="pageTitle">Tổng quan Hệ thống</h2>
             <div id="firebaseStatus" style="font-size: 12px; color: var(--text-muted);">
-                <i class="fa-solid fa-circle" style="color: var(--warning); font-size: 10px;"></i> Đang kết nối Firebase...
+                <i class="fa-solid fa-circle" style="color: var(--warning); font-size: 10px;"></i> Đang khởi tạo...
             </div>
         </div>
 
@@ -928,10 +928,10 @@
 
         window.appState = {
             isAdmin: false,
-            teams: {},
-            players: {},
+            teams: JSON.parse(JSON.stringify(INITIAL_TEST_DATA.teams)),
+            players: JSON.parse(JSON.stringify(INITIAL_TEST_DATA.players)),
             matchesCount: 0,
-            activeTeamId: null,
+            activeTeamId: "team_victoria",
             selectedSlotIndex: null,
             firebaseDb: null,
             firebaseConfig: {
@@ -1011,6 +1011,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            updateUiComponents();
             initFirebase();
             updateAdminStateUi();
         });
@@ -1278,7 +1279,12 @@
         }
 
         function renderSquadBoard() {
-            const teamId = window.appState.activeTeamId;
+            let teamId = window.appState.activeTeamId;
+            if(!teamId && Object.keys(window.appState.teams).length > 0) {
+                teamId = Object.keys(window.appState.teams)[0];
+                window.appState.activeTeamId = teamId;
+            }
+
             const team = window.appState.teams[teamId];
             if (!team) return;
 
