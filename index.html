@@ -14,8 +14,7 @@
               mainBg: '#111827',
               sideBg: '#1f2937',
               cardBg: '#374151',
-              accentGreen: '#059669',
-              pitchBg: '#275231'
+              pitchBg: '#22543d'
             }
           }
         }
@@ -27,7 +26,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
       body { background-color: #111827; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
-      .field-pitch { background: #275231; border: 2px solid #ffffff; position: relative; border-radius: 6px; }
+      .field-pitch { background: #22543d; border: 2px solid #ffffff; position: relative; border-radius: 6px; }
       ::-webkit-scrollbar { width: 5px; height: 5px; }
       ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
     </style>
@@ -41,7 +40,6 @@
                 <div class="w-8 h-8 bg-gray-600 rounded flex items-center justify-center font-bold text-base text-white">VF</div>
                 <div>
                     <h1 class="font-bold text-sm text-white leading-tight">Victoria Football</h1>
-                    <p class="text-[11px] text-gray-400">Trang Quản Lý</p>
                 </div>
             </div>
 
@@ -67,7 +65,7 @@
         <div class="pt-3 border-t border-gray-700">
             <div id="admin-status" class="text-[11px] text-gray-400 mb-2 flex items-center justify-between">
                 <span>Quyền: <strong id="role-label" class="text-gray-200">Người chơi</strong></span>
-                <span id="db-status-dot" class="w-2 h-2 rounded-full bg-gray-500" title="Trạng thái kết nối"></span>
+                <span id="db-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
             </div>
             <button id="auth-btn" onclick="toggleAdminLogin()" class="w-full bg-gray-800 hover:bg-gray-700 text-xs py-1.5 rounded font-medium transition text-gray-200 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-lock"></i> Đăng nhập Admin
@@ -99,8 +97,7 @@
 
             <div class="bg-sideBg p-4 rounded border border-gray-700">
                 <h3 class="font-semibold text-white text-xs mb-3">Danh sách Đội bóng</h3>
-                <div id="teams-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                </div>
+                <div id="teams-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
             </div>
         </section>
 
@@ -119,8 +116,9 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Pitch container -->
                 <div class="lg:col-span-2 bg-sideBg p-3 rounded border border-gray-700 flex justify-center">
-                    <div id="squad-pitch" class="field-pitch w-full h-[420px] max-w-[600px] overflow-hidden relative">
+                    <div id="squad-pitch" class="field-pitch w-full h-[450px] max-w-[600px] overflow-hidden relative">
                         <div class="absolute inset-x-0 top-1/2 border-t border-white/40"></div>
                         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/40 rounded-full"></div>
                         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-16 border-b border-x border-white/40"></div>
@@ -129,10 +127,10 @@
                     </div>
                 </div>
 
+                <!-- Player Inventory -->
                 <div class="bg-sideBg p-3 rounded border border-gray-700 space-y-2">
                     <h3 class="font-semibold text-white text-xs">Kho Cầu thủ Đội bóng</h3>
-                    <div id="squad-inventory" class="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
-                    </div>
+                    <div id="squad-inventory" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
                 </div>
             </div>
         </section>
@@ -184,8 +182,7 @@
             <h2 class="text-base font-bold text-white">Giải đấu</h2>
             <div id="tournament-container" class="bg-sideBg p-4 rounded border border-gray-700">
                 <p class="text-xs text-gray-400">Lịch thi đấu & Kết quả giải đấu.</p>
-                <div id="fixtures-list" class="mt-3 space-y-2">
-                </div>
+                <div id="fixtures-list" class="mt-3 space-y-2"></div>
             </div>
         </section>
 
@@ -256,8 +253,7 @@
                                     <th class="p-2">Xóa</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-players-table" class="divide-y divide-gray-700">
-                            </tbody>
+                            <tbody id="admin-players-table" class="divide-y divide-gray-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -449,6 +445,7 @@
 
         function selectTeam(teamId) {
             state.currentTeamId = teamId;
+            state.squad = Array(11).fill(null);
             renderApp();
         }
 
@@ -491,7 +488,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-2 flex items-center gap-2 font-medium text-white">
-                            <div class="w-5 h-5 rounded bg-gray-700 overflow-hidden flex items-center justify-center shrink-0">
+                            <div class="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex items-center justify-center shrink-0">
                                 ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-[10px]"></i>'}
                             </div>
                             ${p.name}
@@ -545,11 +542,13 @@
                     <div style="top: ${coord.top}; left: ${coord.left};" 
                          onclick="unassignSlot(${index})"
                          class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer">
-                        <div class="w-8 h-8 rounded-full bg-gray-900 border ${assignedPlayer ? 'border-amber-400' : 'border-dashed border-white/60'} flex items-center justify-center overflow-hidden">
-                            ${assignedPlayer && assignedPlayer.avatar ? `<img src="${assignedPlayer.avatar}" class="w-full h-full object-cover">` : `<span class="text-[10px] text-white font-bold">${coord.pos}</span>`}
+                        <div class="w-10 h-10 rounded-full bg-gray-900 border-2 ${assignedPlayer ? 'border-amber-400' : 'border-dashed border-white/60'} flex items-center justify-center overflow-hidden shadow">
+                            ${assignedPlayer && assignedPlayer.avatar 
+                                ? `<img src="${assignedPlayer.avatar}" class="w-full h-full object-cover">` 
+                                : `<span class="text-xs text-white font-bold">${assignedPlayer ? assignedPlayer.name.charAt(0) : coord.pos}</span>`}
                         </div>
-                        <div class="bg-gray-900/90 px-1 py-0.5 rounded text-[9px] text-white mt-0.5 whitespace-nowrap">
-                            ${assignedPlayer ? `${assignedPlayer.name} (${assignedPlayer.ovr})` : coord.pos}
+                        <div class="bg-gray-900/90 px-1.5 py-0.5 rounded text-[10px] text-white mt-1 whitespace-nowrap border border-gray-700">
+                            ${coord.pos} ${assignedPlayer ? `- ${assignedPlayer.name} (${assignedPlayer.ovr})` : ''}
                         </div>
                     </div>
                 `;
@@ -559,6 +558,7 @@
             state.squad.forEach(p => { if (p) { totalOvr += p.ovr; count++; } });
             document.getElementById('dash-team-ovr').textContent = count > 0 ? Math.round(totalOvr / count) : 0;
 
+            // Render Inventory under/next to pitch with full AVT, Name, Pos
             const inventory = document.getElementById('squad-inventory');
             inventory.innerHTML = '';
             activeTeamPlayers.forEach(p => {
@@ -566,12 +566,16 @@
                 inventory.innerHTML += `
                     <div class="p-2 rounded bg-gray-800 flex items-center justify-between ${isAssigned ? 'opacity-40' : 'hover:bg-gray-700 cursor-pointer'}"
                          onclick="${isAssigned ? '' : `assignToSquad('${p.id}')`}">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-gray-300 text-xs">${p.ovr}</span>
-                            <span class="text-xs text-emerald-400 font-semibold">${p.pos}</span>
-                            <span class="text-xs text-white">${p.name}</span>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-gray-900 overflow-hidden flex items-center justify-center border border-gray-700 shrink-0">
+                                ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-xs text-gray-400"></i>`}
+                            </div>
+                            <div>
+                                <div class="text-xs text-white font-semibold">${p.name}</div>
+                                <div class="text-[10px] text-gray-400 font-bold">${p.pos} | OVR: ${p.ovr}</div>
+                            </div>
                         </div>
-                        <span class="text-[10px] text-gray-400">${isAssigned ? 'Đang đá' : '+ Thêm'}</span>
+                        <span class="text-[10px] text-gray-300 font-medium px-2 py-1 bg-gray-700 rounded">${isAssigned ? 'Đang đá' : '+ Chọn'}</span>
                     </div>
                 `;
             });
@@ -580,10 +584,43 @@
         function assignToSquad(playerId) {
             const player = state.players.find(p => p.id === playerId);
             if (!player) return;
-            const emptyIndex = state.squad.findIndex(s => s === null);
-            if (emptyIndex !== -1) state.squad[emptyIndex] = player;
-            else state.squad[0] = player;
-            renderSquadSection();
+
+            const coords = formationCoords[state.formation];
+
+            // LOGIC KIỂM TRA GK NGHIÊM NGẶT
+            // 1. Cầu thủ KHÔNG PHẢI GK -> Không thể đá vị trí GK
+            // 2. Cầu thủ LÀ GK -> Chỉ được đá vị trí GK, không được đá vị trí khác
+            let targetIndex = -1;
+
+            if (player.pos === 'GK') {
+                // GK chỉ xếp vào vị trí có coord.pos === 'GK'
+                const gkIndex = coords.findIndex((c, i) => c.pos === 'GK' && state.squad[i] === null);
+                if (gkIndex !== -1) {
+                    targetIndex = gkIndex;
+                } else if (coords[0].pos === 'GK') {
+                    // Thay thế vị trí GK hiện tại
+                    targetIndex = 0;
+                } else {
+                    alert('Thủ môn (GK) chỉ có thể xếp vào vị trí GK!');
+                    return;
+                }
+            } else {
+                // Cầu thủ ngoài GK -> xếp vào ô trống đầu tiên KHÔNG PHẢI GK
+                const emptyIndex = state.squad.findIndex((s, i) => s === null && coords[i].pos !== 'GK');
+                if (emptyIndex !== -1) {
+                    targetIndex = emptyIndex;
+                } else {
+                    // Nếu k có ô trống, đè vào ô đầu tiên KHÔNG PHẢI GK
+                    targetIndex = coords.findIndex(c => c.pos !== 'GK');
+                }
+            }
+
+            if (targetIndex !== -1) {
+                state.squad[targetIndex] = player;
+                renderSquadSection();
+            } else {
+                alert('Cầu thủ k thuộc vị trí GK k thể chơi ở vị trí Thủ môn!');
+            }
         }
 
         function unassignSlot(index) {
@@ -591,7 +628,7 @@
             renderSquadSection();
         }
 
-        // MATCH SIMULATION ENGINE
+        // MATCH SIMULATION ENGINE 2D
         let simCanvas, simCtx, simInterval = null, simTime = 0, simRunning = false;
         let ball = { x: 400, y: 240, vx: 0, vy: 0 };
         let teamA_players = [], teamB_players = [];
@@ -604,7 +641,7 @@
         }
 
         function drawPitch() {
-            simCtx.fillStyle = "#275231";
+            simCtx.fillStyle = "#22543d";
             simCtx.fillRect(0, 0, 800, 480);
             simCtx.strokeStyle = "rgba(255,255,255,0.7)";
             simCtx.lineWidth = 2;
@@ -681,7 +718,7 @@
                     ball.vy = (Math.random() - 0.5) * 18;
 
                     if (Math.random() < 0.04) {
-                        const events = ["Sút xa nguy hiểm!", "Rê bóng vượt qua hậu vệ", "Đá phạt trực tiếp", "Phạt góc"];
+                        const events = ["Sút xa nguy hiểm!", "Rê bóng qua người", "Đá phạt trực tiếp", "Phạt góc"];
                         logMatchEvent(events[Math.floor(Math.random()*events.length)]);
                     }
                 }
