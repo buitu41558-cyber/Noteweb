@@ -15,7 +15,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    /* FLAT DESIGN SYSTEM & BASE STYLES */
     :root {
       --bg-main: #0b1325;
       --bg-secondary: #131e36;
@@ -56,23 +55,21 @@
       display: flex;
       flex-direction: column;
       z-index: 10;
+      flex-shrink: 0;
     }
 
     .brand {
-      padding: 24px 20px;
-      font-size: 20px;
+      padding: 20px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--accent-emerald);
       letter-spacing: 1px;
       border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     .nav-links {
       list-style: none;
-      padding: 20px 10px;
+      padding: 15px 10px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -90,20 +87,10 @@
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 12px;
     }
 
-    .nav-btn:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-      color: var(--text-main);
-    }
-
-    .nav-btn.active {
-      background-color: var(--accent-emerald);
-      color: #fff;
-    }
+    .nav-btn:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+    .nav-btn.active { background-color: var(--accent-emerald); color: #fff; }
 
     .admin-status {
       margin-top: auto;
@@ -113,7 +100,7 @@
       color: var(--text-muted);
     }
 
-    /* MAIN CONTENT CONTAINER */
+    /* MAIN CONTENT */
     #main-content {
       flex: 1;
       overflow-y: auto;
@@ -123,85 +110,76 @@
 
     .screen {
       display: none;
-      padding: 24px;
-      max-width: 1400px;
+      padding: 20px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
-    .screen.active {
-      display: block;
-    }
+    .screen.active { display: block; }
 
-    /* COMMON UI ELEMENTS */
     .section-title {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      margin-bottom: 20px;
-      color: var(--text-main);
+      margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .btn {
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 6px;
       border: none;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
 
-    .btn-primary {
-      background-color: var(--accent-emerald);
-      color: #fff;
-    }
-    .btn-primary:hover { background-color: var(--accent-emerald-hover); }
-
+    .btn-primary { background-color: var(--accent-emerald); color: #fff; }
     .btn-danger { background-color: var(--accent-red); color: #fff; }
     .btn-secondary { background-color: var(--border-color); color: var(--text-main); }
 
     .card {
       background-color: var(--bg-card);
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       border: 1px solid var(--border-color);
     }
 
-    /* DASHBOARD SCREEN */
+    /* DASHBOARD */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 350px 1fr;
+      grid-template-columns: 300px 1fr;
       gap: 20px;
     }
 
     .team-badge-large {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
       background: var(--bg-secondary);
       border-radius: 50%;
-      padding: 10px;
+      padding: 8px;
       border: 2px solid var(--accent-emerald);
     }
 
-    /* SQUAD MANAGEMENT SCREEN */
+    /* SQUAD MANAGEMENT */
     .squad-container {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr 300px;
       gap: 20px;
     }
 
     .pitch-2d {
       width: 100%;
-      height: 620px;
+      height: 580px;
       background-color: var(--pitch-green);
       border-radius: 12px;
       position: relative;
-      border: 4px solid #fff;
+      border: 3px solid #fff;
       overflow: hidden;
-      background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,0,0,0.05) 40px, rgba(0,0,0,0.05) 80px);
     }
 
     .pitch-line {
@@ -211,42 +189,17 @@
     }
 
     .pitch-center-circle {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      width: 100px; height: 100px; border-radius: 50%;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
     }
 
-    .pitch-center-line {
-      width: 100%;
-      top: 50%;
-      border-top: 2px solid var(--pitch-line);
-    }
-
-    .pitch-box-top {
-      width: 200px;
-      height: 90px;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      border-top: none;
-    }
-
-    .pitch-box-bottom {
-      width: 200px;
-      height: 90px;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      border-bottom: none;
-    }
+    .pitch-center-line { width: 100%; top: 50%; border-top: 2px solid var(--pitch-line); }
+    .pitch-box-top { width: 180px; height: 80px; top: 0; left: 50%; transform: translateX(-50%); }
+    .pitch-box-bottom { width: 180px; height: 80px; bottom: 0; left: 50%; transform: translateX(-50%); }
 
     .player-slot {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 50px; height: 50px;
       transform: translate(-50%, -50%);
       display: flex;
       flex-direction: column;
@@ -256,8 +209,7 @@
     }
 
     .player-card-mini {
-      width: 48px;
-      height: 48px;
+      width: 40px; height: 40px;
       border-radius: 50%;
       background: var(--bg-card);
       border: 2px solid var(--accent-emerald);
@@ -265,175 +217,104 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11px;
       color: #fff;
       overflow: hidden;
-      position: relative;
     }
 
-    .player-card-mini img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .player-card-mini img { width: 100%; height: 100%; object-fit: cover; }
+    .player-pos-tag { background: rgba(0,0,0,0.8); padding: 2px 4px; border-radius: 4px; font-size: 9px; font-weight: 700; margin-top: 2px; }
 
-    .player-pos-tag {
-      background: rgba(0,0,0,0.7);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .bench-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    /* MATCH SIMULATION SCREEN */
+    /* MATCH SCREEN */
     .match-header {
       background: var(--bg-card);
       border-radius: 12px;
-      padding: 16px 24px;
+      padding: 12px 16px;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 16px;
       border: 1px solid var(--border-color);
     }
 
     .match-scoreboard {
       display: flex;
       align-items: center;
-      gap: 24px;
-      font-size: 28px;
+      gap: 16px;
+      font-size: 24px;
       font-weight: 800;
     }
 
     .match-timer {
-      font-size: 18px;
+      font-size: 16px;
       background: var(--bg-secondary);
-      padding: 6px 16px;
-      border-radius: 20px;
+      padding: 4px 12px;
+      border-radius: 16px;
       color: var(--accent-emerald);
       border: 1px solid var(--border-color);
     }
 
-    .match-canvas-container {
-      position: relative;
+    .match-canvas-wrapper {
       width: 100%;
-      display: flex;
-      justify-content: center;
+      max-width: 900px;
+      margin: 0 auto;
+      aspect-ratio: 900 / 550;
+      position: relative;
     }
 
     #matchCanvas {
+      width: 100%;
+      height: 100%;
       background-color: var(--pitch-green);
-      border: 4px solid #fff;
+      border: 3px solid #fff;
       border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: block;
     }
 
     .match-stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 20px;
+      gap: 16px;
+      margin-top: 16px;
     }
 
     .stat-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 6px 0;
       border-bottom: 1px solid var(--border-color);
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    /* PLAYER DATABASE TABLE */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    .data-table th { background: var(--bg-secondary); color: var(--text-muted); }
 
-    .data-table th, .data-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 14px;
-    }
-
-    .data-table th {
-      background: var(--bg-secondary);
-      color: var(--text-muted);
-    }
-
-    /* MODAL SYSTEM */
+    /* MODAL */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
+      display: none; align-items: center; justify-content: center; z-index: 100;
     }
-
     .modal-overlay.active { display: flex; }
+    .modal-card { background: var(--bg-card); border-radius: 12px; padding: 20px; width: 450px; max-width: 90%; border: 1px solid var(--border-color); }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 8px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    .modal-card {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 24px;
-      width: 500px;
-      max-width: 90%;
-      border: 1px solid var(--border-color);
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 10px 12px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 14px;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--accent-emerald);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    /* RESPONSIVE DESIGN */
-    @media (max-width: 900px) {
+    /* RESPONSIVE UI FOR MOBILE */
+    @media (max-width: 850px) {
       body { flex-direction: column; overflow: auto; }
       #sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); }
-      .nav-links { flex-direction: row; overflow-x: auto; padding: 10px; }
+      .nav-links { flex-direction: row; overflow-x: auto; padding: 8px; }
+      .nav-btn { whitespace: nowrap; padding: 8px 12px; font-size: 12px; }
       .dashboard-grid, .squad-container, .match-stats-grid { grid-template-columns: 1fr; }
-      #matchCanvas { width: 100% !important; height: auto !important; }
+      .match-header { flex-direction: column; align-items: stretch; text-align: center; }
+      .match-scoreboard { justify-content: center; }
     }
   </style>
 </head>
@@ -452,50 +333,46 @@
     <div class="admin-status" id="adminStatusText">Quyền: Khách (Chỉ xem)</div>
   </nav>
 
-  <!-- MAIN CONTENT AREA -->
+  <!-- MAIN CONTENT -->
   <main id="main-content">
     
-    <!-- 1. DASHBOARD SCREEN -->
+    <!-- 1. DASHBOARD -->
     <section id="screen-dashboard" class="screen active">
       <div class="section-title">
         <span>Tổng Quan CLB</span>
-        <select id="activeTeamSelect" class="form-control" style="width: 200px;" onchange="changeActiveTeam(this.value)">
-          <!-- Dynamic Teams -->
-        </select>
+        <select id="activeTeamSelect" class="form-control" style="width: 180px;" onchange="changeActiveTeam(this.value)"></select>
       </div>
 
       <div class="dashboard-grid">
         <div class="card" style="text-align: center;">
-          <img id="dashTeamLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23131e36'/></svg>" class="team-badge-large" alt="Logo">
-          <h2 id="dashTeamName" style="margin-top: 12px;">Chưa chọn Đội</h2>
-          <div style="font-size: 36px; font-weight: 800; color: var(--accent-emerald); margin: 12px 0;">
+          <img id="dashTeamLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23131e36'/></svg>" class="team-badge-large" alt="Logo">
+          <h2 id="dashTeamName" style="margin-top: 10px;">Chưa chọn Đội</h2>
+          <div style="font-size: 32px; font-weight: 800; color: var(--accent-emerald); margin: 8px 0;">
             OVR <span id="dashTeamOVR">0</span>
           </div>
-          <p style="color: var(--text-muted); font-size: 14px;">Số lượng cầu thủ: <span id="dashPlayerCount">0</span></p>
+          <p style="color: var(--text-muted); font-size: 13px;">Số cầu thủ: <span id="dashPlayerCount">0</span></p>
         </div>
 
         <div class="card">
-          <h3 style="margin-bottom: 16px;">Giải Đấu Hiện Tại</h3>
-          <div id="dashboardTournamentsList">
-            <p style="color: var(--text-muted);">Chưa có giải đấu nào được khởi tạo bởi Admin.</p>
-          </div>
+          <h3 style="margin-bottom: 12px;">Giải Đấu Hiện Tại</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">Chưa có giải đấu nào được khởi tạo bởi Admin.</p>
         </div>
       </div>
     </section>
 
-    <!-- 2. PLAYER & TEAM DATABASE SCREEN -->
+    <!-- 2. DATABASE -->
     <section id="screen-database" class="screen">
       <div class="section-title">
-        <span>Kho Dữ Liệu Cầu Thủ & Đội Bóng</span>
-        <div id="adminDataControls" style="display: none; gap: 10px;">
-          <button class="btn btn-primary" onclick="openModal('modalCreateTeam')">+ Tạo Đội Bóng</button>
+        <span>Kho Cầu Thủ & Đội Bóng</span>
+        <div id="adminDataControls" style="display: none; gap: 8px;">
+          <button class="btn btn-primary" onclick="openModal('modalCreateTeam')">+ Tạo Đội</button>
           <button class="btn btn-primary" onclick="openModal('modalCreatePlayer')">+ Tạo Cầu Thủ</button>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom: 20px;">
+      <div class="card" style="margin-bottom: 16px;">
         <div class="form-row">
-          <input type="text" id="searchPlayerInput" class="form-control" placeholder="Tìm kiếm tên cầu thủ..." oninput="renderDatabaseTable()">
+          <input type="text" id="searchPlayerInput" class="form-control" placeholder="Tìm tên cầu thủ..." oninput="renderDatabaseTable()">
           <select id="filterPosSelect" class="form-control" onchange="renderDatabaseTable()">
             <option value="">Tất cả vị trí</option>
             <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
@@ -510,31 +387,24 @@
           <thead>
             <tr>
               <th>Ảnh</th>
-              <th>Tên Cầu Thủ</th>
+              <th>Tên</th>
               <th>Vị Trí</th>
               <th>OVR</th>
-              <th>PAC</th>
-              <th>SHO</th>
-              <th>PAS</th>
-              <th>DRI</th>
-              <th>DEF</th>
-              <th>PHY</th>
-              <th>Đội Chủ Quản</th>
+              <th>PAC</th><th>SHO</th><th>PAS</th><th>DRI</th><th>DEF</th><th>PHY</th>
+              <th>Đội</th>
               <th class="admin-col" style="display:none;">Thao tác</th>
             </tr>
           </thead>
-          <tbody id="playerTableBody">
-            <!-- Dynamic Players -->
-          </tbody>
+          <tbody id="playerTableBody"></tbody>
         </table>
       </div>
     </section>
 
-    <!-- 3. SQUAD MANAGEMENT SCREEN -->
+    <!-- 3. SQUAD MANAGEMENT -->
     <section id="screen-squad" class="screen">
       <div class="section-title">
-        <span>Quản Lý Đội Hình Chiến Thuật</span>
-        <select id="formationSelect" class="form-control" style="width: 150px;" onchange="changeFormation(this.value)">
+        <span>Quản Lý Đội Hình</span>
+        <select id="formationSelect" class="form-control" style="width: 140px;" onchange="changeFormation(this.value)">
           <option value="4-3-3">4-3-3</option>
           <option value="4-2-3-1">4-2-3-1</option>
           <option value="4-4-2">4-4-2</option>
@@ -543,32 +413,27 @@
       </div>
 
       <div class="squad-container">
-        <!-- 2D Pitch Layout -->
         <div class="pitch-2d" id="squadPitch">
           <div class="pitch-line pitch-center-circle"></div>
           <div class="pitch-line pitch-center-line"></div>
           <div class="pitch-line pitch-box-top"></div>
           <div class="pitch-line pitch-box-bottom"></div>
-          <!-- Player slots dynamically generated -->
         </div>
 
-        <!-- Bench / Reserves -->
         <div class="card">
-          <h3 style="margin-bottom: 12px;">Hàng Ghế Dự Bị</h3>
-          <div class="bench-list" id="benchList">
-            <!-- Dynamic Bench Players -->
-          </div>
+          <h3 style="margin-bottom: 10px; font-size:15px;">Dự Bị</h3>
+          <div id="benchList" style="display:flex; flex-direction:column; gap:6px; max-height:480px; overflow-y:auto;"></div>
         </div>
       </div>
     </section>
 
-    <!-- 4. MATCH SIMULATION SCREEN -->
+    <!-- 4. MATCH SIMULATION -->
     <section id="screen-match" class="screen">
       <div class="match-header">
-        <div style="display:flex; align-items:center; gap: 12px;">
-          <select id="matchHomeTeamSelect" class="form-control" style="width: 160px;"></select>
-          <span style="font-weight: 700; color: var(--text-muted);">VS</span>
-          <select id="matchAwayTeamSelect" class="form-control" style="width: 160px;"></select>
+        <div style="display:flex; align-items:center; gap: 8px; justify-content: center;">
+          <select id="matchHomeTeamSelect" class="form-control" style="max-width: 130px;"></select>
+          <span style="font-weight: 700; color: var(--text-muted); font-size:12px;">VS</span>
+          <select id="matchAwayTeamSelect" class="form-control" style="max-width: 130px;"></select>
         </div>
         <div class="match-scoreboard">
           <span id="scoreHome">0</span>
@@ -576,28 +441,28 @@
           <span id="scoreAway">0</span>
         </div>
         <div class="match-timer" id="matchTimerDisplay">00:00</div>
-        <div>
+        <div style="text-align: center;">
           <button class="btn btn-primary" id="btnStartMatch" onclick="startMatchSimulation()">Bắt Đầu</button>
           <button class="btn btn-danger" id="btnStopMatch" onclick="stopMatchSimulation()" style="display:none;">Dừng</button>
         </div>
       </div>
 
-      <div class="match-canvas-container">
+      <div class="match-canvas-wrapper">
         <canvas id="matchCanvas" width="900" height="550"></canvas>
       </div>
 
       <div class="match-stats-grid">
         <div class="card">
-          <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">Thống Kê Trận Đấu</h4>
-          <div class="stat-row"><span>Cú Sút (Trúng Đích)</span><span id="statShots">0 (0) - 0 (0)</span></div>
-          <div class="stat-row"><span>Kiểm Soát Bóng (%)</span><span id="statPossession">50% - 50%</span></div>
+          <h4 style="margin-bottom: 10px; color: var(--accent-emerald); font-size:14px;">Thống Kê</h4>
+          <div class="stat-row"><span>Sút (Trúng Đích)</span><span id="statShots">0 (0) - 0 (0)</span></div>
+          <div class="stat-row"><span>Kiểm Soát Bóng</span><span id="statPossession">50% - 50%</span></div>
           <div class="stat-row"><span>Phạm Lỗi</span><span id="statFouls">0 - 0</span></div>
           <div class="stat-row"><span>Việt Vị</span><span id="statOffsides">0 - 0</span></div>
           <div class="stat-row"><span>Thẻ Vàng / Thẻ Đỏ</span><span id="statCards">0/0 - 0/0</span></div>
         </div>
         <div class="card">
-          <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">Nhật Ký Trận Đấu</h4>
-          <div id="matchLogConsole" style="height: 140px; overflow-y: auto; font-size: 12px; color: var(--text-muted); font-family: monospace;">
+          <h4 style="margin-bottom: 10px; color: var(--accent-emerald); font-size:14px;">Diễn Biến</h4>
+          <div id="matchLogConsole" style="height: 120px; overflow-y: auto; font-size: 11px; color: var(--text-muted); font-family: monospace;">
             > Trận đấu chưa bắt đầu...
           </div>
         </div>
@@ -606,97 +471,92 @@
 
   </main>
 
-  <!-- MODAL: ADMIN LOGIN -->
+  <!-- MODAL ADMIN LOGIN -->
   <div class="modal-overlay" id="modalAdmin">
     <div class="modal-card">
-      <h3 style="margin-bottom: 16px;">Đăng Nhập Quản Trị Viên</h3>
+      <h3 style="margin-bottom: 12px;">Đăng Nhập Admin</h3>
       <div class="form-group">
-        <label>Mật Khẩu Admin</label>
-        <input type="password" id="adminPasswordInput" class="form-control" placeholder="Nhập mật khẩu...">
+        <label>Mật Khẩu</label>
+        <input type="password" id="adminPasswordInput" class="form-control" placeholder="admin123">
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button class="btn btn-secondary" onclick="closeModal('modalAdmin')">Hủy</button>
         <button class="btn btn-primary" onclick="loginAdmin()">Đăng Nhập</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: CREATE TEAM -->
+  <!-- MODAL CREATE TEAM -->
   <div class="modal-overlay" id="modalCreateTeam">
     <div class="modal-card">
-      <h3 style="margin-bottom: 16px;">Tạo Đội Bóng Mới</h3>
+      <h3 style="margin-bottom: 12px;">Tạo Đội Bóng</h3>
       <div class="form-group">
-        <label>Tên Đội Bóng</label>
+        <label>Tên Đội</label>
         <input type="text" id="teamNameInput" class="form-control" placeholder="VD: Victoria FC">
       </div>
       <div class="form-group">
-        <label>Logo Đội Bóng (Tải tệp ảnh)</label>
+        <label>Logo (Tải tệp ảnh)</label>
         <input type="file" id="teamLogoInput" class="form-control" accept="image/*">
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button class="btn btn-secondary" onclick="closeModal('modalCreateTeam')">Hủy</button>
-        <button class="btn btn-primary" onclick="saveTeam()">Lưu Đội Bóng</button>
+        <button class="btn btn-primary" onclick="saveTeam()">Lưu</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: CREATE PLAYER -->
+  <!-- MODAL CREATE PLAYER -->
   <div class="modal-overlay" id="modalCreatePlayer">
-    <div class="modal-card" style="width: 600px;">
-      <h3 style="margin-bottom: 16px;">Tạo Cầu Thủ Mới</h3>
+    <div class="modal-card">
+      <h3 style="margin-bottom: 12px;">Tạo Cầu Thủ</h3>
       <div class="form-row">
         <div class="form-group">
           <label>Tên Cầu Thủ</label>
-          <input type="text" id="playerNameInput" class="form-control" placeholder="VD: Nguyen Van A">
+          <input type="text" id="playerNameInput" class="form-control" placeholder="VD: Van A">
         </div>
         <div class="form-group">
-          <label>Đội Chủ Quản</label>
+          <label>Đội Bóng</label>
           <select id="playerTeamSelect" class="form-control"></select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Vị Trí Sở Trường</label>
+          <label>Vị Trí</label>
           <select id="playerPosSelect" class="form-control">
             <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
-            <option value="CF">CF</option><option value="CAM">CAM</option><option value="CM">CM</option>
-            <option value="CDM">CDM</option><option value="LM">LM</option><option value="RM">RM</option>
-            <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option>
-            <option value="LWB">LWB</option><option value="RWB">RWB</option><option value="GK">GK</option>
+            <option value="CAM">CAM</option><option value="CM">CM</option><option value="CDM">CDM</option>
+            <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option><option value="GK">GK</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Ảnh Đại Diện (Tải tệp)</label>
+          <label>Ảnh Đại Diện</label>
           <input type="file" id="playerPhotoInput" class="form-control" accept="image/*">
         </div>
       </div>
-      <div style="font-weight: 700; margin: 10px 0; color: var(--accent-emerald);">Chỉ Số Cầu Thủ (Thang 50 - 200)</div>
+      <div style="font-weight: 700; margin: 8px 0; color: var(--accent-emerald); font-size:12px;">Chỉ Số (50 - 200)</div>
       <div class="form-row">
-        <div class="form-group"><label>Tốc Độ (PAC)</label><input type="number" id="attrPAC" class="form-control" min="50" max="200" value="75"></div>
-        <div class="form-group"><label>Sút (SHO)</label><input type="number" id="attrSHO" class="form-control" min="50" max="200" value="70"></div>
+        <div class="form-group"><label>Tốc Độ (PAC)</label><input type="number" id="attrPAC" class="form-control" min="50" max="200" value="80"></div>
+        <div class="form-group"><label>Sút (SHO)</label><input type="number" id="attrSHO" class="form-control" min="50" max="200" value="75"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Truyền (PAS)</label><input type="number" id="attrPAS" class="form-control" min="50" max="200" value="72"></div>
-        <div class="form-group"><label>Rê Bóng (DRI)</label><input type="number" id="attrDRI" class="form-control" min="50" max="200" value="74"></div>
+        <div class="form-group"><label>Truyền (PAS)</label><input type="number" id="attrPAS" class="form-control" min="50" max="200" value="75"></div>
+        <div class="form-group"><label>Rê Bóng (DRI)</label><input type="number" id="attrDRI" class="form-control" min="50" max="200" value="80"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Phòng Thủ (DEF)</label><input type="number" id="attrDEF" class="form-control" min="50" max="200" value="60"></div>
-        <div class="form-group"><label>Thể Lực (PHY)</label><input type="number" id="attrPHY" class="form-control" min="50" max="200" value="70"></div>
+        <div class="form-group"><label>Phòng Thủ (DEF)</label><input type="number" id="attrDEF" class="form-control" min="50" max="200" value="70"></div>
+        <div class="form-group"><label>Thể Lực (PHY)</label><input type="number" id="attrPHY" class="form-control" min="50" max="200" value="75"></div>
       </div>
-      <div class="form-group"><label>Trí Tuệ / Chế Độ Xử Lý (Vision/IQ)</label><input type="number" id="attrIQ" class="form-control" min="50" max="200" value="80"></div>
+      <div class="form-group"><label>Trí Tuệ / Vision (IQ)</label><input type="number" id="attrIQ" class="form-control" min="50" max="200" value="85"></div>
       
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
         <button class="btn btn-secondary" onclick="closeModal('modalCreatePlayer')">Hủy</button>
-        <button class="btn btn-primary" onclick="savePlayer()">Lưu Cầu Thủ</button>
+        <button class="btn btn-primary" onclick="savePlayer()">Lưu</button>
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
-    /* -------------------------------------------------------------
-       1. FIREBASE CONFIGURATION & INITIALIZATION
-    ------------------------------------------------------------- */
+    /* FIREBASE & STATE */
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "your-app.firebaseapp.com",
@@ -716,22 +576,17 @@
         db = firebase.database();
         isFirebaseConnected = true;
       }
-    } catch(e) {
-      console.warn("Firebase chưa được cấu hình. Đang chạy chế độ Local Storage.");
-    }
+    } catch(e) {}
 
-    /* -------------------------------------------------------------
-       2. GLOBAL STATE & DATA MODELS
-    ------------------------------------------------------------- */
     let isAdmin = false;
     let activeTeamId = null;
     let currentFormation = '4-3-3';
     
     let teams = {};
     let players = {};
-    let squadLineup = {}; // slotId -> playerId
+    let squadLineup = {};
 
-    // FORMATION POSITIONS CONFIG (2D Pitch Coordinates in %)
+    // SƠ ĐỒ DỌC (SA BÀN MANAGEMENT)
     const FORMATIONS = {
       '4-3-3': [
         { id: 'gk', pos: 'GK', top: 88, left: 50 },
@@ -787,9 +642,6 @@
       ]
     };
 
-    /* -------------------------------------------------------------
-       3. SYSTEM INITIALIZATION
-    ------------------------------------------------------------- */
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
       renderSquadPitch();
@@ -798,21 +650,13 @@
 
     function loadData() {
       if (isFirebaseConnected) {
-        db.ref('teams').on('value', (snapshot) => {
-          teams = snapshot.val() || {};
-          updateTeamDropdowns();
-          renderDashboard();
-        });
-        db.ref('players').on('value', (snapshot) => {
-          players = snapshot.val() || {};
-          renderDatabaseTable();
-          renderSquadPitch();
-        });
+        db.ref('teams').on('value', (s) => { teams = s.val() || {}; updateTeamDropdowns(); renderDashboard(); });
+        db.ref('players').on('value', (s) => { players = s.val() || {}; renderDatabaseTable(); renderSquadPitch(); });
       } else {
-        const localTeams = localStorage.getItem('victoria_teams');
-        const localPlayers = localStorage.getItem('victoria_players');
-        if (localTeams) teams = JSON.parse(localTeams);
-        if (localPlayers) players = JSON.parse(localPlayers);
+        const lt = localStorage.getItem('victoria_teams');
+        const lp = localStorage.getItem('victoria_players');
+        if (lt) teams = JSON.parse(lt);
+        if (lp) players = JSON.parse(lp);
         updateTeamDropdowns();
         renderDashboard();
         renderDatabaseTable();
@@ -820,73 +664,52 @@
       }
     }
 
-    function saveData(key, data) {
-      if (isFirebaseConnected) {
-        db.ref(key).set(data);
-      } else {
-        localStorage.setItem(`victoria_${key}`, JSON.stringify(data));
-      }
+    function saveData(k, v) {
+      if (isFirebaseConnected) db.ref(k).set(v);
+      else localStorage.setItem(`victoria_${k}`, JSON.stringify(v));
     }
 
-    /* -------------------------------------------------------------
-       4. NAVIGATION & SCREEN SWITCHING
-    ------------------------------------------------------------- */
-    function switchScreen(screenId) {
+    function switchScreen(sId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      
-      document.getElementById(`screen-${screenId}`).classList.add('active');
+      document.getElementById(`screen-${sId}`).classList.add('active');
       event.currentTarget.classList.add('active');
-
-      if (screenId === 'squad') renderSquadPitch();
-      if (screenId === 'dashboard') renderDashboard();
+      if (sId === 'squad') renderSquadPitch();
+      if (sId === 'dashboard') renderDashboard();
     }
 
-    /* -------------------------------------------------------------
-       5. ADMIN MANAGEMENT & SECURITY
-    ------------------------------------------------------------- */
     function openAdminModal() { openModal('modalAdmin'); }
-
     function loginAdmin() {
-      const pass = document.getElementById('adminPasswordInput').value;
-      if (pass === 'admin123') {
+      if (document.getElementById('adminPasswordInput').value === 'admin123') {
         isAdmin = true;
         document.getElementById('adminStatusText').innerText = "Quyền: Quản Trị Viên (Admin)";
         document.getElementById('adminStatusText').style.color = "var(--accent-emerald)";
         document.getElementById('adminDataControls').style.display = "flex";
-        document.querySelectorAll('.admin-col').forEach(c => c.style.display = "table-cell");
+        document.querySelectorAll('.admin-col').forEach(c => c.style.style = "table-cell");
         closeModal('modalAdmin');
         renderDatabaseTable();
-      } else {
-        alert("Mật khẩu Admin không chính xác!");
-      }
+      } else alert("Mật khẩu sai!");
     }
 
-    /* -------------------------------------------------------------
-       6. TEAM & PLAYER CREATION (BASE64 UPLOAD SUPPORT)
-    ------------------------------------------------------------- */
     function saveTeam() {
       if (!isAdmin) return;
       const name = document.getElementById('teamNameInput').value;
       const fileInput = document.getElementById('teamLogoInput');
-      
-      if (!name) return alert("Vui lòng nhập tên đội bóng!");
+      if (!name) return alert("Vui lòng nhập tên!");
 
-      const teamId = 'team_' + Date.now();
-      const processSave = (logoData) => {
-        teams[teamId] = { id: teamId, name: name, logo: logoData || '' };
+      const id = 'team_' + Date.now();
+      const save = (logo) => {
+        teams[id] = { id, name, logo: logo || '' };
         saveData('teams', teams);
         updateTeamDropdowns();
         closeModal('modalCreateTeam');
       };
 
       if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => processSave(e.target.result);
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        processSave('');
-      }
+        const r = new FileReader();
+        r.onload = (e) => save(e.target.result);
+        r.readAsDataURL(fileInput.files[0]);
+      } else save('');
     }
 
     function savePlayer() {
@@ -896,74 +719,53 @@
       const pos = document.getElementById('playerPosSelect').value;
       const photoInput = document.getElementById('playerPhotoInput');
 
-      const pac = parseInt(document.getElementById('attrPAC').value) || 70;
-      const sho = parseInt(document.getElementById('attrSHO').value) || 70;
-      const pas = parseInt(document.getElementById('attrPAS').value) || 70;
-      const dri = parseInt(document.getElementById('attrDRI').value) || 70;
+      const pac = parseInt(document.getElementById('attrPAC').value) || 80;
+      const sho = parseInt(document.getElementById('attrSHO').value) || 75;
+      const pas = parseInt(document.getElementById('attrPAS').value) || 75;
+      const dri = parseInt(document.getElementById('attrDRI').value) || 80;
       const def = parseInt(document.getElementById('attrDEF').value) || 70;
-      const phy = parseInt(document.getElementById('attrPHY').value) || 70;
-      const iq = parseInt(document.getElementById('attrIQ').value) || 70;
+      const phy = parseInt(document.getElementById('attrPHY').value) || 75;
+      const iq = parseInt(document.getElementById('attrIQ').value) || 85;
 
-      if (!name) return alert("Vui lòng nhập tên cầu thủ!");
+      if (!name) return alert("Nhập tên cầu thủ!");
 
       const ovr = Math.round((pac + sho + pas + dri + def + phy + iq) / 7);
-      const playerId = 'player_' + Date.now();
+      const id = 'player_' + Date.now();
 
-      const processSave = (photoData) => {
-        players[playerId] = {
-          id: playerId, name, teamId, pos, photo: photoData || '',
-          ovr, pac, sho, pas, dri, def, phy, iq
-        };
+      const save = (photo) => {
+        players[id] = { id, name, teamId, pos, photo: photo || '', ovr, pac, sho, pas, dri, def, phy, iq };
         saveData('players', players);
         renderDatabaseTable();
         closeModal('modalCreatePlayer');
       };
 
       if (photoInput.files && photoInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => processSave(e.target.result);
-        reader.readAsDataURL(photoInput.files[0]);
-      } else {
-        processSave('');
-      }
+        const r = new FileReader();
+        r.onload = (e) => save(e.target.result);
+        r.readAsDataURL(photoInput.files[0]);
+      } else save('');
     }
 
     function deletePlayer(id) {
       if (!isAdmin) return;
-      if (confirm("Bạn có chắc chắn muốn xóa cầu thủ này?")) {
+      if (confirm("Xóa cầu thủ này?")) {
         delete players[id];
         saveData('players', players);
         renderDatabaseTable();
       }
     }
 
-    /* -------------------------------------------------------------
-       7. UI RENDERERS & HELPERS
-    ------------------------------------------------------------- */
     function updateTeamDropdowns() {
-      const activeSelect = document.getElementById('activeTeamSelect');
-      const playerTeamSelect = document.getElementById('playerTeamSelect');
-      const homeSelect = document.getElementById('matchHomeTeamSelect');
-      const awaySelect = document.getElementById('matchAwayTeamSelect');
-
-      let optionsHTML = '<option value="">-- Chọn Đội --</option>';
-      Object.values(teams).forEach(t => {
-        optionsHTML += `<option value="${t.id}">${t.name}</option>`;
-      });
-
-      activeSelect.innerHTML = optionsHTML;
-      playerTeamSelect.innerHTML = optionsHTML;
-      homeSelect.innerHTML = optionsHTML;
-      awaySelect.innerHTML = optionsHTML;
-
-      if (activeTeamId) activeSelect.value = activeTeamId;
+      let html = '<option value="">-- Chọn Đội --</option>';
+      Object.values(teams).forEach(t => { html += `<option value="${t.id}">${t.name}</option>`; });
+      document.getElementById('activeTeamSelect').innerHTML = html;
+      document.getElementById('playerTeamSelect').innerHTML = html;
+      document.getElementById('matchHomeTeamSelect').innerHTML = html;
+      document.getElementById('matchAwayTeamSelect').innerHTML = html;
+      if (activeTeamId) document.getElementById('activeTeamSelect').value = activeTeamId;
     }
 
-    function changeActiveTeam(id) {
-      activeTeamId = id;
-      renderDashboard();
-      renderSquadPitch();
-    }
+    function changeActiveTeam(id) { activeTeamId = id; renderDashboard(); renderSquadPitch(); }
 
     function renderDashboard() {
       if (!activeTeamId || !teams[activeTeamId]) {
@@ -972,151 +774,119 @@
         document.getElementById('dashPlayerCount').innerText = "0";
         return;
       }
-
-      const team = teams[activeTeamId];
-      const teamPlayers = Object.values(players).filter(p => p.teamId === activeTeamId);
-      const avgOVR = teamPlayers.length ? Math.round(teamPlayers.reduce((a, b) => a + b.ovr, 0) / teamPlayers.length) : 0;
-
-      document.getElementById('dashTeamName').innerText = team.name;
-      document.getElementById('dashTeamLogo').src = team.logo || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23131e36'/></svg>";
-      document.getElementById('dashTeamOVR').innerText = avgOVR;
-      document.getElementById('dashPlayerCount').innerText = teamPlayers.length;
+      const t = teams[activeTeamId];
+      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
+      const avg = tp.length ? Math.round(tp.reduce((a, b) => a + b.ovr, 0) / tp.length) : 0;
+      document.getElementById('dashTeamName').innerText = t.name;
+      document.getElementById('dashTeamLogo').src = t.logo || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23131e36'/></svg>";
+      document.getElementById('dashTeamOVR').innerText = avg;
+      document.getElementById('dashPlayerCount').innerText = tp.length;
     }
 
     function renderDatabaseTable() {
       const tbody = document.getElementById('playerTableBody');
       const search = document.getElementById('searchPlayerInput').value.toLowerCase();
-      const posFilter = document.getElementById('filterPosSelect').value;
-
+      const posF = document.getElementById('filterPosSelect').value;
       tbody.innerHTML = '';
 
       Object.values(players).forEach(p => {
         if (search && !p.name.toLowerCase().includes(search)) return;
-        if (posFilter && p.pos !== posFilter) return;
+        if (posF && p.pos !== posF) return;
 
         const team = teams[p.teamId];
-        const teamName = team ? team.name : 'Tự do';
-        const imgStyle = "width:36px; height:36px; border-radius:50%; object-fit:cover;";
-
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><img src="${p.photo || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><circle cx=\'18\' cy=\'18\' r=\'18\' fill=\'%2327395e\'/></svg>'}" style="${imgStyle}"></td>
+          <td><img src="${p.photo || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'30\' height=\'30\'><circle cx=\'15\' cy=\'15\' r=\'15\' fill=\'%2327395e\'/></svg>'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;"></td>
           <td style="font-weight:600;">${p.name}</td>
           <td><span class="player-pos-tag">${p.pos}</span></td>
           <td style="font-weight:700; color:var(--accent-emerald);">${p.ovr}</td>
           <td>${p.pac}</td><td>${p.sho}</td><td>${p.pas}</td><td>${p.dri}</td><td>${p.def}</td><td>${p.phy}</td>
-          <td>${teamName}</td>
+          <td>${team ? team.name : 'Tự do'}</td>
           <td class="admin-col" style="${isAdmin ? '' : 'display:none;'}">
-            <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deletePlayer('${p.id}')">Xóa</button>
+            <button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deletePlayer('${p.id}')">Xóa</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    /* -------------------------------------------------------------
-       8. SQUAD MANAGEMENT & DRAG-AND-DROP ENGINE
-    ------------------------------------------------------------- */
-    function changeFormation(fmt) {
-      currentFormation = fmt;
-      renderSquadPitch();
-    }
+    /* SQUAD MANAGEMENT */
+    function changeFormation(f) { currentFormation = f; renderSquadPitch(); }
 
     function renderSquadPitch() {
       const pitch = document.getElementById('squadPitch');
-      // Remove old slots
       pitch.querySelectorAll('.player-slot').forEach(s => s.remove());
 
       const slots = FORMATIONS[currentFormation];
-      const teamPlayers = Object.values(players).filter(p => p.teamId === activeTeamId);
+      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
 
-      slots.forEach(slot => {
+      slots.forEach(s => {
         const slotDiv = document.createElement('div');
         slotDiv.className = 'player-slot';
-        slotDiv.style.top = `${slot.top}%`;
-        slotDiv.style.left = `${slot.left}%`;
-        slotDiv.dataset.slotId = slot.id;
+        slotDiv.style.top = `${s.top}%`;
+        slotDiv.style.left = `${s.left}%`;
 
-        const assignedPlayerId = squadLineup[slot.id];
-        const assignedPlayer = players[assignedPlayerId];
+        const pId = squadLineup[s.id];
+        const p = players[pId];
 
         slotDiv.innerHTML = `
           <div class="player-card-mini">
-            ${assignedPlayer ? `<img src="${assignedPlayer.photo || ''}">` : slot.pos}
+            ${p ? `<img src="${p.photo || ''}">` : s.pos}
           </div>
-          <div class="player-pos-tag">${assignedPlayer ? assignedPlayer.name.split(' ').pop() : slot.pos}</div>
+          <div class="player-pos-tag">${p ? p.name.split(' ').pop() : s.pos}</div>
         `;
-
-        slotDiv.onclick = () => assignPlayerToSlotPrompt(slot.id, slot.pos);
+        slotDiv.onclick = () => assignPlayerPrompt(s.id, s.pos);
         pitch.appendChild(slotDiv);
       });
 
-      renderBenchList(teamPlayers);
-    }
-
-    function renderBenchList(teamPlayers) {
+      const startingIds = Object.values(squadLineup);
+      const bench = tp.filter(p => !startingIds.includes(p.id));
       const benchList = document.getElementById('benchList');
       benchList.innerHTML = '';
 
-      const startingIds = Object.values(squadLineup);
-      const benchPlayers = teamPlayers.filter(p => !startingIds.includes(p.id));
-
-      benchPlayers.forEach(p => {
+      bench.forEach(p => {
         const item = document.createElement('div');
         item.className = 'card';
-        item.style.padding = '8px 12px';
+        item.style.padding = '6px 10px';
         item.style.display = 'flex';
-        item.style.justifySpaceBetween = 'space-between';
+        item.style.justifyContent = 'space-between';
         item.style.alignItems = 'center';
-        item.style.marginBottom = '6px';
         item.innerHTML = `
-          <div>
-            <strong style="font-size:13px;">${p.name}</strong>
-            <span class="player-pos-tag" style="margin-left:6px;">${p.pos}</span>
-          </div>
-          <div style="font-weight:700; color:var(--accent-emerald);">${p.ovr}</div>
+          <div><strong style="font-size:12px;">${p.name}</strong> <span class="player-pos-tag">${p.pos}</span></div>
+          <div style="font-weight:700; color:var(--accent-emerald); font-size:12px;">${p.ovr}</div>
         `;
         benchList.appendChild(item);
       });
     }
 
-    function assignPlayerToSlotPrompt(slotId, requiredPos) {
+    function assignPlayerPrompt(sId, reqPos) {
       if (!activeTeamId) return alert("Vui lòng chọn đội bóng trước!");
-      const teamPlayers = Object.values(players).filter(p => p.teamId === activeTeamId);
-      
-      let msg = `Chọn cầu thủ cho vị trí ${requiredPos}:\n`;
-      teamPlayers.forEach((p, idx) => {
-        msg += `${idx + 1}. ${p.name} (${p.pos} - OVR: ${p.ovr})\n`;
-      });
+      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
+      let msg = `Chọn cầu thủ vị trí ${reqPos}:\n`;
+      tp.forEach((p, i) => { msg += `${i + 1}. ${p.name} (${p.pos} - OVR: ${p.ovr})\n`; });
 
       const choice = prompt(msg);
       if (choice) {
-        const index = parseInt(choice) - 1;
-        if (teamPlayers[index]) {
-          squadLineup[slotId] = teamPlayers[index].id;
-          renderSquadPitch();
-        }
+        const idx = parseInt(choice) - 1;
+        if (tp[idx]) { squadLineup[sId] = tp[idx].id; renderSquadPitch(); }
       }
     }
 
-    /* -------------------------------------------------------------
-       9. REAL-TIME 2D MATCH ENGINE & AI REFEREE
-    ------------------------------------------------------------- */
+    /* MATCH SIMULATION ENGINE 2D FIXED HORIZONTAL POSITIONS */
     let canvas, ctx;
     let matchInterval = null;
-    let matchTime = 0; // 0 to 90 mins
+    let matchTime = 0;
     let isMatchRunning = false;
 
     let homeTeamState = [], awayTeamState = [];
     let ballState = { x: 450, y: 275, vx: 0, vy: 0, owner: null };
     let refereeState = { x: 450, y: 200 };
-    let linesmanState = { x: 20, y: 10 };
 
     let matchStats = {
       homeShots: 0, homeShotsTarget: 0, awayShots: 0, awayShotsTarget: 0,
       homeFouls: 0, awayFouls: 0, homeOffsides: 0, awayOffsides: 0,
       homeCardsY: 0, homeCardsR: 0, awayCardsY: 0, awayCardsR: 0,
-      homePossession: 50, scoreHome: 0, scoreAway: 0
+      scoreHome: 0, scoreAway: 0
     };
 
     function initMatchCanvas() {
@@ -1129,68 +899,51 @@
       ctx.fillStyle = '#2e7d32';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Pitch Markings
       ctx.strokeStyle = 'rgba(255,255,255,0.8)';
       ctx.lineWidth = 2;
 
-      // Outer Boundary
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+      // Outer Pitch Boundary
+      ctx.strokeRect(30, 20, canvas.width - 60, canvas.height - 40);
 
-      // Halfway Line
+      // Center Line & Circle
       ctx.beginPath();
       ctx.moveTo(canvas.width / 2, 20);
       ctx.lineTo(canvas.width / 2, canvas.height - 20);
       ctx.stroke();
 
-      // Center Circle
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+      ctx.arc(canvas.width / 2, canvas.height / 2, 55, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Penalty Boxes
-      ctx.strokeRect(20, (canvas.height - 200) / 2, 100, 200);
-      ctx.strokeRect(canvas.width - 120, (canvas.height - 200) / 2, 100, 200);
+      // Penalty Areas
+      ctx.strokeRect(30, (canvas.height - 220) / 2, 110, 220);
+      ctx.strokeRect(canvas.width - 140, (canvas.height - 220) / 2, 110, 220);
 
       // Goal Areas (5m50)
-      ctx.strokeRect(20, (canvas.height - 90) / 2, 40, 90);
-      ctx.strokeRect(canvas.width - 60, (canvas.height - 90) / 2, 40, 90);
+      ctx.strokeRect(30, (canvas.height - 100) / 2, 45, 100);
+      ctx.strokeRect(canvas.width - 75, (canvas.height - 100) / 2, 45, 100);
+
+      // Goals Net
+      ctx.strokeRect(15, (canvas.height - 80) / 2, 15, 80);
+      ctx.strokeRect(canvas.width - 30, (canvas.height - 80) / 2, 15, 80);
     }
 
-    function startMatchSimulation() {
-      const homeId = document.getElementById('matchHomeTeamSelect').value;
-      const awayId = document.getElementById('matchAwayTeamSelect').value;
-
-      if (!homeId || !awayId || homeId === awayId) {
-        return alert("Vui lòng chọn 2 đội bóng khác nhau để thi đấu!");
-      }
-
-      // Initialize Player Field Coordinates (100% Correct Tactical Positioning)
-      homeTeamState = setupTeamOnPitch(homeId, true);
-      awayTeamState = setupTeamOnPitch(awayId, false);
-
-      matchTime = 0;
-      isMatchRunning = true;
-      document.getElementById('btnStartMatch').style.display = 'none';
-      document.getElementById('btnStopMatch').style.display = 'inline-block';
-
-      logMatch("Trận đấu bắt đầu! Trọng tài chính thổi còi khai cuộc.");
-
-      matchInterval = setInterval(updateMatchLoop, 100); // 100ms per frame
-    }
-
+    // CHUYỂN ĐỔI CHUẨN TỌA ĐỘ SÂN DỌC SANG SÂN NGANG 2D
     function setupTeamOnPitch(teamId, isHome) {
-      const teamPlayers = Object.values(players).filter(p => p.teamId === teamId);
-      const slots = FORMATIONS['4-3-3']; // Default engine formation
+      const tp = Object.values(players).filter(p => p.teamId === teamId);
+      const slots = FORMATIONS[currentFormation] || FORMATIONS['4-3-3'];
 
       return slots.map((slot, idx) => {
-        const p = teamPlayers[idx] || { name: `Cầu thủ ${idx+1}`, pac: 70, sho: 70, pas: 70, dri: 70, def: 70, phy: 70, iq: 70 };
+        const p = tp[idx] || { name: `Cầu thủ ${idx+1}`, pos: slot.pos, pac: 80, sho: 75, pas: 75, dri: 80, def: 75, phy: 75, iq: 80 };
         
-        // Map 2D Pitch % to Canvas WxH
-        let posX = (slot.left / 100) * (canvas.width / 2 - 40) + 20;
-        let posY = (slot.top / 100) * (canvas.height - 40) + 20;
+        // Slot Top (18%..88%) -> Chiều dài sân ngang (Sân nhà bên trái 30..420, Sân khách bên phải 480..870)
+        // Slot Left (12%..88%) -> Chiều rộng sân ngang Y (20..530)
+        let normalizedX = (100 - slot.top) / 100; // GK (top 88) -> 0.12 (sát gôn), ST (top 18) -> 0.82 (gần giữa sân)
+        let posX = 30 + normalizedX * (canvas.width / 2 - 60);
+        let posY = 20 + (slot.left / 100) * (canvas.height - 40);
 
         if (!isHome) {
-          posX = canvas.width - posX; // Mirror for Away team
+          posX = canvas.width - posX; // Đội khách lật sang nửa sân bên phải
         }
 
         return {
@@ -1199,147 +952,237 @@
           y: posY,
           baseX: posX,
           baseY: posY,
-          vx: 0, vy: 0,
-          isHome: isHome
+          isHome: isHome,
+          hasBall: false
         };
       });
+    }
+
+    function startMatchSimulation() {
+      const homeId = document.getElementById('matchHomeTeamSelect').value;
+      const awayId = document.getElementById('matchAwayTeamSelect').value;
+
+      if (!homeId || !awayId || homeId === awayId) {
+        return alert("Vui lòng chọn 2 đội bóng khác nhau!");
+      }
+
+      homeTeamState = setupTeamOnPitch(homeId, true);
+      awayTeamState = setupTeamOnPitch(awayId, false);
+
+      matchTime = 0;
+      ballState = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, owner: null };
+      
+      matchStats = { homeShots: 0, homeShotsTarget: 0, awayShots: 0, awayShotsTarget: 0, homeFouls: 0, awayFouls: 0, homeOffsides: 0, awayOffsides: 0, homeCardsY: 0, homeCardsR: 0, awayCardsY: 0, awayCardsR: 0, scoreHome: 0, scoreAway: 0 };
+      updateStatsUI();
+
+      isMatchRunning = true;
+      document.getElementById('btnStartMatch').style.display = 'none';
+      document.getElementById('btnStopMatch').style.display = 'inline-block';
+
+      logMatch("Trọng tài thổi còi bắt đầu trận đấu!");
+
+      if (matchInterval) clearInterval(matchInterval);
+      matchInterval = setInterval(updateMatchLoop, 60);
     }
 
     function updateMatchLoop() {
       if (!isMatchRunning) return;
 
-      matchTime += 0.15; // Speed up 90 mins
+      matchTime += 0.1;
       if (matchTime >= 90) {
         stopMatchSimulation();
-        logMatch("Hết giờ! Trận đấu kết thúc.");
+        logMatch("Trận đấu kết thúc!");
         return;
       }
 
       document.getElementById('matchTimerDisplay').innerText = `${Math.floor(matchTime)}:00`;
 
-      // Update AI Engine Physics
-      updateAIPlayerBehaviored();
+      updateAIEngine();
       updateBallPhysics();
-      updateRefereeAI();
-
-      // Render Frame
+      
       drawPitch();
       renderPlayersAndBall();
     }
 
-    function updateAIPlayerBehaviored() {
-      // AI Player Movement based on PAC & IQ
-      [...homeTeamState, ...awayTeamState].forEach(p => {
-        const speedMultiplier = (p.pac / 200) * 3 + 1; // Scaled move speed
-        
-        // Simple AI logic: move towards ball if near, else return to base position
+    function updateAIEngine() {
+      const allPlayers = [...homeTeamState, ...awayTeamState];
+
+      // Di chuyển Trọng tài chính
+      refereeState.x += (ballState.x - refereeState.x) * 0.05;
+      refereeState.y += (ballState.y - 40 - refereeState.y) * 0.05;
+
+      allPlayers.forEach(p => {
+        const speed = (p.pac / 200) * 2.5 + 1.2;
         const distToBall = Math.hypot(ballState.x - p.x, ballState.y - p.y);
 
-        if (distToBall < 120 && p.pos !== 'GK') {
-          const angle = Math.atan2(ballState.y - p.y, ballState.x - p.x);
-          p.x += Math.cos(angle) * speedMultiplier;
-          p.y += Math.sin(angle) * speedMultiplier;
+        if (ballState.owner === p) {
+          // CẦU THỦ ĐANG GIỮ BÓNG: Tự động dẫn bóng tiến về gôn đối phương
+          const targetGoalX = p.isHome ? canvas.width - 30 : 30;
+          const targetGoalY = canvas.height / 2;
+          const distToGoal = Math.hypot(targetGoalX - p.x, targetGoalY - p.y);
 
-          // Possession & Shooting Trigger
-          if (distToBall < 12) {
-            ballState.owner = p;
-            if (Math.random() < 0.05) {
-              triggerShot(p);
-            }
+          const angle = Math.atan2(targetGoalY - p.y, targetGoalX - p.x);
+          p.x += Math.cos(angle) * (speed * 0.7);
+          p.y += Math.sin(angle) * (speed * 0.7);
+
+          // Cập nhật vị trí bóng theo cầu thủ
+          ballState.x = p.x + Math.cos(angle) * 8;
+          ballState.y = p.y + Math.sin(angle) * 8;
+
+          // Quyết định sút khi tới gần gôn (< 180px)
+          if (distToGoal < 180 || Math.random() < 0.02) {
+            triggerShot(p, targetGoalX, targetGoalY);
+          } 
+          // Hoặc chuyền bóng ngẫu nhiên dựa vào chỉ số IQ
+          else if (Math.random() < 0.03 + (p.iq / 2000)) {
+            triggerPass(p);
           }
-        } else {
-          // Return to tactical position
-          p.x += (p.baseX - p.x) * 0.05;
-          p.y += (p.baseY - p.y) * 0.05;
+        } 
+        else if (!ballState.owner) {
+          // BÓNG TỰ DO: Cầu thủ gần bóng nhất lao vào tranh bóng
+          if (distToBall < 150) {
+            const angle = Math.atan2(ballState.y - p.y, ballState.x - p.x);
+            p.x += Math.cos(angle) * speed;
+            p.y += Math.sin(angle) * speed;
+
+            if (distToBall < 12) {
+              ballState.owner = p;
+              logMatch(`${p.name} (${p.isHome ? 'Đội nhà' : 'Đội khách'}) cướp được bóng!`);
+            }
+          } else {
+            // Trở về vị trí chiến thuật
+            p.x += (p.baseX - p.x) * 0.05;
+            p.y += (p.baseY - p.y) * 0.05;
+          }
+        } 
+        else {
+          // ĐỐI PHƯƠNG ĐANG CÓ BÓNG: Phòng ngự & Kèm người
+          if (p.isHome !== ballState.owner.isHome && distToBall < 120) {
+            const angle = Math.atan2(ballState.y - p.y, ballState.x - p.x);
+            p.x += Math.cos(angle) * speed;
+            p.y += Math.sin(angle) * speed;
+
+            // Xoạc cướp bóng
+            if (distToBall < 10 && Math.random() < 0.1) {
+              if (Math.random() * 200 < p.def) {
+                ballState.owner = p;
+                logMatch(`${p.name} xoạc bóng cắt bóng chính xác!`);
+              } else if (Math.random() < 0.2) {
+                // Phạm lỗi
+                if (p.isHome) matchStats.homeFouls++; else matchStats.awayFouls++;
+                logMatch(`Trọng tài thổi phạt! ${p.name} phạm lỗi nguy hiểm.`);
+                updateStatsUI();
+              }
+            }
+          } else {
+            p.x += (p.baseX - p.x) * 0.04;
+            p.y += (p.baseY - p.y) * 0.04;
+          }
         }
       });
     }
 
-    function triggerShot(p) {
-      const targetGoalX = p.isHome ? canvas.width - 20 : 20;
-      const targetGoalY = canvas.height / 2;
+    function triggerPass(p) {
+      const teammates = (p.isHome ? homeTeamState : awayTeamState).filter(tm => tm !== p);
+      if (!teammates.length) return;
 
-      logMatch(`${p.name} (${p.isHome ? 'Sân nhà' : 'Sân khách'}) tung cú sút căng!`);
-      
+      const target = teammates[Math.floor(Math.random() * teammates.length)];
+      logMatch(`${p.name} chuyền bóng cho ${target.name}.`);
+
+      ballState.owner = null;
+      const angle = Math.atan2(target.y - p.y, target.x - p.x);
+      ballState.vx = Math.cos(angle) * 8;
+      ballState.vy = Math.sin(angle) * 8;
+    }
+
+    function triggerShot(p, targetX, targetY) {
+      logMatch(`${p.name} dứt điểm từ xa!`);
+      ballState.owner = null;
+
       if (p.isHome) matchStats.homeShots++; else matchStats.awayShots++;
 
-      // Accuracy check by SHO attribute
-      if (Math.random() * 200 < p.sho) {
+      const isTarget = Math.random() * 200 < p.sho;
+      if (isTarget) {
         if (p.isHome) matchStats.homeShotsTarget++; else matchStats.awayShotsTarget++;
         
-        // Goal scored logic
-        if (Math.random() < 0.4) {
+        // Tỷ lệ ghi bàn
+        if (Math.random() < 0.45) {
           if (p.isHome) matchStats.scoreHome++; else matchStats.scoreAway++;
-          logMatch(`VÀO OOO! ${p.name} đã ghi bàn tuyệt đẹp!`);
+          logMatch(`VÀO OOO! Bàn thắng nâng tỷ số cho ${p.name}!`);
           document.getElementById('scoreHome').innerText = matchStats.scoreHome;
           document.getElementById('scoreAway').innerText = matchStats.scoreAway;
           resetBallToCenter();
+          return;
         }
       }
+
+      // Sút trượt hoặc bị cản phá
+      const angle = Math.atan2(targetY - p.y, targetX - p.x) + (Math.random() - 0.5) * 0.4;
+      ballState.vx = Math.cos(angle) * 10;
+      ballState.vy = Math.sin(angle) * 10;
+
       updateStatsUI();
     }
 
     function updateBallPhysics() {
-      if (ballState.owner) {
-        ballState.x = ballState.owner.x;
-        ballState.y = ballState.owner.y;
+      if (!ballState.owner) {
+        ballState.x += ballState.vx;
+        ballState.y += ballState.vy;
+        ballState.vx *= 0.92;
+        ballState.vy *= 0.92;
+
+        // Bật biên
+        if (ballState.x < 30 || ballState.x > canvas.width - 30) { ballState.vx *= -1; }
+        if (ballState.y < 20 || ballState.y > canvas.height - 20) { ballState.vy *= -1; }
       }
     }
 
-    function updateRefereeAI() {
-      // Referee follows ball movement
-      refereeState.x += (ballState.x - refereeState.x) * 0.05;
-      refereeState.y += (ballState.y - 50 - refereeState.y) * 0.05;
-
-      // Linesman stays on sideline
-      linesmanState.x = ballState.x;
-    }
-
     function resetBallToCenter() {
-      ballState.x = canvas.width / 2;
-      ballState.y = canvas.height / 2;
-      ballState.owner = null;
+      ballState = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, owner: null };
     }
 
     function renderPlayersAndBall() {
-      // Draw Referee (Yellow circle)
+      // Trọng tài
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
-      ctx.arc(refereeState.x, refereeState.y, 6, 0, Math.PI * 2);
+      ctx.arc(refereeState.x, refereeState.y, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw Home Players (Blue)
+      // Đội nhà (Xanh dương)
       homeTeamState.forEach(p => {
         ctx.fillStyle = '#3b82f6';
         ctx.beginPath();
         ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
 
-      // Draw Away Players (Red)
+      // Đội khách (Đỏ)
       awayTeamState.forEach(p => {
         ctx.fillStyle = '#ef4444';
         ctx.beginPath();
         ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
 
-      // Draw Ball (White/Black)
+      // Trái bóng
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(ballState.x, ballState.y, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
     function stopMatchSimulation() {
       isMatchRunning = false;
-      clearInterval(matchInterval);
+      if (matchInterval) clearInterval(matchInterval);
       document.getElementById('btnStartMatch').style.display = 'inline-block';
       document.getElementById('btnStopMatch').style.display = 'none';
     }
@@ -1352,14 +1195,11 @@
     }
 
     function logMatch(msg) {
-      const consoleDiv = document.getElementById('matchLogConsole');
-      consoleDiv.innerHTML += `<div>[${Math.floor(matchTime)}'] ${msg}</div>`;
-      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      const c = document.getElementById('matchLogConsole');
+      c.innerHTML += `<div>[${Math.floor(matchTime)}'] ${msg}</div>`;
+      c.scrollTop = c.scrollHeight;
     }
 
-    /* -------------------------------------------------------------
-       10. MODAL SYSTEM HELPERS
-    ------------------------------------------------------------- */
     function openModal(id) { document.getElementById(id).classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   </script>
