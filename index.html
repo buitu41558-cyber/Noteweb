@@ -3,936 +3,433 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VICTORIA FOOTBALL</title>
-  <!-- CDN Firebase 8.x bắt buộc để k bị lỗi trang trắng -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  
+  <title>2D Football Simulation - Reality Physics</title>
   <style>
-    :root {
-      --bg-dark: #0a0f1d;
-      --panel-bg: #131e36;
-      --accent-emerald: #10b981;
-      --accent-blue: #3b82f6;
-      --accent-red: #ef4444;
-      --text-main: #f3f4f6;
-      --text-sub: #9ca3af;
-      --border-color: #27395e;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
-
-    header {
-      background-color: var(--panel-bg);
-      padding: 12px 20px;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a1a1a;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      border-bottom: 1px solid var(--border-color);
+      justify-content: center;
+      min-height: 100vh;
+      padding: 10px;
     }
-    .logo { font-weight: 800; font-size: 18px; color: var(--accent-emerald); letter-spacing: 1px; }
-
-    nav { display: flex; gap: 10px; }
-    .nav-btn {
-      background: transparent; border: none; color: var(--text-sub);
-      padding: 8px 12px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px;
-    }
-    .nav-btn.active, .nav-btn:hover { background-color: var(--border-color); color: var(--accent-emerald); }
-
-    .container { padding: 15px; max-width: 1000px; margin: 0 auto; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    .card {
-      background-color: var(--panel-bg);
-      border-radius: 8px;
+    #game-container {
+      display: flex;
+      gap: 15px;
+      background: #2a2a2a;
       padding: 15px;
-      border: 1px solid var(--border-color);
-      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
-
-    .btn {
-      background: var(--accent-emerald); color: #fff; border: none;
-      padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+    #canvas-wrapper {
+      position: relative;
     }
-    .btn-danger { background: var(--accent-red); }
-    .btn-secondary { background: var(--border-color); color: var(--text-main); }
-
-    /* Sa bàn sơ đồ quản lý squad */
-    .pitch-vertical {
-      width: 100%; max-width: 340px; height: 460px;
-      background: #277738; margin: 0 auto; position: relative;
-      border: 2px solid #fff; border-radius: 8px; overflow: hidden;
+    canvas {
+      background: #388e3c;
+      border: 4px solid #fff;
+      border-radius: 4px;
+      display: block;
     }
-    .pitch-line-center {
-      position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.6);
+    #sidebar {
+      width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .pitch-circle-center {
-      position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
-      border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; transform: translate(-50%, -50%);
+    .scoreboard {
+      background: #111;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #444;
     }
-
-    .player-slot {
-      position: absolute; transform: translate(-50%, -50%);
-      display: flex; flex-direction: column; align-items: center; cursor: pointer;
+    .score-title { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+    .score-display { font-size: 24px; font-weight: bold; color: #4caf50; }
+    .stats-panel, .log-panel {
+      background: #111;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      font-size: 13px;
     }
-    .player-card-mini {
-      width: 32px; height: 32px; border-radius: 50%; background: #fff; color: #000;
-      display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;
-      border: 2px solid var(--accent-emerald); overflow: hidden;
+    .stats-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .log-panel {
+      height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #ddd;
     }
-    .player-card-mini img { width: 100%; height: 100%; object-fit: cover; }
-    .player-pos-tag {
-      background: rgba(0,0,0,0.7); color: #fff; font-size: 9px; padding: 1px 4px;
-      border-radius: 3px; margin-top: 2px; white-space: nowrap;
+    .log-item { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
+    .controls { display: flex; gap: 8px; }
+    button {
+      flex: 1;
+      padding: 8px;
+      background: #4caf50;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
     }
-
-    /* Mô phỏng trận đấu 2D Canvas */
-    .match-container { display: flex; flex-direction: column; align-items: center; }
-    canvas { background: #2e7d32; border-radius: 8px; border: 2px solid var(--border-color); max-width: 100%; }
-    
-    .match-log {
-      width: 100%; height: 120px; background: #070b14; border: 1px solid var(--border-color);
-      border-radius: 6px; padding: 10px; font-family: monospace; font-size: 11px;
-      overflow-y: auto; color: var(--text-sub); margin-top: 10px;
-    }
-
-    /* Modal */
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 999;
-    }
-    .modal.active { display: flex; }
-    .modal-content {
-      background: var(--panel-bg); padding: 20px; border-radius: 8px;
-      width: 90%; max-width: 400px; border: 1px solid var(--border-color);
-    }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 8px; background: var(--bg-dark); border: 1px solid var(--border-color);
-      color: #fff; border-radius: 4px; font-size: 13px;
-    }
-    
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
-    th { color: var(--text-sub); }
+    button:hover { background: #45a049; }
+    button#reset-btn { background: #f44336; }
+    button#reset-btn:hover { background: #da190b; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">VICTORIA FOOTBALL</div>
-    <nav>
-      <button class="nav-btn active" onclick="switchScreen('dashboard')">Bảng Điều Khiển</button>
-      <button class="nav-btn" onclick="switchScreen('database')">Kho Cầu Thủ & Đội</button>
-      <button class="nav-btn" onclick="switchScreen('squad')">Quản Lý Đội Hình</button>
-      <button class="nav-btn" onclick="switchScreen('match')">Mô Phỏng Trận Đấu</button>
-      <button class="nav-btn" onclick="openAdminModal()">Đăng Nhập Admin</button>
-    </nav>
-  </header>
-
-  <div class="container">
-    
-    <!-- DASHBOARD -->
-    <div id="screen-dashboard" class="screen active">
-      <div class="card">
-        <h3 style="margin-bottom: 10px;">Tổng Quan Đội Bóng</h3>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div class="form-group" style="margin:0;">
-              <select id="activeTeamSelect" onchange="changeActiveTeam(this.value)"></select>
-            </div>
-          </div>
-          <div id="adminStatusText" style="font-size:12px; color:var(--accent-red);">Quyền: Khách (Chỉ xem)</div>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px;">
-        <div class="card" style="text-align:center;">
-          <img id="dashTeamLogo" src="" style="width:60px; height:60px; border-radius:50%; margin-bottom:8px; object-fit:cover;">
-          <h4 id="dashTeamName">Chưa Chọn</h4>
-        </div>
-        <div class="card" style="text-align:center;">
-          <div style="font-size:28px; font-weight:bold; color:var(--accent-emerald);" id="dashTeamOVR">0</div>
-          <div style="font-size:12px; color:var(--text-sub);">Chỉ Số Trung Bình (OVR)</div>
-        </div>
-        <div class="card" style="text-align:center;">
-          <div style="font-size:28px; font-weight:bold; color:var(--accent-blue);" id="dashPlayerCount">0</div>
-          <div style="font-size:12px; color:var(--text-sub);">Số Lượng Cầu Thủ</div>
-        </div>
-      </div>
+  <div id="game-container">
+    <div id="canvas-wrapper">
+      <canvas id="pitch" width="800" height="500"></canvas>
     </div>
 
-    <!-- DATABASE -->
-    <div id="screen-database" class="screen">
-      <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; gap:10px;">
-          <input type="text" id="searchPlayerInput" placeholder="Tìm tên cầu thủ..." style="padding:6px; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; border-radius:4px;" oninput="renderDatabaseTable()">
-          <select id="filterPosSelect" style="padding:6px; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; border-radius:4px;" onchange="renderDatabaseTable()">
-            <option value="">Tất cả vị trí</option>
-            <option value="GK">GK</option><option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option>
-            <option value="CDM">CDM</option><option value="CM">CM</option><option value="CAM">CAM</option>
-            <option value="ST">ST</option><option value="LW">LW</option><option value="RW">RW</option>
-          </select>
-        </div>
-        <div id="adminDataControls" style="display:none; gap:10px;">
-          <button class="btn" onclick="openModal('modalCreateTeam')">+ Tạo Đội</button>
-          <button class="btn" onclick="openModal('modalCreatePlayer')">+ Tạo Cầu Thủ</button>
-        </div>
+    <div id="sidebar">
+      <div class="scoreboard">
+        <div class="score-title">TRẬN ĐẤU GIẢ LẬP</div>
+        <div class="score-display" id="score">RED 0 - 0 BLUE</div>
       </div>
-      <div class="card" style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Ảnh</th><th>Tên</th><th>Vị Trí</th><th>OVR</th><th>PAC</th><th>SHO</th><th>PAS</th><th>DRI</th><th>DEF</th><th>PHY</th><th>Đội</th>
-              <th class="admin-col" style="display:none;">Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="playerTableBody"></tbody>
-        </table>
-      </div>
-    </div>
 
-    <!-- SQUAD FORMATION -->
-    <div id="screen-squad" class="screen">
-      <div style="display:grid; grid-template-columns: 1fr 300px; gap:15px;">
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h4>Sơ Đồ Chiến Thuật</h4>
-            <select id="formationSelect" style="padding:6px; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; border-radius:4px;" onchange="changeFormation(this.value)">
-              <option value="4-3-3">4-3-3</option>
-              <option value="4-2-3-1">4-2-3-1</option>
-              <option value="4-4-2">4-4-2</option>
-              <option value="3-5-2">3-5-2</option>
-            </select>
-          </div>
-          <div class="pitch-vertical" id="squadPitch">
-            <div class="pitch-line-center"></div>
-            <div class="pitch-circle-center"></div>
-          </div>
-        </div>
-        <div class="card">
-          <h4 style="margin-bottom:10px;">Cầu Thủ Dự Bị</h4>
-          <div id="benchList" style="display:flex; flex-direction:column; gap:8px;"></div>
-        </div>
+      <div class="stats-panel">
+        <div class="stats-row"><span>Sút bóng:</span><span id="stat-shots">0 - 0</span></div>
+        <div class="stats-row"><span>Phạm lỗi:</span><span id="stat-fouls">0 - 0</span></div>
+        <div class="stats-row"><span>Kiểm soát bóng:</span><span id="stat-possession">50% - 50%</span></div>
       </div>
-    </div>
 
-    <!-- MATCH SIMULATION -->
-    <div id="screen-match" class="screen">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div style="width:200px;">
-            <label style="font-size:11px; color:var(--text-sub);">ĐỘI NHÀ</label>
-            <select id="matchHomeTeamSelect" style="width:100%; padding:6px; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; border-radius:4px;"></select>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:24px; font-weight:bold;"><span id="scoreHome">0</span> - <span id="scoreAway">0</span></div>
-            <div id="matchTimerDisplay" style="font-size:12px; color:var(--accent-emerald);">00:00</div>
-          </div>
-          <div style="width:200px;">
-            <label style="font-size:11px; color:var(--text-sub);">ĐỘI KHÁCH</label>
-            <select id="matchAwayTeamSelect" style="width:100%; padding:6px; background:var(--bg-dark); border:1px solid var(--border-color); color:#fff; border-radius:4px;"></select>
-          </div>
-        </div>
-        <div style="text-align:center; margin-bottom:15px;">
-          <button id="btnStartMatch" class="btn" onclick="startMatchSimulation()">Bắt Đầu</button>
-          <button id="btnStopMatch" class="btn btn-danger" style="display:none;" onclick="stopMatchSimulation()">Dừng Trận Đấu</button>
-        </div>
-        <div class="match-container">
-          <canvas id="matchCanvas" width="900" height="550"></canvas>
-          <div id="matchLogConsole" class="match-log"></div>
-        </div>
+      <div class="log-panel" id="match-log">
+        <div class="log-item">--- Trận đấu bắt đầu ---</div>
       </div>
-      <div class="card">
-        <h4>Thống Kê</h4>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; font-size:12px;">
-          <div>Sút (Trúng Đích): <strong id="statShots">0 (0) - 0 (0)</strong></div>
-          <div>Phạm Lỗi: <strong id="statFouls">0 - 0</strong></div>
-          <div>Việt Vị: <strong id="statOffsides">0 - 0</strong></div>
-          <div>Thẻ Vàng / Thẻ Đỏ: <strong id="statCards">0/0 - 0/0</strong></div>
-        </div>
-      </div>
-    </div>
 
-  </div>
-
-  <!-- MODALS -->
-  <div id="modalAdmin" class="modal">
-    <div class="modal-content">
-      <h3 style="margin-bottom:12px;">Đăng Nhập Admin</h3>
-      <div class="form-group">
-        <label>Mật Khẩu</label>
-        <input type="password" id="adminPasswordInput" placeholder="Nhập admin123">
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="btn btn-secondary" onclick="closeModal('modalAdmin')">Hủy</button>
-        <button class="btn" onclick="loginAdmin()">Đăng Nhập</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalCreateTeam" class="modal">
-    <div class="modal-content">
-      <h3 style="margin-bottom:12px;">Tạo Đội Bóng</h3>
-      <div class="form-group">
-        <label>Tên Đội</label>
-        <input type="text" id="teamNameInput">
-      </div>
-      <div class="form-group">
-        <label>Logo Đội</label>
-        <input type="file" id="teamLogoInput" accept="image/*">
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="btn btn-secondary" onclick="closeModal('modalCreateTeam')">Hủy</button>
-        <button class="btn" onclick="saveTeam()">Lưu</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalCreatePlayer" class="modal">
-    <div class="modal-content" style="max-height:85vh; overflow-y:auto;">
-      <h3 style="margin-bottom:12px;">Tạo Cầu Thủ</h3>
-      <div class="form-group"><label>Tên Cầu Thủ</label><input type="text" id="playerNameInput"></div>
-      <div class="form-group"><label>Thuộc Đội</label><select id="playerTeamSelect"></select></div>
-      <div class="form-group">
-        <label>Vị Trí</label>
-        <select id="playerPosSelect">
-          <option value="GK">GK</option><option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option>
-          <option value="CDM">CDM</option><option value="CM">CM</option><option value="CAM">CAM</option>
-          <option value="ST">ST</option><option value="LW">LW</option><option value="RW">RW</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Ảnh Cầu Thủ</label><input type="file" id="playerPhotoInput" accept="image/*"></div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-        <div class="form-group"><label>PAC (Tốc độ)</label><input type="number" id="attrPAC" value="80"></div>
-        <div class="form-group"><label>SHO (Sút)</label><input type="number" id="attrSHO" value="75"></div>
-        <div class="form-group"><label>PAS (Chuyền)</label><input type="number" id="attrPAS" value="75"></div>
-        <div class="form-group"><label>DRI (Rê bóng)</label><input type="number" id="attrDRI" value="80"></div>
-        <div class="form-group"><label>DEF (Phòng thủ)</label><input type="number" id="attrDEF" value="70"></div>
-        <div class="form-group"><label>PHY (Thể lực)</label><input type="number" id="attrPHY" value="75"></div>
-      </div>
-      <div class="form-group"><label>IQ (Tư duy)</label><input type="number" id="attrIQ" value="85"></div>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-        <button class="btn btn-secondary" onclick="closeModal('modalCreatePlayer')">Hủy</button>
-        <button class="btn" onclick="savePlayer()">Lưu Cầu Thủ</button>
+      <div class="controls">
+        <button id="pause-btn">Tạm dừng</button>
+        <button id="reset-btn">Làm mới</button>
       </div>
     </div>
   </div>
 
   <script>
-    /* FIREBASE & STATE */
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "your-app.firebaseapp.com",
-      databaseURL: "https://your-app-default-rtdb.firebaseio.com",
-      projectId: "your-app",
-      storageBucket: "your-app.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
+    const canvas = document.getElementById('pitch');
+    const ctx = canvas.getContext('2d');
+
+    let isRunning = true;
+    let matchStats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeFouls: 0, awayFouls: 0, homePoss: 50 };
+
+    // Khởi tạo Bóng
+    const ballState = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: 0,
+      vy: 0,
+      owner: null,
+      radius: 5
     };
 
-    let db = null;
-    let isFirebaseConnected = false;
+    // Khởi tạo Trọng tài
+    const refereeState = { x: canvas.width / 2, y: canvas.height / 2 - 50 };
 
-    try {
-      if (firebaseConfig.apiKey !== "YOUR_API_KEY" && typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        isFirebaseConnected = true;
-      }
-    } catch(e) {}
+    // Khởi tạo Cầu thủ (Home: Red, Away: Blue)
+    function createTeam(isHome) {
+      const team = [];
+      const color = isHome ? '#e53935' : '#1e88e5';
+      const startX = isHome ? 100 : canvas.width - 100;
 
-    let isAdmin = false;
-    let activeTeamId = null;
-    let currentFormation = '4-3-3';
-    
-    let teams = {};
-    let players = {};
-    let squadLineup = {};
+      // 1 GK, 2 DEF, 2 MID, 1 FW
+      const positions = [
+        { role: 'GK', x: isHome ? 40 : canvas.width - 40, y: canvas.height / 2, pac: 50, phy: 80, def: 85, dri: 40 },
+        { role: 'DEF', x: isHome ? 180 : canvas.width - 180, y: 150, pac: 65, phy: 85, def: 80, dri: 50 },
+        { role: 'DEF', x: isHome ? 180 : canvas.width - 180, y: 350, pac: 65, phy: 85, def: 80, dri: 50 },
+        { role: 'MID', x: isHome ? 320 : canvas.width - 320, y: 180, pac: 75, phy: 70, def: 65, dri: 75 },
+        { role: 'MID', x: isHome ? 320 : canvas.width - 320, y: 320, pac: 75, phy: 70, def: 65, dri: 75 },
+        { role: 'FW',  x: isHome ? 380 : canvas.width - 380, y: 250, pac: 85, phy: 70, def: 40, dri: 85 }
+      ];
 
-    const FORMATIONS = {
-      '4-3-3': [
-        { id: 'gk', pos: 'GK', top: 88, left: 50 },
-        { id: 'lb', pos: 'LB', top: 70, left: 15 },
-        { id: 'cb1', pos: 'CB', top: 75, left: 38 },
-        { id: 'cb2', pos: 'CB', top: 75, left: 62 },
-        { id: 'rb', pos: 'RB', top: 70, left: 85 },
-        { id: 'cm1', pos: 'CM', top: 48, left: 30 },
-        { id: 'cdm', pos: 'CDM', top: 52, left: 50 },
-        { id: 'cm2', pos: 'CM', top: 48, left: 70 },
-        { id: 'lw', pos: 'LW', top: 22, left: 20 },
-        { id: 'st', pos: 'ST', top: 18, left: 50 },
-        { id: 'rw', pos: 'RW', top: 22, left: 80 }
-      ],
-      '4-2-3-1': [
-        { id: 'gk', pos: 'GK', top: 88, left: 50 },
-        { id: 'lb', pos: 'LB', top: 72, left: 15 },
-        { id: 'cb1', pos: 'CB', top: 75, left: 38 },
-        { id: 'cb2', pos: 'CB', top: 75, left: 62 },
-        { id: 'rb', pos: 'RB', top: 72, left: 85 },
-        { id: 'cdm1', pos: 'CDM', top: 58, left: 35 },
-        { id: 'cdm2', pos: 'CDM', top: 58, left: 65 },
-        { id: 'cam1', pos: 'LM', top: 35, left: 20 },
-        { id: 'cam2', pos: 'CAM', top: 32, left: 50 },
-        { id: 'cam3', pos: 'RM', top: 35, left: 80 },
-        { id: 'st', pos: 'ST', top: 16, left: 50 }
-      ],
-      '4-4-2': [
-        { id: 'gk', pos: 'GK', top: 88, left: 50 },
-        { id: 'lb', pos: 'LB', top: 72, left: 15 },
-        { id: 'cb1', pos: 'CB', top: 75, left: 38 },
-        { id: 'cb2', pos: 'CB', top: 75, left: 62 },
-        { id: 'rb', pos: 'RB', top: 72, left: 85 },
-        { id: 'lm', pos: 'LM', top: 48, left: 15 },
-        { id: 'cm1', pos: 'CM', top: 50, left: 38 },
-        { id: 'cm2', pos: 'CM', top: 50, left: 62 },
-        { id: 'rm', pos: 'RM', top: 48, left: 85 },
-        { id: 'st1', pos: 'ST', top: 20, left: 35 },
-        { id: 'st2', pos: 'ST', top: 20, left: 65 }
-      ],
-      '3-5-2': [
-        { id: 'gk', pos: 'GK', top: 88, left: 50 },
-        { id: 'cb1', pos: 'CB', top: 75, left: 25 },
-        { id: 'cb2', pos: 'CB', top: 78, left: 50 },
-        { id: 'cb3', pos: 'CB', top: 75, left: 75 },
-        { id: 'cdm1', pos: 'CDM', top: 56, left: 38 },
-        { id: 'cdm2', pos: 'CDM', top: 56, left: 62 },
-        { id: 'lm', pos: 'LWB', top: 40, left: 12 },
-        { id: 'cam', pos: 'CAM', top: 38, left: 50 },
-        { id: 'rm', pos: 'RWB', top: 40, left: 88 },
-        { id: 'st1', pos: 'ST', top: 18, left: 35 },
-        { id: 'st2', pos: 'ST', top: 18, left: 65 }
-      ]
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadData();
-      renderSquadPitch();
-      initMatchCanvas();
-    });
-
-    function loadData() {
-      if (isFirebaseConnected) {
-        db.ref('teams').on('value', (s) => { teams = s.val() || {}; updateTeamDropdowns(); renderDashboard(); });
-        db.ref('players').on('value', (s) => { players = s.val() || {}; renderDatabaseTable(); renderSquadPitch(); });
-      } else {
-        const lt = localStorage.getItem('victoria_teams');
-        const lp = localStorage.getItem('victoria_players');
-        if (lt) teams = JSON.parse(lt);
-        if (lp) players = JSON.parse(lp);
-        updateTeamDropdowns();
-        renderDashboard();
-        renderDatabaseTable();
-        renderSquadPitch();
-      }
-    }
-
-    function saveData(k, v) {
-      if (isFirebaseConnected) db.ref(k).set(v);
-      else localStorage.setItem(`victoria_${k}`, JSON.stringify(v));
-    }
-
-    function switchScreen(sId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`screen-${sId}`).classList.add('active');
-      if (event && event.currentTarget) event.currentTarget.classList.add('active');
-      if (sId === 'squad') renderSquadPitch();
-      if (sId === 'dashboard') renderDashboard();
-    }
-
-    function openAdminModal() { openModal('modalAdmin'); }
-    function loginAdmin() {
-      if (document.getElementById('adminPasswordInput').value === 'admin123') {
-        isAdmin = true;
-        document.getElementById('adminStatusText').innerText = "Quyền: Quản Trị Viên (Admin)";
-        document.getElementById('adminStatusText').style.color = "var(--accent-emerald)";
-        document.getElementById('adminDataControls').style.display = "flex";
-        document.querySelectorAll('.admin-col').forEach(c => c.style.display = "table-cell");
-        closeModal('modalAdmin');
-        renderDatabaseTable();
-      } else alert("Mật khẩu sai!");
-    }
-
-    function saveTeam() {
-      if (!isAdmin) return;
-      const name = document.getElementById('teamNameInput').value;
-      const fileInput = document.getElementById('teamLogoInput');
-      if (!name) return alert("Vui lòng nhập tên!");
-
-      const id = 'team_' + Date.now();
-      const save = (logo) => {
-        teams[id] = { id, name, logo: logo || '' };
-        saveData('teams', teams);
-        updateTeamDropdowns();
-        closeModal('modalCreateTeam');
-      };
-
-      if (fileInput.files && fileInput.files[0]) {
-        const r = new FileReader();
-        r.onload = (e) => save(e.target.result);
-        r.readAsDataURL(fileInput.files[0]);
-      } else save('');
-    }
-
-    function savePlayer() {
-      if (!isAdmin) return;
-      const name = document.getElementById('playerNameInput').value;
-      const teamId = document.getElementById('playerTeamSelect').value;
-      const pos = document.getElementById('playerPosSelect').value;
-      const photoInput = document.getElementById('playerPhotoInput');
-
-      const pac = parseInt(document.getElementById('attrPAC').value) || 80;
-      const sho = parseInt(document.getElementById('attrSHO').value) || 75;
-      const pas = parseInt(document.getElementById('attrPAS').value) || 75;
-      const dri = parseInt(document.getElementById('attrDRI').value) || 80;
-      const def = parseInt(document.getElementById('attrDEF').value) || 70;
-      const phy = parseInt(document.getElementById('attrPHY').value) || 75;
-      const iq = parseInt(document.getElementById('attrIQ').value) || 85;
-
-      if (!name) return alert("Nhập tên cầu thủ!");
-
-      const ovr = Math.round((pac + sho + pas + dri + def + phy + iq) / 7);
-      const id = 'player_' + Date.now();
-
-      const save = (photo) => {
-        players[id] = { id, name, teamId, pos, photo: photo || '', ovr, pac, sho, pas, dri, def, phy, iq };
-        saveData('players', players);
-        renderDatabaseTable();
-        closeModal('modalCreatePlayer');
-      };
-
-      if (photoInput.files && photoInput.files[0]) {
-        const r = new FileReader();
-        r.onload = (e) => save(e.target.result);
-        r.readAsDataURL(photoInput.files[0]);
-      } else save('');
-    }
-
-    function deletePlayer(id) {
-      if (!isAdmin) return;
-      if (confirm("Xóa cầu thủ này?")) {
-        delete players[id];
-        saveData('players', players);
-        renderDatabaseTable();
-      }
-    }
-
-    function updateTeamDropdowns() {
-      let html = '<option value="">-- Chọn Đội --</option>';
-      Object.values(teams).forEach(t => { html += `<option value="${t.id}">${t.name}</option>`; });
-      document.getElementById('activeTeamSelect').innerHTML = html;
-      document.getElementById('playerTeamSelect').innerHTML = html;
-      document.getElementById('matchHomeTeamSelect').innerHTML = html;
-      document.getElementById('matchAwayTeamSelect').innerHTML = html;
-      if (activeTeamId) document.getElementById('activeTeamSelect').value = activeTeamId;
-    }
-
-    function changeActiveTeam(id) { activeTeamId = id; renderDashboard(); renderSquadPitch(); }
-
-    function renderDashboard() {
-      if (!activeTeamId || !teams[activeTeamId]) {
-        document.getElementById('dashTeamName').innerText = "Chưa chọn Đội";
-        document.getElementById('dashTeamOVR').innerText = "0";
-        document.getElementById('dashPlayerCount').innerText = "0";
-        return;
-      }
-      const t = teams[activeTeamId];
-      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
-      const avg = tp.length ? Math.round(tp.reduce((a, b) => a + b.ovr, 0) / tp.length) : 0;
-      document.getElementById('dashTeamName').innerText = t.name;
-      document.getElementById('dashTeamLogo').src = t.logo || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23131e36'/></svg>";
-      document.getElementById('dashTeamOVR').innerText = avg;
-      document.getElementById('dashPlayerCount').innerText = tp.length;
-    }
-
-    function renderDatabaseTable() {
-      const tbody = document.getElementById('playerTableBody');
-      const search = document.getElementById('searchPlayerInput').value.toLowerCase();
-      const posF = document.getElementById('filterPosSelect').value;
-      tbody.innerHTML = '';
-
-      Object.values(players).forEach(p => {
-        if (search && !p.name.toLowerCase().includes(search)) return;
-        if (posF && p.pos !== posF) return;
-
-        const team = teams[p.teamId];
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><img src="${p.photo || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'30\' height=\'30\'><circle cx=\'15\' cy=\'15\' r=\'15\' fill=\'%2327395e\'/></svg>'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;"></td>
-          <td style="font-weight:600;">${p.name}</td>
-          <td><span class="player-pos-tag">${p.pos}</span></td>
-          <td style="font-weight:700; color:var(--accent-emerald);">${p.ovr}</td>
-          <td>${p.pac}</td><td>${p.sho}</td><td>${p.pas}</td><td>${p.dri}</td><td>${p.def}</td><td>${p.phy}</td>
-          <td>${team ? team.name : 'Tự do'}</td>
-          <td class="admin-col" style="${isAdmin ? '' : 'display:none;'}">
-            <button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deletePlayer('${p.id}')">Xóa</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    /* SQUAD MANAGEMENT */
-    function changeFormation(f) { currentFormation = f; renderSquadPitch(); }
-
-    function renderSquadPitch() {
-      const pitch = document.getElementById('squadPitch');
-      pitch.querySelectorAll('.player-slot').forEach(s => s.remove());
-
-      const slots = FORMATIONS[currentFormation];
-      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
-
-      slots.forEach(s => {
-        const slotDiv = document.createElement('div');
-        slotDiv.className = 'player-slot';
-        slotDiv.style.top = `${s.top}%`;
-        slotDiv.style.left = `${s.left}%`;
-
-        const pId = squadLineup[s.id];
-        const p = players[pId];
-
-        slotDiv.innerHTML = `
-          <div class="player-card-mini">
-            ${p ? `<img src="${p.photo || ''}">` : s.pos}
-          </div>
-          <div class="player-pos-tag">${p ? p.name.split(' ').pop() : s.pos}</div>
-        `;
-        slotDiv.onclick = () => assignPlayerPrompt(s.id, s.pos);
-        pitch.appendChild(slotDiv);
-      });
-
-      const startingIds = Object.values(squadLineup);
-      const bench = tp.filter(p => !startingIds.includes(p.id));
-      const benchList = document.getElementById('benchList');
-      benchList.innerHTML = '';
-
-      bench.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'card';
-        item.style.padding = '6px 10px';
-        item.style.display = 'flex';
-        item.style.justifyContent = 'space-between';
-        item.style.alignItems = 'center';
-        item.innerHTML = `
-          <div><strong style="font-size:12px;">${p.name}</strong> <span class="player-pos-tag">${p.pos}</span></div>
-          <div style="font-weight:700; color:var(--accent-emerald); font-size:12px;">${p.ovr}</div>
-        `;
-        benchList.appendChild(item);
-      });
-    }
-
-    function assignPlayerPrompt(sId, reqPos) {
-      if (!activeTeamId) return alert("Vui lòng chọn đội bóng trước!");
-      const tp = Object.values(players).filter(p => p.teamId === activeTeamId);
-      let msg = `Chọn cầu thủ vị trí ${reqPos}:\n`;
-      tp.forEach((p, i) => { msg += `${i + 1}. ${p.name} (${p.pos} - OVR: ${p.ovr})\n`; });
-
-      const choice = prompt(msg);
-      if (choice) {
-        const idx = parseInt(choice) - 1;
-        if (tp[idx]) { squadLineup[sId] = tp[idx].id; renderSquadPitch(); }
-      }
-    }
-
-    /* MATCH SIMULATION ENGINE */
-    let canvas, ctx;
-    let matchInterval = null;
-    let matchTime = 0;
-    let isMatchRunning = false;
-
-    let homeTeamState = [], awayTeamState = [];
-    let ballState = { x: 450, y: 275, vx: 0, vy: 0, owner: null };
-    let refereeState = { x: 450, y: 200 };
-
-    let matchStats = {
-      homeShots: 0, homeShotsTarget: 0, awayShots: 0, awayShotsTarget: 0,
-      homeFouls: 0, awayFouls: 0, homeOffsides: 0, awayOffsides: 0,
-      homeCardsY: 0, homeCardsR: 0, awayCardsY: 0, awayCardsR: 0,
-      scoreHome: 0, scoreAway: 0
-    };
-
-    function initMatchCanvas() {
-      canvas = document.getElementById('matchCanvas');
-      ctx = canvas.getContext('2d');
-      drawPitch();
-    }
-
-    function drawPitch() {
-      ctx.fillStyle = '#2e7d32';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-      ctx.lineWidth = 2;
-
-      ctx.strokeRect(30, 20, canvas.width - 60, canvas.height - 40);
-
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 20);
-      ctx.lineTo(canvas.width / 2, canvas.height - 20);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 55, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.strokeRect(30, (canvas.height - 220) / 2, 110, 220);
-      ctx.strokeRect(canvas.width - 140, (canvas.height - 220) / 2, 110, 220);
-
-      ctx.strokeRect(30, (canvas.height - 100) / 2, 45, 100);
-      ctx.strokeRect(canvas.width - 75, (canvas.height - 100) / 2, 45, 100);
-
-      ctx.strokeRect(15, (canvas.height - 80) / 2, 15, 80);
-      ctx.strokeRect(canvas.width - 30, (canvas.height - 80) / 2, 15, 80);
-    }
-
-    function setupTeamOnPitch(teamId, isHome) {
-      const tp = Object.values(players).filter(p => p.teamId === teamId);
-      const slots = FORMATIONS[currentFormation] || FORMATIONS['4-3-3'];
-
-      return slots.map((slot, idx) => {
-        const p = tp[idx] || { name: `${isHome ? 'kid' : 'bot'}${idx+1}`, pos: slot.pos, pac: 80, sho: 75, pas: 75, dri: 80, def: 75, phy: 75, iq: 80 };
-        
-        let normalizedX = (100 - slot.top) / 100;
-        let posX = 30 + normalizedX * (canvas.width / 2 - 60);
-        let posY = 20 + (slot.left / 100) * (canvas.height - 40);
-
-        if (!isHome) posX = canvas.width - posX;
-
-        return {
-          ...p,
-          x: posX,
-          y: posY,
-          baseX: posX,
-          baseY: posY,
+      positions.forEach((p, index) => {
+        team.push({
+          id: (isHome ? 'H' : 'A') + (index + 1),
+          name: (isHome ? 'Red ' : 'Blue ') + (index + 1),
           isHome: isHome,
+          color: color,
+          role: p.role,
+          x: p.x,
+          y: p.y,
+          baseX: p.x,
+          baseY: p.y,
+          pac: p.pac,
+          phy: p.phy,
+          def: p.def,
+          dri: p.dri,
           cooldown: 0
-        };
+        });
       });
+      return team;
     }
 
-    function startMatchSimulation() {
-      const homeId = document.getElementById('matchHomeTeamSelect').value;
-      const awayId = document.getElementById('matchAwayTeamSelect').value;
+    let homeTeamState = createTeam(true);
+    let awayTeamState = createTeam(false);
 
-      if (!homeId || !awayId || homeId === awayId) {
-        return alert("Vui lòng chọn 2 đội bóng khác nhau!");
-      }
+    // LOGGING SYSTEM
+    function logMatch(msg) {
+      const logBox = document.getElementById('match-log');
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerText = msg;
+      logBox.appendChild(item);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
 
-      homeTeamState = setupTeamOnPitch(homeId, true);
-      awayTeamState = setupTeamOnPitch(awayId, false);
+    function updateStatsUI() {
+      document.getElementById('score').innerText = `RED ${matchStats.homeGoals} - ${matchStats.awayGoals} BLUE`;
+      document.getElementById('stat-shots').innerText = `${matchStats.homeShots} - ${matchStats.awayShots}`;
+      document.getElementById('stat-fouls').innerText = `${matchStats.homeFouls} - ${matchStats.awayFouls}`;
+    }
 
-      matchTime = 0;
-      ballState = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, owner: null };
+    // ACTIONS
+    function triggerShot(p, targetX, targetY) {
+      if (p.isHome) matchStats.homeShots++; else matchStats.awayShots++;
       
-      matchStats = { homeShots: 0, homeShotsTarget: 0, awayShots: 0, awayShotsTarget: 0, homeFouls: 0, awayFouls: 0, homeOffsides: 0, awayOffsides: 0, homeCardsY: 0, homeCardsR: 0, awayCardsY: 0, awayCardsR: 0, scoreHome: 0, scoreAway: 0 };
+      const angle = Math.atan2(targetY - p.y, targetX - p.x);
+      const power = 9 + Math.random() * 3;
+      
+      ballState.owner = null;
+      ballState.vx = Math.cos(angle) * power;
+      ballState.vy = Math.sin(angle) * power;
+      p.cooldown = 20;
+
+      logMatch(`${p.name} dứt điểm căng về phía khung thành!`);
       updateStatsUI();
-
-      isMatchRunning = true;
-      document.getElementById('btnStartMatch').style.display = 'none';
-      document.getElementById('btnStopMatch').style.display = 'inline-block';
-
-      logMatch("Trọng tài thổi còi bắt đầu trận đấu!");
-
-      if (matchInterval) clearInterval(matchInterval);
-      matchInterval = setInterval(updateMatchLoop, 60);
     }
 
-    function updateMatchLoop() {
-      if (!isMatchRunning) return;
+    function triggerPass(p) {
+      const teammates = (p.isHome ? homeTeamState : awayTeamState).filter(t => t !== p);
+      const target = teammates[Math.floor(Math.random() * teammates.length)];
 
-      matchTime += 0.1;
-      if (matchTime >= 90) {
-        stopMatchSimulation();
-        logMatch("Trận đấu kết thúc!");
-        return;
-      }
-
-      document.getElementById('matchTimerDisplay').innerText = `${Math.floor(matchTime)}:00`;
-
-      updateAIEngine();
-      updateBallPhysics();
-      
-      drawPitch();
-      renderPlayersAndBall();
+      const angle = Math.atan2(target.y - p.y, target.x - p.x);
+      ballState.owner = null;
+      ballState.vx = Math.cos(angle) * 6;
+      ballState.vy = Math.sin(angle) * 6;
+      p.cooldown = 15;
     }
 
+    // AI ENGINE (VẬT LÝ VÀ TRANH CHẤP CHÂN THỰC)
     function updateAIEngine() {
       const allPlayers = [...homeTeamState, ...awayTeamState];
 
-      refereeState.x += (ballState.x - refereeState.x) * 0.05;
-      refereeState.y += (ballState.y - 40 - refereeState.y) * 0.05;
+      // Trọng tài di chuyển
+      refereeState.x += (ballState.x - refereeState.x) * 0.03;
+      refereeState.y += (ballState.y - 40 - refereeState.y) * 0.03;
 
+      // Cập nhật bóng khi ko ai giữ
+      if (!ballState.owner) {
+        ballState.x += ballState.vx;
+        ballState.y += ballState.vy;
+        ballState.vx *= 0.95;
+        ballState.vy *= 0.95;
+
+        // Va chạm biên / Goal
+        if (ballState.y <= 10 || ballState.y >= canvas.height - 10) ballState.vy *= -1;
+        if (ballState.x <= 10) {
+          if (ballState.y > 200 && ballState.y < 300) {
+            matchStats.awayGoals++;
+            logMatch(`VÀOOO! Blue ghi bàn!`);
+            resetPositions();
+          } else {
+            ballState.vx *= -1;
+          }
+        }
+        if (ballState.x >= canvas.width - 10) {
+          if (ballState.y > 200 && ballState.y < 300) {
+            matchStats.homeGoals++;
+            logMatch(`VÀOOO! Red ghi bàn!`);
+            resetPositions();
+          } else {
+            ballState.vx *= -1;
+          }
+        }
+      }
+
+      // Logic Cầu thủ
       allPlayers.forEach(p => {
         if (p.cooldown > 0) p.cooldown--;
 
-        const speed = (p.pac / 200) * 2.2 + 1.0;
+        let speed = (p.pac / 200) * 2.0 + 1.0;
         const distToBall = Math.hypot(ballState.x - p.x, ballState.y - p.y);
 
+        // NẾU ĐANG GIỮ BÓNG
         if (ballState.owner === p) {
-          const targetGoalX = p.isHome ? canvas.width - 30 : 30;
+          const targetGoalX = p.isHome ? canvas.width - 20 : 20;
           const targetGoalY = canvas.height / 2;
           const distToGoal = Math.hypot(targetGoalX - p.x, targetGoalY - p.y);
+
+          // Tỳ đè tỳ vết: Kiểm tra đối phương ép sát
+          const enemyNear = allPlayers.find(e => e.isHome !== p.isHome && Math.hypot(e.x - p.x, e.y - p.y) < 18);
+          if (enemyNear) {
+            // Giảm tốc độ do bị đè, KHÔNG văng ra
+            const phyDiff = (enemyNear.phy - p.phy) / 100;
+            speed = Math.max(0.5, speed * (0.65 - phyDiff * 0.2));
+          }
 
           const angle = Math.atan2(targetGoalY - p.y, targetGoalX - p.x);
           p.x += Math.cos(angle) * (speed * 0.7);
           p.y += Math.sin(angle) * (speed * 0.7);
 
-          ballState.x = p.x + Math.cos(angle) * 10;
-          ballState.y = p.y + Math.sin(angle) * 10;
+          ballState.x = p.x + Math.cos(angle) * 8;
+          ballState.y = p.y + Math.sin(angle) * 8;
 
-          if (distToGoal < 160 || (distToGoal < 240 && Math.random() < 0.03)) {
+          if (distToGoal < 150 || (distToGoal < 220 && Math.random() < 0.025)) {
             triggerShot(p, targetGoalX, targetGoalY);
-          } else if (Math.random() < 0.04) {
+          } else if (Math.random() < 0.03 || enemyNear) {
             triggerPass(p);
           }
-        } else {
+        } 
+        // NẾU KO GIỮ BÓNG
+        else {
           if (distToBall < 180 && p.cooldown === 0) {
             const angle = Math.atan2(ballState.y - p.y, ballState.x - p.x);
             p.x += Math.cos(angle) * speed;
             p.y += Math.sin(angle) * speed;
 
-            if (distToBall < 14) {
-              if (!ballState.owner || Math.random() * 200 < p.def) {
+            // Tiếp cận sát tranh chấp
+            if (distToBall < 12) {
+              if (ballState.owner) {
+                const owner = ballState.owner;
+                const stealChance = (p.def * 0.6 + p.phy * 0.4) - (owner.dri * 0.5 + owner.phy * 0.5);
+                
+                // Tỷ lệ cướp bóng bằng tỳ đè
+                if (Math.random() * 100 < (48 + stealChance * 0.3)) {
+                  ballState.owner = p;
+                  p.cooldown = 15;
+                  owner.cooldown = 15;
+                  logMatch(`${p.name} tỳ đè cướp bóng thành công từ ${owner.name}!`);
+                } else if (Math.random() < 0.025) {
+                  // Phạm lỗi
+                  if (p.isHome) matchStats.homeFouls++; else matchStats.awayFouls++;
+                  logMatch(`Còi vang! ${p.name} phạm lỗi trg pha tranh chấp.`);
+                  updateStatsUI();
+                  p.cooldown = 25;
+                }
+              } else {
                 ballState.owner = p;
-                p.cooldown = 20;
-                logMatch(`${p.name} (${p.isHome ? 'Đội nhà' : 'Đội khách'}) cướp bóng thành công!`);
-              } else if (Math.random() < 0.05) {
-                if (p.isHome) matchStats.homeFouls++; else matchStats.awayFouls++;
-                logMatch(`Trọng tài thổi phạt! ${p.name} phạm lỗi.`);
-                updateStatsUI();
+                p.cooldown = 10;
               }
             }
           } else {
-            let shiftX = (ballState.x - canvas.width / 2) * 0.3;
+            // Định hình lại vị trí đội hình
+            let shiftX = (ballState.x - canvas.width / 2) * 0.35;
             let targetX = p.baseX + shiftX;
             let targetY = p.baseY;
 
-            p.x += (targetX - p.x) * 0.05;
-            p.y += (targetY - p.y) * 0.05;
+            p.x += (targetX - p.x) * 0.04;
+            p.y += (targetY - p.y) * 0.04;
           }
         }
       });
     }
 
-    function triggerPass(p) {
-      const teammates = (p.isHome ? homeTeamState : awayTeamState).filter(tm => tm !== p);
-      if (!teammates.length) return;
-
-      let target = teammates[Math.floor(Math.random() * teammates.length)];
-      logMatch(`${p.name} chuyền bóng cho ${target.name}.`);
-
-      p.cooldown = 25;
+    function resetPositions() {
+      ballState.x = canvas.width / 2;
+      ballState.y = canvas.height / 2;
+      ballState.vx = 0;
+      ballState.vy = 0;
       ballState.owner = null;
 
-      const angle = Math.atan2(target.y - p.y, target.x - p.x);
-      ballState.vx = Math.cos(angle) * 9;
-      ballState.vy = Math.sin(angle) * 9;
-    }
-
-    function triggerShot(p, targetX, targetY) {
-      logMatch(`${p.name} dứt điểm từ xa!`);
-      ballState.owner = null;
-      p.cooldown = 30;
-
-      if (p.isHome) matchStats.homeShots++; else matchStats.awayShots++;
-
-      const isTarget = Math.random() * 200 < p.sho;
-      if (isTarget) {
-        if (p.isHome) matchStats.homeShotsTarget++; else matchStats.awayShotsTarget++;
-        
-        if (Math.random() < 0.4) {
-          if (p.isHome) matchStats.scoreHome++; else matchStats.scoreAway++;
-          logMatch(`VÀO OOO! Bàn thắng nâng tỷ số cho ${p.name}!`);
-          document.getElementById('scoreHome').innerText = matchStats.scoreHome;
-          document.getElementById('scoreAway').innerText = matchStats.scoreAway;
-          resetBallToCenter();
-          return;
-        }
-      }
-
-      const angle = Math.atan2(targetY - p.y, targetX - p.x) + (Math.random() - 0.5) * 0.3;
-      ballState.vx = Math.cos(angle) * 11;
-      ballState.vy = Math.sin(angle) * 11;
-
+      [...homeTeamState, ...awayTeamState].forEach(p => {
+        p.x = p.baseX;
+        p.y = p.baseY;
+        p.cooldown = 0;
+      });
       updateStatsUI();
     }
 
-    function updateBallPhysics() {
-      if (!ballState.owner) {
-        ballState.x += ballState.vx;
-        ballState.y += ballState.vy;
-        ballState.vx *= 0.93;
-        ballState.vy *= 0.93;
+    // RENDER GRAPHICS
+    function drawPitch() {
+      ctx.fillStyle = '#388e3c';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        if (ballState.x < 30 || ballState.x > canvas.width - 30) { ballState.vx *= -1; }
-        if (ballState.y < 20 || ballState.y > canvas.height - 20) { ballState.vy *= -1; }
-      }
+      // Đường kẻ sân
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 2;
+
+      // Đường giữa sân & Vòng tròn trung tâm
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Vòng cấm địa (2 bên)
+      ctx.strokeRect(0, 120, 100, 260);
+      ctx.strokeRect(canvas.width - 100, 120, 100, 260);
+
+      // Khung thành
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 200, 8, 100);
+      ctx.fillRect(canvas.width - 8, 200, 8, 100);
     }
 
-    function resetBallToCenter() {
-      ballState = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, owner: null };
-    }
-
-    function renderPlayersAndBall() {
-      ctx.fillStyle = '#f59e0b';
+    function drawEntities() {
+      // Vẽ Trọng tài
+      ctx.fillStyle = '#ffeb3b';
       ctx.beginPath();
       ctx.arc(refereeState.x, refereeState.y, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      homeTeamState.forEach(p => {
-        ctx.fillStyle = '#3b82f6';
+      // Vẽ Cầu thủ
+      const allPlayers = [...homeTeamState, ...awayTeamState];
+      allPlayers.forEach(p => {
+        ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
         ctx.stroke();
+
+        // Tên cầu thủ
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px Arial';
+        ctx.fillText(p.role, p.x - 8, p.y - 11);
       });
 
-      awayTeamState.forEach(p => {
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      });
-
+      // Vẽ Bóng
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(ballState.x, ballState.y, 5, 0, Math.PI * 2);
+      ctx.arc(ballState.x, ballState.y, ballState.radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
-    function stopMatchSimulation() {
-      isMatchRunning = false;
-      if (matchInterval) clearInterval(matchInterval);
-      document.getElementById('btnStartMatch').style.display = 'inline-block';
-      document.getElementById('btnStopMatch').style.display = 'none';
+    // GAME LOOP
+    function gameLoop() {
+      if (isRunning) {
+        updateAIEngine();
+        drawPitch();
+        drawEntities();
+      }
+      requestAnimationFrame(gameLoop);
     }
 
-    function updateStatsUI() {
-      document.getElementById('statShots').innerText = `${matchStats.homeShots} (${matchStats.homeShotsTarget}) - ${matchStats.awayShots} (${matchStats.awayShotsTarget})`;
-      document.getElementById('statFouls').innerText = `${matchStats.homeFouls} - ${matchStats.awayFouls}`;
-      document.getElementById('statOffsides').innerText = `${matchStats.homeOffsides} - ${matchStats.awayOffsides}`;
-      document.getElementById('statCards').innerText = `${matchStats.homeCardsY}/${matchStats.homeCardsR} - ${matchStats.awayCardsY}/${matchStats.awayCardsR}`;
-    }
+    // CONTROLS
+    document.getElementById('pause-btn').addEventListener('click', (e) => {
+      isRunning = !isRunning;
+      e.target.innerText = isRunning ? 'Tạm dừng' : 'Tiếp tục';
+    });
 
-    function logMatch(msg) {
-      const c = document.getElementById('matchLogConsole');
-      c.innerHTML += `<div>[${Math.floor(matchTime)}'] ${msg}</div>`;
-      c.scrollTop = c.scrollHeight;
-    }
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      matchStats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeFouls: 0, awayFouls: 0, homePoss: 50 };
+      resetPositions();
+      document.getElementById('match-log').innerHTML = '<div class="log-item">--- Trận đấu bắt đầu lại ---</div>';
+    });
 
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    // START
+    gameLoop();
   </script>
 </body>
 </html>
