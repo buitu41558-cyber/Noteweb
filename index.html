@@ -1,586 +1,1795 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VICTORIA FOOTBALL - Pro Engine</title>
-  <style>
-    :root {
-      --bg-main: #0b132b;
-      --bg-card: #1c2541;
-      --accent: #00b4d8;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --text: #ffffff;
-      --text-dim: #94a3b8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victoria Football - Game Quản Lý & Mô Phỏng Bóng Đá</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    
-    body {
-      background: var(--bg-main);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 10px;
-    }
+    <style>
+        /* ==================== GLOBAL STYLES & FLAT DESIGN SYSTEM ==================== */
+        :root {
+            --bg-primary: #0b1329;
+            --bg-secondary: #111c38;
+            --bg-card: #1a274a;
+            --bg-hover: #23335e;
+            --emerald-main: #10b981;
+            --emerald-dark: #059669;
+            --emerald-light: #34d399;
+            --navy-dark: #070d1e;
+            --accent-blue: #2563eb;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #2e3d66;
+            --pitch-green: #2e7d32;
+            --pitch-line: rgba(255, 255, 255, 0.7);
+        }
 
-    header {
-      width: 100%;
-      max-width: 1000px;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--bg-card);
-      border-radius: 8px;
-      margin-bottom: 12px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
 
-    .brand { font-size: 18px; font-weight: 800; color: var(--accent-green); letter-spacing: 1px; }
-    .role-badge { font-size: 12px; color: var(--text-dim); }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    .main-layout {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-      max-width: 1000px;
-    }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
 
-    @media (min-width: 850px) {
-      .main-layout { display: grid; grid-template-columns: 1fr 320px; }
-    }
+        /* ==================== LAYOUT & SIDEBAR ==================== */
+        #app-sidebar {
+            width: 260px;
+            background-color: var(--navy-dark);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
 
-    .pitch-container {
-      background: var(--bg-card);
-      padding: 12px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .brand-logo {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    .score-board {
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      width: 100%;
-      margin-bottom: 10px;
-      background: rgba(0,0,0,0.2);
-      padding: 8px 15px;
-      border-radius: 6px;
-    }
+        .brand-logo i {
+            font-size: 28px;
+            color: var(--emerald-main);
+        }
 
-    .team-name { font-weight: bold; font-size: 14px; }
-    .score { font-size: 22px; font-weight: 900; color: #fff; }
-    .timer { font-family: monospace; font-size: 16px; color: var(--accent); font-weight: bold; }
+        .brand-logo h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
 
-    canvas {
-      width: 100%;
-      max-width: 650px;
-      height: auto;
-      aspect-ratio: 13 / 8;
-      background: #2e7d32;
-      border: 2px solid rgba(255,255,255,0.8);
-      border-radius: 4px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
+        .nav-menu {
+            list-style: none;
+            padding: 15px 10px;
+            flex-grow: 1;
+        }
 
-    .controls-btn {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      width: 100%;
-    }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-    button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+        .nav-item:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-main);
+        }
 
-    .btn-start { background: var(--accent-green); color: #fff; }
-    .btn-reset { background: var(--accent-red); color: #fff; }
-    button:hover { opacity: 0.85; }
+        .nav-item.active {
+            background-color: var(--emerald-main);
+            color: #ffffff;
+        }
 
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        .nav-item i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
 
-    .panel {
-      background: var(--bg-card);
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
+        .admin-status-box {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+        }
 
-    .panel-title {
-      font-size: 13px;
-      font-weight: bold;
-      color: var(--accent);
-      margin-bottom: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding-bottom: 4px;
-    }
+        .admin-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
 
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-bottom: 6px;
-      color: var(--text-dim);
-    }
-    .stat-row span:last-child { color: #fff; font-weight: bold; }
+        /* ==================== MAIN CONTENT AREA ==================== */
+        #app-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
 
-    .log-box {
-      height: 180px;
-      overflow-y: auto;
-      font-size: 11px;
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+        .top-header {
+            height: 60px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+        }
 
-    .log-item {
-      padding: 3px 6px;
-      background: rgba(0,0,0,0.15);
-      border-radius: 3px;
-      border-left: 2px solid var(--accent);
-    }
-  </style>
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .team-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-selector select {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .content-body {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .view-panel {
+            display: none;
+            height: 100%;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        /* ==================== UI COMPONENTS ==================== */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-emerald { background-color: var(--emerald-main); color: #fff; }
+        .btn-emerald:hover { background-color: var(--emerald-dark); }
+        .btn-blue { background-color: var(--accent-blue); color: #fff; }
+        .btn-red { background-color: var(--accent-red); color: #fff; }
+        .btn-secondary { background-color: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+        /* ==================== DASHBOARD VIEW ==================== */
+        .dash-overview {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border-left: 5px solid var(--emerald-main);
+        }
+
+        .team-logo-lg {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            background-color: var(--navy-dark);
+            border-radius: 12px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .ovr-badge {
+            background-color: var(--emerald-main);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 20px;
+            display: inline-block;
+        }
+
+        /* ==================== PLAYER DATABASE VIEW ==================== */
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .player-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--emerald-main);
+        }
+
+        .player-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--bg-card);
+            margin-bottom: 8px;
+            border: 2px solid var(--border-color);
+        }
+
+        .player-pos-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--accent-blue);
+            color: #fff;
+            font-weight: 700;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .player-ovr-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--emerald-main);
+            color: #fff;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .player-name {
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .player-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .player-stats-mini {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            width: 100%;
+            font-size: 10px;
+            text-align: center;
+            background-color: var(--bg-primary);
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .stat-item span { font-weight: 700; color: var(--emerald-light); }
+
+        /* ==================== SQUAD MANAGEMENT VIEW ==================== */
+        .squad-container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 120px);
+        }
+
+        .pitch-2d {
+            flex-grow: 1;
+            background-color: var(--pitch-green);
+            border: 2px solid #fff;
+            border-radius: 8px;
+            position: relative;
+            background-image: 
+                linear-gradient(to bottom, rgba(255,255,255,0.05) 50%, transparent 50%),
+                linear-gradient(to right, rgba(0,0,0,0.05) 50%, transparent 50%);
+            background-size: 100% 10%, 10% 100%;
+            overflow: hidden;
+        }
+
+        .pitch-line-center {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--pitch-line);
+        }
+
+        .pitch-circle-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--pitch-line);
+            border-radius: 50%;
+        }
+
+        .pitch-box-top {
+            position: absolute;
+            top: 0;
+            left: 25%;
+            width: 50%;
+            height: 18%;
+            border: 2px solid var(--pitch-line);
+            border-top: none;
+        }
+
+        .pitch-box-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            width: 50%;
+            height: 18%;
+            border: 2px solid var(--pitch-line);
+            border-bottom: none;
+        }
+
+        .pitch-slot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 65px;
+            height: 75px;
+            background-color: rgba(17, 28, 56, 0.85);
+            border: 1.5px solid var(--emerald-main);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .pitch-slot:hover {
+            transform: translate(-50%, -50%) scale(1.08);
+            border-color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .pitch-slot .slot-pos {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--emerald-light);
+            background: rgba(0,0,0,0.4);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .pitch-slot .slot-name {
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 90%;
+            margin-top: 2px;
+        }
+
+        .pitch-slot .slot-ovr {
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .squad-sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bench-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .bench-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+
+        .bench-item:hover {
+            border-color: var(--emerald-main);
+        }
+
+        /* ==================== MATCH SIMULATION VIEW ==================== */
+        .match-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: calc(100vh - 100px);
+        }
+
+        .scoreboard {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .score-team {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            width: 35%;
+        }
+
+        .score-team.home { justify-content: flex-end; }
+        .score-team.away { justify-content: flex-start; }
+
+        .score-digits {
+            font-size: 32px;
+            font-weight: 900;
+            background-color: var(--navy-dark);
+            padding: 4px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--emerald-light);
+        }
+
+        .match-clock {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-yellow);
+            background-color: var(--navy-dark);
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .match-body {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #matchCanvas {
+            background-color: var(--pitch-green);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .match-stats-panel {
+            width: 280px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .match-log {
+            height: 140px;
+            background-color: var(--navy-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+            overflow-y: auto;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .log-entry { margin-bottom: 4px; color: var(--text-muted); }
+        .log-entry.goal { color: var(--emerald-light); font-weight: bold; }
+        .log-entry.foul { color: var(--accent-yellow); }
+        .log-entry.card { color: var(--accent-red); }
+
+        /* ==================== FORM & MODALS ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 480px;
+            max-width: 90%;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            border-color: var(--emerald-main);
+        }
+
+        /* Responsive design */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            #app-sidebar { width: 100%; height: auto; }
+            .nav-menu { display: flex; overflow-x: auto; padding: 5px; }
+            .squad-container { flex-direction: column; }
+            .squad-sidebar { width: 100%; height: 200px; }
+            .match-body { flex-direction: column; }
+            .match-stats-panel { width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">VICTORIA FOOTBALL</div>
-    <div class="role-badge">Quyền: Khách (Mô phỏng nâng cao)</div>
-  </header>
-
-  <div class="main-layout">
-    <div class="pitch-container">
-      <div class="score-board">
-        <div class="team-name" style="color: #60a5fa;" id="home-name">ĐỘI NHÀ</div>
-        <div class="score" id="score-text">0 - 0</div>
-        <div class="team-name" style="color: #f87171;" id="away-name">ĐỘI KHÁCH</div>
-        <div class="timer" id="match-timer">00:00</div>
-      </div>
-
-      <canvas id="pitch" width="650" height="400"></canvas>
-
-      <div class="controls-btn">
-        <button class="btn-start" id="start-btn">Đồng Ý Bắt Đầu</button>
-        <button class="btn-reset" id="reset-btn">Làm Mới Trận Đấu</button>
-      </div>
-    </div>
-
-    <div class="sidebar">
-      <div class="panel">
-        <div class="panel-title">Thống Kê Trận Đấu</div>
-        <div class="stat-row"><span>Cú Sút (Trúng Đích)</span><span id="st-shots">0 (0) - 0 (0)</span></div>
-        <div class="stat-row"><span>Kiểm Soát Bóng (%)</span><span id="st-poss">50% - 50%</span></div>
-        <div class="stat-row"><span>Phạm Lỗi</span><span id="st-fouls">0 - 0</span></div>
-        <div class="stat-row"><span>Việt Vị</span><span>0 - 0</span></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">Nhật Ký Trận Đấu</div>
-        <div class="log-box" id="log-box">
-          <div class="log-item">[0'] Trận đấu sẵn sàng. Nhấn Bắt đầu!</div>
+    <!-- SIDEBAR NAVIGATION -->
+    <div id="app-sidebar">
+        <div class="brand-logo">
+            <i class="fa-solid fa-futbol"></i>
+            <h1>Victoria FC</h1>
         </div>
-      </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchView('dashboard')">
+                <i class="fa-solid fa-chart-pie"></i> Bảng Điều Khiển
+            </li>
+            <li class="nav-item" onclick="switchView('database')">
+                <i class="fa-solid fa-users"></i> Kho Cầu Thủ & Đội
+            </li>
+            <li class="nav-item" onclick="switchView('squad')">
+                <i class="fa-solid fa-shield-halved"></i> Quản Lý Đội Hình
+            </li>
+            <li class="nav-item" onclick="switchView('match')">
+                <i class="fa-solid fa-gamepad"></i> Mô Phỏng Trận Đấu
+            </li>
+            <li class="nav-item" onclick="switchView('admin')">
+                <i class="fa-solid fa-user-gear"></i> Đăng Nhập Admin
+            </li>
+        </ul>
+        <div class="admin-status-box">
+            <div class="admin-badge">
+                <span>Trạng thái Admin:</span>
+                <span id="admin-status-text" style="color: var(--accent-red)">Chưa Khóa</span>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const canvas = document.getElementById('pitch');
-    const ctx = canvas.getContext('2d');
+    <!-- MAIN CONTENT CONTAINER -->
+    <div id="app-main">
+        <div class="top-header">
+            <div class="page-title" id="header-title">Bảng Điều Khiển Tổng Quan</div>
+            <div class="team-selector">
+                <label style="font-size: 12px; color: var(--text-muted); font-weight: 700;">ĐỘI ĐANG CHỌN:</label>
+                <select id="activeTeamSelect" onchange="changeActiveTeam(this.value)">
+                    <!-- Loaded dynamically -->
+                </select>
+            </div>
+        </div>
 
-    let isPlaying = false;
-    let gameTime = 0; // tính theo giây mô phỏng
-    let timerInterval = null;
+        <div class="content-body">
+            <!-- 1. DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-panel active">
+                <div class="card dash-overview">
+                    <img id="dash-team-logo" class="team-logo-lg" src="https://via.placeholder.com/90/10b981/ffffff?text=VFC" alt="Logo">
+                    <div>
+                        <h2 id="dash-team-name" style="font-size: 24px; font-weight: 800;">Victoria Team</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 10px 0;">Sân nhà: Victoria Arena | Giải đấu: Victoria Super League</p>
+                        <div>Chỉ Số Đội Hình (OVR): <span id="dash-team-ovr" class="ovr-badge">0</span></div>
+                    </div>
+                </div>
 
-    // Thống kê
-    let stats = {
-      homeGoals: 0, awayGoals: 0,
-      homeShots: 0, awayShots: 0,
-      homeShotsOnTarget: 0, awayShotsOnTarget: 0,
-      homeFouls: 0, awayFouls: 0,
-      homePossTicks: 0, awayPossTicks: 0
-    };
+                <div class="grid-3">
+                    <div class="card">
+                        <h3 style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">TỔNG CẦU THỦ</h3>
+                        <div id="dash-count-players" style="font-size: 32px; font-weight: 800; color: var(--emerald-light);">0</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">CHỈ SỐ TỐC ĐỘ TB</h3>
+                        <div id="dash-avg-pac" style="font-size: 32px; font-weight: 800; color: var(--accent-blue);">0</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">SỨC CẦU THỦ TB</h3>
+                        <div id="dash-avg-phy" style="font-size: 32px; font-weight: 800; color: var(--accent-yellow);">0</div>
+                    </div>
+                </div>
 
-    // Bóng
-    const ball = {
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      vx: 0,
-      vy: 0,
-      owner: null,
-      radius: 4.5
-    };
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; font-size: 16px;">Cấu Hình Nhanh Firebase Database</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Nhập thông tin Firebase Realtime Database của bạn để đồng bộ trực tiếp đám mây (Có chế độ chạy Offline mặc định).</p>
+                    <div class="grid-2">
+                        <input type="text" id="fb-apiKey" class="form-control" placeholder="API Key">
+                        <input type="text" id="fb-dbUrl" class="form-control" placeholder="Database URL (https://...firebaseio.com)">
+                    </div>
+                    <button class="btn btn-emerald" style="margin-top: 10px;" onclick="saveFirebaseConfig()"><i class="fa-solid fa-database"></i> Lưu & Kết Nối Firebase</button>
+                </div>
+            </div>
 
-    // Tạo đội bóng
-    function initTeam(isHome) {
-      const color = isHome ? '#3b82f6' : '#ef4444';
-      const side = isHome ? 1 : -1;
-      const basePositions = [
-        { role: 'GK', x: isHome ? 30 : canvas.width - 30, y: 200, spd: 1.8, def: 80, phy: 75 },
-        { role: 'CB', x: isHome ? 120 : canvas.width - 120, y: 120, spd: 2.0, def: 78, phy: 80 },
-        { role: 'CB', x: isHome ? 120 : canvas.width - 120, y: 280, spd: 2.0, def: 78, phy: 80 },
-        { role: 'CM', x: isHome ? 230 : canvas.width - 230, y: 140, spd: 2.2, def: 70, phy: 70 },
-        { role: 'CM', x: isHome ? 230 : canvas.width - 230, y: 260, spd: 2.2, def: 70, phy: 70 },
-        { role: 'ST', x: isHome ? 300 : canvas.width - 300, y: 200, spd: 2.5, def: 50, phy: 72 }
-      ];
+            <!-- 2. DATABASE VIEW -->
+            <div id="view-database" class="view-panel">
+                <div class="card" style="display: flex; gap: 15px; align-items: center;">
+                    <input type="text" id="dbSearchInput" class="form-control" placeholder="Tìm tên cầu thủ..." oninput="renderDatabaseView()" style="width: 250px;">
+                    <select id="dbPosFilter" class="form-control" onchange="renderDatabaseView()" style="width: 150px;">
+                        <option value="ALL">Tất cả Vị trí</option>
+                        <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
+                        <option value="CAM">CAM</option><option value="CM">CM</option><option value="CDM">CDM</option>
+                        <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option><option value="GK">GK</option>
+                    </select>
+                </div>
+                <div id="playerDatabaseGrid" class="player-grid">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
 
-      return basePositions.map((p, idx) => ({
-        id: (isHome ? 'H' : 'A') + (idx + 1),
-        name: (isHome ? 'Đội nhà ' : 'Đội khách ') + (idx + 1),
-        isHome: isHome,
-        role: p.role,
-        color: color,
-        x: p.x,
-        y: p.y,
-        baseX: p.x,
-        baseY: p.y,
-        speed: p.spd,
-        def: p.def,
-        phy: p.phy,
-        cooldown: 0
-      }));
-    }
+            <!-- 3. SQUAD MANAGEMENT VIEW -->
+            <div id="view-squad" class="view-panel">
+                <div class="squad-container">
+                    <div class="pitch-2d" id="squadPitch">
+                        <div class="pitch-line-center"></div>
+                        <div class="pitch-circle-center"></div>
+                        <div class="pitch-box-top"></div>
+                        <div class="pitch-box-bottom"></div>
+                        <!-- 11 slots will be rendered here -->
+                    </div>
 
-    let homeTeam = initTeam(true);
-    let awayTeam = initTeam(false);
+                    <div class="squad-sidebar">
+                        <div class="card" style="padding: 15px;">
+                            <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">SƠ ĐỒ CHIẾN THUẬT:</label>
+                            <select id="tacticSelect" class="form-control" style="margin-top: 5px;" onchange="changeTactic(this.value)">
+                                <option value="4-3-3">4-3-3 Tấn Công</option>
+                                <option value="4-2-3-1">4-2-3-1 Biến Ảo</option>
+                                <option value="4-4-2">4-4-2 Cổ Điển</option>
+                                <option value="3-5-2">3-5-2 Kiểm Soát</option>
+                            </select>
+                            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 13px; font-weight: 600;">OVR Đội Hình:</span>
+                                <span id="squadOvrDisplay" style="font-size: 20px; font-weight: 800; color: var(--emerald-light);">0</span>
+                            </div>
+                        </div>
 
-    function writeLog(text) {
-      const box = document.getElementById('log-box');
-      const item = document.createElement('div');
-      item.className = 'log-item';
-      const min = Math.floor(gameTime / 60);
-      item.innerText = `[${min}'] ${text}`;
-      box.appendChild(item);
-      box.scrollTop = box.scrollHeight;
-    }
+                        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">HÀNG GHẾ DỰ BỊ</div>
+                        <div class="bench-list" id="benchList">
+                            <!-- Dynamic bench items -->
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    function updateUI() {
-      document.getElementById('score-text').innerText = `${stats.homeGoals} - ${stats.awayGoals}`;
-      document.getElementById('st-shots').innerText = `${stats.homeShots} (${stats.homeShotsOnTarget}) - ${stats.awayShots} (${stats.awayShotsOnTarget})`;
-      document.getElementById('st-fouls').innerText = `${stats.homeFouls} - ${stats.awayFouls}`;
+            <!-- 4. MATCH SIMULATION VIEW -->
+            <div id="view-match" class="view-panel">
+                <div class="match-layout">
+                    <div class="scoreboard">
+                        <div class="score-team home">
+                            <span id="matchHomeName">Home FC</span>
+                            <img id="matchHomeLogo" src="" style="width:35px; height:35px; object-fit:contain;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="score-digits" id="matchScore">0 - 0</div>
+                            <div class="match-clock" id="matchTimer">00:00</div>
+                        </div>
+                        <div class="score-team away">
+                            <img id="matchAwayLogo" src="" style="width:35px; height:35px; object-fit:contain;">
+                            <span id="matchAwayName">Away FC</span>
+                        </div>
+                    </div>
 
-      const totalPoss = (stats.homePossTicks + stats.awayPossTicks) || 1;
-      const hPct = Math.round((stats.homePossTicks / totalPoss) * 100);
-      document.getElementById('st-poss').innerText = `${hPct}% - ${100 - hPct}%`;
+                    <div class="match-body">
+                        <div class="canvas-container">
+                            <canvas id="matchCanvas" width="800" height="480"></canvas>
+                        </div>
 
-      const m = String(Math.floor(gameTime / 60)).padStart(2, '0');
-      const s = String(gameTime % 60).padStart(2, '0');
-      document.getElementById('match-timer').innerText = `${m}:${s}`;
-    }
+                        <div class="match-stats-panel">
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-emerald" style="flex: 1;" onclick="startMatchSimulation()"><i class="fa-solid fa-play"></i> Bắt Đầu</button>
+                                <button class="btn btn-red" onclick="pauseMatchSimulation()"><i class="fa-solid fa-pause"></i> Dừng</button>
+                            </div>
+                            <div style="font-weight: 800; font-size: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">THỐNG KÊ TRẬN ĐẤU</div>
+                            <div class="stat-row"><span>Cú Sút</span><span id="statShots">0 - 0</span></div>
+                            <div class="stat-row"><span>Sút Trúng Đích</span><span id="statOnTarget">0 - 0</span></div>
+                            <div class="stat-row"><span>Kiểm Soát Bóng</span><span id="statPoss">50% - 50%</span></div>
+                            <div class="stat-row"><span>Phạm Lỗi</span><span id="statFouls">0 - 0</span></div>
+                            <div class="stat-row"><span>Việt Vị</span><span id="statOffsides">0 - 0</span></div>
+                            <div class="stat-row"><span>Thẻ Vàng/Đỏ</span><span id="statCards">0/0 - 0/0</span></div>
 
-    // THUẬT TOÁN TÁCH CỰ LY (CHỐNG DỒN CỤC BẦY ĐÀN)
-    function applySeparation(p, allPlayers) {
-      let sepX = 0, sepY = 0;
-      const minDist = 18; // Khoảng cách tối thiểu giữa 2 cầu thủ
+                            <div style="font-weight: 800; font-size: 12px; margin-top: 5px;">DIỄN BIẾN TRẬN ĐẤU</div>
+                            <div class="match-log" id="matchLog">
+                                <div class="log-entry">Trận đấu sẵn sàng khởi tranh...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      allPlayers.forEach(other => {
-        if (other !== p) {
-          const dx = p.x - other.x;
-          const dy = p.y - other.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > 0 && dist < minDist) {
-            sepX += (dx / dist) * (minDist - dist) * 0.15;
-            sepY += (dy / dist) * (minDist - dist) * 0.15;
-          }
+            <!-- 5. ADMIN VIEW -->
+            <div id="view-admin" class="view-panel">
+                <div id="adminLockedState" class="card" style="text-align: center; padding: 40px;">
+                    <i class="fa-solid fa-lock" style="font-size: 48px; color: var(--accent-red); margin-bottom: 15px;"></i>
+                    <h2>Yêu Cầu Quyền Quản Trị Viên</h2>
+                    <p style="color: var(--text-muted); margin: 10px 0 20px 0;">Vui lòng nhập mật khẩu Admin để tạo/sửa đổi dữ liệu đội bóng và cầu thủ.</p>
+                    <input type="password" id="adminPassInput" class="form-control" placeholder="Mật khẩu (Mặc định: admin123)" style="width: 250px; margin: 0 auto 15px auto;">
+                    <button class="btn btn-emerald" onclick="verifyAdminPassword()">Đăng Nhập Admin</button>
+                </div>
+
+                <div id="adminUnlockedState" style="display: none;">
+                    <div class="grid-2">
+                        <!-- Create Team -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 15px;">Tạo Đội Bóng Mới</h3>
+                            <div class="form-group">
+                                <label>Tên Đội Bóng</label>
+                                <input type="text" id="admTeamName" class="form-control" placeholder="Nhập tên đội...">
+                            </div>
+                            <div class="form-group">
+                                <label>Logo Đội (Tải tệp ảnh lên)</label>
+                                <input type="file" id="admTeamLogoFile" class="form-control" accept="image/*">
+                            </div>
+                            <button class="btn btn-emerald" onclick="createTeam()"><i class="fa-solid fa-plus"></i> Tạo Đội Bóng</button>
+                        </div>
+
+                        <!-- Create Player -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 15px;">Tạo Cầu Thủ Mới</h3>
+                            <div class="form-group">
+                                <label>Tên Cầu Thủ</label>
+                                <input type="text" id="admPlayerName" class="form-control" placeholder="Tên cầu thủ...">
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Đội Chủ Quản</label>
+                                    <select id="admPlayerTeamSelect" class="form-control"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Vị Trí Chuẩn</label>
+                                    <select id="admPlayerPosSelect" class="form-control">
+                                        <option value="ST">ST</option><option value="RW">RW</option><option value="LW">LW</option>
+                                        <option value="CAM">CAM</option><option value="CM">CM</option><option value="CDM">CDM</option>
+                                        <option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option><option value="GK">GK</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Ảnh Cầu Thủ (Tải tệp)</label>
+                                <input type="file" id="admPlayerImgFile" class="form-control" accept="image/*">
+                            </div>
+
+                            <div style="font-weight: 700; font-size: 12px; margin-bottom: 8px;">THANG CHỈ SỐ (50 - 200)</div>
+                            <div class="grid-3" style="font-size: 12px;">
+                                <div>PAC (Tốc độ): <input type="number" id="stPac" class="form-control" value="75" min="50" max="200"></div>
+                                <div>SHO (Sút): <input type="number" id="stSho" class="form-control" value="75" min="50" max="200"></div>
+                                <div>PAS (Truyền): <input type="number" id="stPas" class="form-control" value="75" min="50" max="200"></div>
+                                <div>DRI (Rê bóng): <input type="number" id="stDri" class="form-control" value="75" min="50" max="200"></div>
+                                <div>DEF (Phòng thủ): <input type="number" id="stDef" class="form-control" value="75" min="50" max="200"></div>
+                                <div>PHY (Thể lực): <input type="number" id="stPhy" class="form-control" value="75" min="50" max="200"></div>
+                            </div>
+                            <button class="btn btn-emerald" style="margin-top: 15px;" onclick="createPlayer()"><i class="fa-solid fa-user-plus"></i> Tạo Cầu Thủ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLAYER PICKER MODAL FOR SQUAD MANAGEMENT -->
+    <div class="modal-overlay" id="playerPickerModal">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 15px;">Chọn Cầu Thủ Vị Trí <span id="pickerSlotPos" style="color: var(--emerald-light);"></span></h3>
+            <div id="pickerPlayerList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Loaded dynamically -->
+            </div>
+            <button class="btn btn-secondary" style="margin-top: 15px; width: 100%; justify-content: center;" onclick="closeModal('playerPickerModal')">Đóng</button>
+        </div>
+    </div>
+
+    <!-- APP SCRIPT & MATCH ENGINE LOGIC -->
+    <script>
+        /* ==================== GLOBAL APP STATE ==================== */
+        let state = {
+            isAdmin: false,
+            activeTeamId: 'team_1',
+            teams: [
+                { id: 'team_1', name: 'Victoria FC', logo: 'https://via.placeholder.com/90/10b981/ffffff?text=VFC' },
+                { id: 'team_2', name: 'Horizon City', logo: 'https://via.placeholder.com/90/2563eb/ffffff?text=HZC' }
+            ],
+            players: [],
+            squads: {
+                'team_1': { tactic: '4-3-3', slots: {} },
+                'team_2': { tactic: '4-3-3', slots: {} }
+            },
+            firebaseApp: null,
+            db: null
+        };
+
+        const FORMATIONS = {
+            '4-3-3': [
+                { pos: 'GK', x: 50, y: 90 },
+                { pos: 'LB', x: 15, y: 72 }, { pos: 'CB', x: 38, y: 76 }, { pos: 'CB', x: 62, y: 76 }, { pos: 'RB', x: 85, y: 72 },
+                { pos: 'CM', x: 30, y: 50 }, { pos: 'CDM', x: 50, y: 55 }, { pos: 'CM', x: 70, y: 50 },
+                { pos: 'LW', x: 20, y: 22 }, { pos: 'ST', x: 50, y: 15 }, { pos: 'RW', x: 80, y: 22 }
+            ],
+            '4-4-2': [
+                { pos: 'GK', x: 50, y: 90 },
+                { pos: 'LB', x: 15, y: 72 }, { pos: 'CB', x: 38, y: 76 }, { pos: 'CB', x: 62, y: 76 }, { pos: 'RB', x: 85, y: 72 },
+                { pos: 'LM', x: 15, y: 45 }, { pos: 'CM', x: 38, y: 50 }, { pos: 'CM', x: 62, y: 50 }, { pos: 'RM', x: 85, y: 45 },
+                { pos: 'ST', x: 35, y: 18 }, { pos: 'ST', x: 65, y: 18 }
+            ],
+            '4-2-3-1': [
+                { pos: 'GK', x: 50, y: 90 },
+                { pos: 'LB', x: 15, y: 72 }, { pos: 'CB', x: 38, y: 76 }, { pos: 'CB', x: 62, y: 76 }, { pos: 'RB', x: 85, y: 72 },
+                { pos: 'CDM', x: 35, y: 60 }, { pos: 'CDM', x: 65, y: 60 },
+                { pos: 'CAM', x: 20, y: 38 }, { pos: 'CAM', x: 50, y: 35 }, { pos: 'CAM', x: 80, y: 38 },
+                { pos: 'ST', x: 50, y: 15 }
+            ],
+            '3-5-2': [
+                { pos: 'GK', x: 50, y: 90 },
+                { pos: 'CB', x: 25, y: 75 }, { pos: 'CB', x: 50, y: 78 }, { pos: 'CB', x: 75, y: 75 },
+                { pos: 'LM', x: 10, y: 48 }, { pos: 'CM', x: 32, y: 52 }, { pos: 'CDM', x: 50, y: 58 }, { pos: 'CM', x: 68, y: 52 }, { pos: 'RM', x: 90, y: 48 },
+                { pos: 'ST', x: 38, y: 18 }, { pos: 'ST', x: 62, y: 18 }
+            ]
+        };
+
+        /* Default Players Data Generation */
+        function generateDefaultPlayers() {
+            const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CM', 'CDM', 'CM', 'LW', 'ST', 'RW', 'CAM', 'ST', 'CB'];
+            const names1 = ['Minh Vu', 'Hoang Nam', 'Tuan Anh', 'Quang Hai', 'Van Hau', 'Hung Dung', 'Tien Linh', 'Van Lam', 'Duy Manh', 'Thanh Chung', 'Van Toan', 'Cong Phuong', 'Tan Tai', 'Viet Anh'];
+            const names2 = ['David Silva', 'Alex Mercer', 'John Stone', 'Marcus Vance', 'Lucas Ray', 'Ethan Hunt', 'Leo Dash', 'Chris Paul', 'Victor Hugo', 'Sam Wilson', 'Brian O', 'Jack Reacher', 'Alan Wake', 'Garry Cole'];
+
+            let result = [];
+            for(let i=0; i<14; i++) {
+                result.push({
+                    id: 'p_1_' + i,
+                    teamId: 'team_1',
+                    name: names1[i],
+                    position: positions[i],
+                    avatar: 'https://via.placeholder.com/70/1a274a/ffffff?text=' + positions[i],
+                    pac: 80 + Math.floor(Math.random()*40),
+                    sho: 75 + Math.floor(Math.random()*40),
+                    pas: 78 + Math.floor(Math.random()*40),
+                    dri: 82 + Math.floor(Math.random()*40),
+                    def: 70 + Math.floor(Math.random()*40),
+                    phy: 75 + Math.floor(Math.random()*40)
+                });
+            }
+            for(let i=0; i<14; i++) {
+                result.push({
+                    id: 'p_2_' + i,
+                    teamId: 'team_2',
+                    name: names2[i],
+                    position: positions[i],
+                    avatar: 'https://via.placeholder.com/70/23335e/ffffff?text=' + positions[i],
+                    pac: 82 + Math.floor(Math.random()*40),
+                    sho: 77 + Math.floor(Math.random()*40),
+                    pas: 75 + Math.floor(Math.random()*40),
+                    dri: 80 + Math.floor(Math.random()*40),
+                    def: 72 + Math.floor(Math.random()*40),
+                    phy: 78 + Math.floor(Math.random()*40)
+                });
+            }
+            return result;
         }
-      });
-      p.x += sepX;
-      p.y += sepY;
-    }
 
-    // AI ENGINE
-    function updatePhysics() {
-      const allPlayers = [...homeTeam, ...awayTeam];
-
-      // Tính kiểm soát bóng
-      if (ball.owner) {
-        if (ball.owner.isHome) stats.homePossTicks++; else stats.awayPossTicks++;
-      }
-
-      // Xử lý bóng di chuyển tự do
-      if (!ball.owner) {
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-        ball.vx *= 0.94;
-        ball.vy *= 0.94;
-
-        // Bật tường
-        if (ball.y <= 10 || ball.y >= canvas.height - 10) ball.vy *= -0.8;
-
-        // Bàn thắng
-        if (ball.x <= 5 && ball.y > 150 && ball.y < 250) {
-          stats.awayGoals++;
-          writeLog("VÀOOO! Đội khách ghi bàn mở tỷ số!");
-          resetMatchState();
-          return;
-        }
-        if (ball.x >= canvas.width - 5 && ball.y > 150 && ball.y < 250) {
-          stats.homeGoals++;
-          writeLog("VÀOOO! Đội nhà dứt điểm tung lưới!");
-          resetMatchState();
-          return;
+        /* Calculate OVR formula */
+        function calcPlayerOVR(p) {
+            return Math.round((p.pac + p.sho + p.pas + p.dri + p.def + p.phy) / 6);
         }
 
-        // Bật biên ngang
-        if (ball.x <= 5 || ball.x >= canvas.width - 5) ball.vx *= -0.8;
-      }
+        /* Initialize Application */
+        window.onload = function() {
+            state.players = generateDefaultPlayers();
+            autoAssignDefaultSquads();
+            renderTeamSelects();
+            renderDashboard();
+            renderDatabaseView();
+            renderSquadView();
+        };
 
-      // Tìm cầu thủ mỗi đội gần bóng nhất
-      let closestHome = null, minHomeDist = 9999;
-      let closestAway = null, minAwayDist = 9999;
+        function autoAssignDefaultSquads() {
+            state.teams.forEach(t => {
+                let teamPlayers = state.players.filter(p => p.teamId === t.id);
+                let squad = state.squads[t.id];
+                let slots = FORMATIONS[squad.tactic];
+                slots.forEach((slot, index) => {
+                    if(teamPlayers[index]) {
+                        squad.slots[index] = teamPlayers[index].id;
+                    }
+                });
+            });
+        }
 
-      homeTeam.forEach(p => {
-        const d = Math.hypot(ball.x - p.x, ball.y - p.y);
-        if (d < minHomeDist) { minHomeDist = d; closestHome = p; }
-      });
-      awayTeam.forEach(p => {
-        const d = Math.hypot(ball.x - p.x, ball.y - p.y);
-        if (d < minAwayDist) { minAwayDist = d; closestAway = p; }
-      });
-
-      // Cập nhật từng cầu thủ
-      allPlayers.forEach(p => {
-        if (p.cooldown > 0) p.cooldown--;
-
-        // Áp dụng chống giẫm chân nhau
-        applySeparation(p, allPlayers);
-
-        // NẾU CÓ BÓNG
-        if (ball.owner === p) {
-          const targetGoalX = p.isHome ? canvas.width - 15 : 15;
-          const targetGoalY = canvas.height / 2;
-          const distGoal = Math.hypot(targetGoalX - p.x, targetGoalY - p.y);
-
-          // Rê bóng
-          const angle = Math.atan2(targetGoalY - p.y, targetGoalX - p.x);
-          p.x += Math.cos(angle) * (p.speed * 0.65);
-          p.y += Math.sin(angle) * (p.speed * 0.65);
-
-          ball.x = p.x + Math.cos(angle) * 6;
-          ball.y = p.y + Math.sin(angle) * 6;
-
-          // Quyết định Sút
-          if (distGoal < 140 || (distGoal < 200 && Math.random() < 0.03)) {
-            if (p.isHome) stats.homeShots++; else stats.awayShots++;
+        /* Navigation Controller */
+        function switchView(viewId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
             
-            const isTarget = Math.random() > 0.3;
-            if (isTarget) {
-              if (p.isHome) stats.homeShotsOnTarget++; else stats.awayShotsOnTarget++;
-            }
+            event.currentTarget.classList.add('active');
+            document.getElementById('view-' + viewId).classList.add('active');
 
-            const shotAngle = Math.atan2((targetGoalY + (Math.random()*40-20)) - p.y, targetGoalX - p.x);
-            ball.owner = null;
-            ball.vx = Math.cos(shotAngle) * (8 + Math.random() * 4);
-            ball.vy = Math.sin(shotAngle) * (8 + Math.random() * 4);
-            p.cooldown = 30;
+            const titles = {
+                dashboard: 'Bảng Điều Khiển Tổng Quan',
+                database: 'Kho Cầu Thủ & Đội Bóng',
+                squad: 'Quản Lý Sơ Đồ Đội Hình',
+                match: 'Mô Phỏng Trận Đấu 2D Real-Time',
+                admin: 'Quản Trị Hệ Thống'
+            };
+            document.getElementById('header-title').innerText = titles[viewId];
 
-            writeLog(`${p.name} dứt điểm căng từ xa!`);
-          }
-          // Quyết định Chuyền bóng
-          else if (Math.random() < 0.025) {
-            const mates = (p.isHome ? homeTeam : awayTeam).filter(m => m !== p && m.role !== 'GK');
-            const targetMate = mates[Math.floor(Math.random() * mates.length)];
-            
-            if (targetMate) {
-              const passAngle = Math.atan2(targetMate.y - p.y, targetMate.x - p.x);
-              ball.owner = null;
-              ball.vx = Math.cos(passAngle) * 6.5;
-              ball.vy = Math.sin(passAngle) * 6.5;
-              p.cooldown = 20;
-              writeLog(`${p.name} thực hiện đường chuyền đồng đội.`);
-            }
-          }
+            if(viewId === 'dashboard') renderDashboard();
+            if(viewId === 'squad') renderSquadView();
+            if(viewId === 'database') renderDatabaseView();
+            if(viewId === 'match') prepareMatchEngine();
         }
-        // NẾU KHÔNG CÓ BÓNG
-        else {
-          const isPresser = (p === closestHome || p === closestAway);
-          const distToBall = Math.hypot(ball.x - p.x, ball.y - p.y);
 
-          // CHỈ CẦU THỦ GẦN NHẤT MỚI ĐƯỢC ÁP SÁT BÓNG (TẠO TÍNH CHIẾN THUẬT)
-          if (isPresser && p.role !== 'GK' && p.cooldown === 0) {
-            const angle = Math.atan2(ball.y - p.y, ball.x - p.x);
-            p.x += Math.cos(angle) * p.speed;
-            p.y += Math.sin(angle) * p.speed;
+        function renderTeamSelects() {
+            const activeSelect = document.getElementById('activeTeamSelect');
+            const admSelect = document.getElementById('admPlayerTeamSelect');
+            activeSelect.innerHTML = '';
+            admSelect.innerHTML = '';
 
-            // Xử lý Cướp bóng / Tranh chấp sát người
-            if (distToBall < 10) {
-              if (ball.owner && ball.owner.isHome !== p.isHome) {
-                const victim = ball.owner;
-                // Tỷ lệ cướp
-                if (Math.random() < 0.35) {
-                  ball.owner = p;
-                  p.cooldown = 20;
-                  victim.cooldown = 20;
-                  writeLog(`${p.name} xoạc bóng cắt bóng chính xác!`);
-                } else if (Math.random() < 0.05) {
-                  // Phạm lỗi
-                  if (p.isHome) stats.homeFouls++; else stats.awayFouls++;
-                  writeLog(`Trọng tài thổi phạt! ${p.name} phạm lỗi nguy hiểm.`);
-                  p.cooldown = 35;
-                }
-              } else if (!ball.owner) {
-                ball.owner = p;
-                p.cooldown = 15;
-              }
-            }
-          } 
-          // CÁC CẦU THỦ CÒN LẠI GIỮ ĐỘI HÌNH VÀ BỌC LÓT
-          else {
-            // GK giữ cầu môn
-            if (p.role === 'GK') {
-              const targetY = Math.max(160, Math.min(240, ball.y));
-              p.y += (targetY - p.y) * 0.08;
-              p.x += (p.baseX - p.x) * 0.08;
+            state.teams.forEach(t => {
+                activeSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                admSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+            });
+            activeSelect.value = state.activeTeamId;
+        }
+
+        function changeActiveTeam(teamId) {
+            state.activeTeamId = teamId;
+            renderDashboard();
+            renderSquadView();
+            renderDatabaseView();
+        }
+
+        /* ==================== DASHBOARD RENDER ==================== */
+        function renderDashboard() {
+            let activeTeam = state.teams.find(t => t.id === state.activeTeamId);
+            if(!activeTeam) return;
+
+            document.getElementById('dash-team-name').innerText = activeTeam.name;
+            document.getElementById('dash-team-logo').src = activeTeam.logo;
+
+            let teamPlayers = state.players.filter(p => p.teamId === activeTeam.id);
+            document.getElementById('dash-count-players').innerText = teamPlayers.length;
+
+            if(teamPlayers.length > 0) {
+                let avgOvr = Math.round(teamPlayers.reduce((acc, p) => acc + calcPlayerOVR(p), 0) / teamPlayers.length);
+                let avgPac = Math.round(teamPlayers.reduce((acc, p) => acc + p.pac, 0) / teamPlayers.length);
+                let avgPhy = Math.round(teamPlayers.reduce((acc, p) => acc + p.phy, 0) / teamPlayers.length);
+                
+                document.getElementById('dash-team-ovr').innerText = avgOvr;
+                document.getElementById('dash-avg-pac').innerText = avgPac;
+                document.getElementById('dash-avg-phy').innerText = avgPhy;
             } else {
-              // Giữ vị trí chiến thuật theo hướng bóng
-              let shiftX = (ball.x - canvas.width / 2) * 0.25;
-              let targetX = p.baseX + shiftX;
-              let targetY = p.baseY + (ball.y - canvas.height / 2) * 0.15;
-
-              p.x += (targetX - p.x) * 0.05;
-              p.y += (targetY - p.y) * 0.05;
+                document.getElementById('dash-team-ovr').innerText = 0;
+                document.getElementById('dash-avg-pac').innerText = 0;
+                document.getElementById('dash-avg-phy').innerText = 0;
             }
-          }
         }
-      });
-    }
 
-    function resetMatchState() {
-      ball.x = canvas.width / 2;
-      ball.y = canvas.height / 2;
-      ball.vx = 0;
-      ball.vy = 0;
-      ball.owner = null;
+        /* ==================== DATABASE RENDER ==================== */
+        function renderDatabaseView() {
+            const grid = document.getElementById('playerDatabaseGrid');
+            const search = document.getElementById('dbSearchInput').value.toLowerCase();
+            const posFilter = document.getElementById('dbPosFilter').value;
 
-      [...homeTeam, ...awayTeam].forEach(p => {
-        p.x = p.baseX;
-        p.y = p.baseY;
-        p.cooldown = 0;
-      });
-      updateUI();
-    }
+            grid.innerHTML = '';
+            let filtered = state.players.filter(p => {
+                let matchName = p.name.toLowerCase().includes(search);
+                let matchPos = (posFilter === 'ALL' || p.position === posFilter);
+                return matchName && matchPos;
+            });
 
-    // DRAW ENGINE
-    function render() {
-      // Sân bóng
-      ctx.fillStyle = '#2e7d32';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+            filtered.forEach(p => {
+                let ovr = calcPlayerOVR(p);
+                let team = state.teams.find(t => t.id === p.teamId);
+                let teamName = team ? team.name : 'Tự do';
 
-      // Kẻ vạch sân
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 1.5;
-
-      // Giữa sân
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 45, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Vòng cấm
-      ctx.strokeRect(0, 110, 80, 180);
-      ctx.strokeRect(canvas.width - 80, 110, 80, 180);
-
-      // Khung thành
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 150, 4, 100);
-      ctx.fillRect(canvas.width - 4, 150, 4, 100);
-
-      // Cầu thủ
-      [...homeTeam, ...awayTeam].forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Viền bóng nếu đang giữ
-        if (ball.owner === p) {
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-          ctx.stroke();
+                grid.innerHTML += `
+                    <div class="player-card">
+                        <span class="player-pos-badge">${p.position}</span>
+                        <span class="player-ovr-badge">${ovr}</span>
+                        <img class="player-img" src="${p.avatar}" alt="${p.name}">
+                        <div class="player-name">${p.name}</div>
+                        <div class="player-subtext">${teamName}</div>
+                        <div class="player-stats-mini">
+                            <div class="stat-item">PAC <span>${p.pac}</span></div>
+                            <div class="stat-item">SHO <span>${p.sho}</span></div>
+                            <div class="stat-item">PAS <span>${p.pas}</span></div>
+                            <div class="stat-item">DRI <span>${p.dri}</span></div>
+                            <div class="stat-item">DEF <span>${p.def}</span></div>
+                            <div class="stat-item">PHY <span>${p.phy}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
         }
-      });
 
-      // Trọng tài
-      ctx.fillStyle = '#facc15';
-      ctx.beginPath();
-      ctx.arc(canvas.width/2 + (ball.x - canvas.width/2)*0.1, canvas.height/2 + (ball.y - canvas.height/2)*0.1, 4, 0, Math.PI * 2);
-      ctx.fill();
+        /* ==================== SQUAD MANAGEMENT RENDER ==================== */
+        let selectedSlotIndex = null;
 
-      // Quả bóng
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
+        function renderSquadView() {
+            const pitch = document.getElementById('squadPitch');
+            // Remove existing pitch slots
+            document.querySelectorAll('.pitch-slot').forEach(el => el.remove());
 
-    function loop() {
-      if (isPlaying) {
-        updatePhysics();
-        updateUI();
-      }
-      render();
-      requestAnimationFrame(loop);
-    }
+            let squad = state.squads[state.activeTeamId];
+            if(!squad) return;
 
-    // CONTROLS & TIMERS
-    document.getElementById('start-btn').addEventListener('click', function() {
-      isPlaying = !isPlaying;
-      this.innerText = isPlaying ? 'Dừng Trận Đấu' : 'Đồng Ý Bắt Đầu';
-      this.style.background = isPlaying ? 'var(--accent-red)' : 'var(--accent-green)';
+            let tacticSlots = FORMATIONS[squad.tactic];
+            document.getElementById('tacticSelect').value = squad.tactic;
 
-      if (isPlaying && !timerInterval) {
-        timerInterval = setInterval(() => {
-          if (isPlaying) gameTime++;
-        }, 1000);
-      }
-    });
+            let totalOvr = 0;
+            let activeCount = 0;
 
-    document.getElementById('reset-btn').addEventListener('click', function() {
-      isPlaying = false;
-      clearInterval(timerInterval);
-      timerInterval = null;
-      gameTime = 0;
-      stats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeShotsOnTarget: 0, awayShotsOnTarget: 0, homeFouls: 0, awayFouls: 0, homePossTicks: 0, awayPossTicks: 0 };
-      document.getElementById('start-btn').innerText = 'Đồng Ý Bắt Đầu';
-      document.getElementById('start-btn').style.background = 'var(--accent-green)';
-      document.getElementById('log-box').innerHTML = '<div class="log-item">[0\'] Trận đấu bắt đầu lại.</div>';
-      resetMatchState();
-    });
+            tacticSlots.forEach((slotInfo, index) => {
+                let playerId = squad.slots[index];
+                let player = state.players.find(p => p.id === playerId);
+                
+                let slotEl = document.createElement('div');
+                slotEl.className = 'pitch-slot';
+                slotEl.style.left = slotInfo.x + '%';
+                slotEl.style.top = slotInfo.y + '%';
+                slotEl.onclick = () => openPlayerPicker(index, slotInfo.pos);
 
-    // START ENGINE
-    resetMatchState();
-    loop();
-  </script>
+                if(player) {
+                    let ovr = calcPlayerOVR(player);
+                    totalOvr += ovr;
+                    activeCount++;
+                    let posColor = (player.position === slotInfo.pos) ? 'var(--emerald-light)' : 'var(--accent-yellow)';
+
+                    slotEl.innerHTML = `
+                        <span class="slot-pos" style="color: ${posColor}">${slotInfo.pos}</span>
+                        <span class="slot-name">${player.name}</span>
+                        <span class="slot-ovr">${ovr}</span>
+                    `;
+                } else {
+                    slotEl.innerHTML = `
+                        <span class="slot-pos">${slotInfo.pos}</span>
+                        <span class="slot-name" style="color: var(--text-muted)">+ Bổ sung</span>
+                    `;
+                }
+                pitch.appendChild(slotEl);
+            });
+
+            // Calculate Squad OVR
+            let avgSquadOvr = activeCount > 0 ? Math.round(totalOvr / activeCount) : 0;
+            document.getElementById('squadOvrDisplay').innerText = avgSquadOvr;
+
+            // Render Bench List
+            renderBenchList();
+        }
+
+        function renderBenchList() {
+            const benchContainer = document.getElementById('benchList');
+            benchContainer.innerHTML = '';
+            let squad = state.squads[state.activeTeamId];
+            let assignedPlayerIds = Object.values(squad.slots);
+
+            let teamPlayers = state.players.filter(p => p.teamId === state.activeTeamId);
+            let unassigned = teamPlayers.filter(p => !assignedPlayerIds.includes(p.id));
+
+            unassigned.forEach(p => {
+                benchContainer.innerHTML += `
+                    <div class="bench-item">
+                        <div>
+                            <span style="font-weight: 700; font-size: 11px; background: var(--bg-primary); padding: 2px 6px; border-radius: 4px; margin-right: 6px;">${p.position}</span>
+                            <span style="font-size: 13px; font-weight: 600;">${p.name}</span>
+                        </div>
+                        <span style="font-weight: 800; color: var(--emerald-light); font-size: 13px;">${calcPlayerOVR(p)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function changeTactic(tacticName) {
+            state.squads[state.activeTeamId].tactic = tacticName;
+            renderSquadView();
+        }
+
+        function openPlayerPicker(slotIndex, slotPos) {
+            selectedSlotIndex = slotIndex;
+            document.getElementById('pickerSlotPos').innerText = slotPos;
+            const container = document.getElementById('pickerPlayerList');
+            container.innerHTML = '';
+
+            let teamPlayers = state.players.filter(p => p.teamId === state.activeTeamId);
+
+            teamPlayers.forEach(p => {
+                let ovr = calcPlayerOVR(p);
+                container.innerHTML += `
+                    <div class="bench-item" onclick="assignPlayerToSlot('${p.id}')">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-weight: 800; color: var(--emerald-main);">${p.position}</span>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px;">${p.name}</div>
+                                <div style="font-size: 11px; color: var(--text-muted)">OVR: ${ovr}</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-emerald" style="padding: 4px 8px; font-size: 11px;">Chọn</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('playerPickerModal').classList.add('active');
+        }
+
+        function assignPlayerToSlot(playerId) {
+            let squad = state.squads[state.activeTeamId];
+            // Swap if player is already assigned elsewhere
+            for(let key in squad.slots) {
+                if(squad.slots[key] === playerId) {
+                    delete squad.slots[key];
+                }
+            }
+            squad.slots[selectedSlotIndex] = playerId;
+            closeModal('playerPickerModal');
+            renderSquadView();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        /* ==================== ADMIN & FIREBASE INTEGRATION ==================== */
+        function verifyAdminPassword() {
+            let pass = document.getElementById('adminPassInput').value;
+            if(pass === 'admin123') {
+                state.isAdmin = true;
+                document.getElementById('adminLockedState').style.display = 'none';
+                document.getElementById('adminUnlockedState').style.display = 'block';
+                document.getElementById('admin-status-text').innerText = 'Đã Mở Khóa';
+                document.getElementById('admin-status-text').style.color = 'var(--emerald-light)';
+            } else {
+                alert('Mật khẩu Admin không chính xác!');
+            }
+        }
+
+        function createTeam() {
+            let name = document.getElementById('admTeamName').value;
+            let fileInput = document.getElementById('admTeamLogoFile');
+
+            if(!name) return alert('Vui lòng nhập tên đội!');
+
+            let logoUrl = 'https://via.placeholder.com/90/10b981/ffffff?text=' + name.substring(0,3).toUpperCase();
+            
+            let processCreate = (logo) => {
+                let newTeam = { id: 'team_' + Date.now(), name: name, logo: logo };
+                state.teams.push(newTeam);
+                state.squads[newTeam.id] = { tactic: '4-3-3', slots: {} };
+                renderTeamSelects();
+                alert('Đã tạo đội bóng thành công!');
+                syncFirebase();
+            };
+
+            if(fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = (e) => processCreate(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processCreate(logoUrl);
+            }
+        }
+
+        function createPlayer() {
+            let name = document.getElementById('admPlayerName').value;
+            let teamId = document.getElementById('admPlayerTeamSelect').value;
+            let pos = document.getElementById('admPlayerPosSelect').value;
+            let fileInput = document.getElementById('admPlayerImgFile');
+
+            if(!name) return alert('Vui lòng nhập tên cầu thủ!');
+
+            let avatarUrl = 'https://via.placeholder.com/70/1a274a/ffffff?text=' + pos;
+
+            let processPlayerCreate = (avatar) => {
+                let newPlayer = {
+                    id: 'p_' + Date.now(),
+                    teamId: teamId,
+                    name: name,
+                    position: pos,
+                    avatar: avatar,
+                    pac: parseInt(document.getElementById('stPac').value) || 75,
+                    sho: parseInt(document.getElementById('stSho').value) || 75,
+                    pas: parseInt(document.getElementById('stPas').value) || 75,
+                    dri: parseInt(document.getElementById('stDri').value) || 75,
+                    def: parseInt(document.getElementById('stDef').value) || 75,
+                    phy: parseInt(document.getElementById('stPhy').value) || 75
+                };
+                state.players.push(newPlayer);
+                alert('Đã tạo cầu thủ thành công!');
+                renderDatabaseView();
+                syncFirebase();
+            };
+
+            if(fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = (e) => processPlayerCreate(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processPlayerCreate(avatarUrl);
+            }
+        }
+
+        function saveFirebaseConfig() {
+            let apiKey = document.getElementById('fb-apiKey').value;
+            let databaseURL = document.getElementById('fb-dbUrl').value;
+
+            if(!apiKey || !databaseURL) return alert('Vui lòng điền đầy đủ API Key và Database URL!');
+
+            try {
+                const firebaseConfig = { apiKey: apiKey, databaseURL: databaseURL };
+                if(!firebase.apps.length) {
+                    state.firebaseApp = firebase.initializeApp(firebaseConfig);
+                } else {
+                    state.firebaseApp = firebase.app();
+                }
+                state.db = firebase.database();
+                alert('Kết nối Firebase Realtime Database thành công!');
+                listenFirebaseData();
+            } catch(e) {
+                alert('Lỗi kết nối Firebase: ' + e.message);
+            }
+        }
+
+        function syncFirebase() {
+            if(state.db) {
+                state.db.ref('victoria_data').set({
+                    teams: state.teams,
+                    players: state.players,
+                    squads: state.squads
+                });
+            }
+        }
+
+        function listenFirebaseData() {
+            if(state.db) {
+                state.db.ref('victoria_data').on('value', (snapshot) => {
+                    let data = snapshot.val();
+                    if(data) {
+                        if(data.teams) state.teams = data.teams;
+                        if(data.players) state.players = data.players;
+                        if(data.squads) state.squads = data.squads;
+                        renderTeamSelects();
+                        renderDashboard();
+                        renderDatabaseView();
+                        renderSquadView();
+                    }
+                });
+            }
+        }
+
+        /* ==================== MATCH ENGINE 2D REAL-TIME ==================== */
+        let matchEngine = {
+            canvas: null,
+            ctx: null,
+            animId: null,
+            isRunning: false,
+            timeSec: 0,
+            homeTeam: null,
+            awayTeam: null,
+            homeScore: 0,
+            awayScore: 0,
+            ball: { x: 400, y: 240, vx: 0, vy: 0, targetX: 400, targetY: 240, owner: null },
+            referee: { x: 380, y: 220, vx: 0, vy: 0 },
+            linesman: { x: 790, y: 100, flagRaised: false },
+            players: [],
+            stats: {
+                shots: [0, 0],
+                onTarget: [0, 0],
+                poss: [50, 50],
+                fouls: [0, 0],
+                offsides: [0, 0],
+                cards: [{y:0, r:0}, {y:0, r:0}]
+            },
+            state: 'KICKOFF' // KICKOFF, IN_GAME, GOAL, PAUSED
+        };
+
+        function prepareMatchEngine() {
+            matchEngine.canvas = document.getElementById('matchCanvas');
+            matchEngine.ctx = matchEngine.canvas.getContext('2d');
+
+            // Select Home & Away Teams
+            matchEngine.homeTeam = state.teams.find(t => t.id === state.activeTeamId);
+            matchEngine.awayTeam = state.teams.find(t => t.id !== state.activeTeamId) || state.teams[0];
+
+            document.getElementById('matchHomeName').innerText = matchEngine.homeTeam.name;
+            document.getElementById('matchHomeLogo').src = matchEngine.homeTeam.logo;
+            document.getElementById('matchAwayName').innerText = matchEngine.awayTeam.name;
+            document.getElementById('matchAwayLogo').src = matchEngine.awayTeam.logo;
+
+            resetMatchPositions();
+            drawMatchCanvas();
+        }
+
+        function resetMatchPositions() {
+            matchEngine.players = [];
+            
+            // Build Home Players (Left to Right half)
+            let homeSquad = state.squads[matchEngine.homeTeam.id];
+            let homeTacticSlots = FORMATIONS[homeSquad.tactic || '4-3-3'];
+            homeTacticSlots.forEach((slot, i) => {
+                let pId = homeSquad.slots[i];
+                let pData = state.players.find(p => p.id === pId) || { name: 'Player ' + i, pac: 75, sho: 75, pas: 75, def: 75, dri: 75 };
+                
+                // Map pitch coords to 2D match canvas coords (Home: Left half 0 to 400)
+                let canvasX = (slot.y / 100) * 380 + 20; 
+                let canvasY = (slot.x / 100) * 440 + 20;
+
+                matchEngine.players.push({
+                    id: 'home_' + i,
+                    team: 'home',
+                    data: pData,
+                    x: canvasX,
+                    y: canvasY,
+                    homeX: canvasX,
+                    homeY: canvasY,
+                    vx: 0, vy: 0,
+                    color: '#10b981',
+                    isST: (slot.pos === 'ST')
+                });
+            });
+
+            // Build Away Players (Right to Left half)
+            let awaySquad = state.squads[matchEngine.awayTeam.id] || { tactic: '4-3-3', slots: {} };
+            let awayTacticSlots = FORMATIONS[awaySquad.tactic || '4-3-3'];
+            awayTacticSlots.forEach((slot, i) => {
+                let pId = awaySquad.slots[i];
+                let pData = state.players.find(p => p.id === pId) || { name: 'Rival ' + i, pac: 75, sho: 75, pas: 75, def: 75, dri: 75 };
+                
+                // Mirror coordinates for away team
+                let canvasX = 800 - ((slot.y / 100) * 380 + 20); 
+                let canvasY = (slot.x / 100) * 440 + 20;
+
+                matchEngine.players.push({
+                    id: 'away_' + i,
+                    team: 'away',
+                    data: pData,
+                    x: canvasX,
+                    y: canvasY,
+                    homeX: canvasX,
+                    homeY: canvasY,
+                    vx: 0, vy: 0,
+                    color: '#2563eb',
+                    isST: (slot.pos === 'ST')
+                });
+            });
+
+            // Position Ball for Kickoff (ST in center circle)
+            let kickoffPlayer = matchEngine.players.find(p => p.team === 'home' && p.isST) || matchEngine.players[0];
+            kickoffPlayer.x = 395;
+            kickoffPlayer.y = 240;
+            matchEngine.ball.x = 400;
+            matchEngine.ball.y = 240;
+            matchEngine.ball.owner = kickoffPlayer;
+            matchEngine.state = 'KICKOFF';
+        }
+
+        function startMatchSimulation() {
+            if(!matchEngine.isRunning) {
+                matchEngine.isRunning = true;
+                logMatchEvent("Trận đấu bắt đầu! Tiền đạo thực hiện giao bóng.");
+                matchLoop();
+            }
+        }
+
+        function pauseMatchSimulation() {
+            matchEngine.isRunning = false;
+            cancelAnimationFrame(matchEngine.animId);
+            logMatchEvent("Tạm dừng trận đấu.");
+        }
+
+        function matchLoop() {
+            if(!matchEngine.isRunning) return;
+
+            updateMatchPhysics();
+            drawMatchCanvas();
+
+            matchEngine.timeSec += 0.1;
+            let displayMin = Math.floor(matchEngine.timeSec / 2);
+            let displaySec = Math.floor((matchEngine.timeSec % 2) * 30);
+            document.getElementById('matchTimer').innerText = 
+                (displayMin < 10 ? '0' : '') + displayMin + ':' + (displaySec < 10 ? '0' : '') + displaySec;
+
+            if(displayMin >= 90) {
+                matchEngine.isRunning = false;
+                logMatchEvent("Còi kết thúc trận đấu vang lên! Trận đấu kết thúc.");
+                return;
+            }
+
+            matchEngine.animId = requestAnimationFrame(matchLoop);
+        }
+
+        function updateMatchPhysics() {
+            let ball = matchEngine.ball;
+
+            // Player AI & Movement
+            matchEngine.players.forEach(p => {
+                // Calculate speed based on PAC attribute formula (50 to 200 scale)
+                let maxSpeed = 1.2 + (p.data.pac / 200) * 2.2;
+
+                if(matchEngine.state === 'KICKOFF' && p === ball.owner) {
+                    // Kickoff pass routine: pass back to a midfielder
+                    let cm = matchEngine.players.find(m => m.team === p.team && !m.isST);
+                    if(cm) {
+                        ball.owner = null;
+                        ball.targetX = cm.x;
+                        ball.targetY = cm.y;
+                        matchEngine.state = 'IN_GAME';
+                        logMatchEvent(`${p.data.name} chuyền bóng khởi đầu trận đấu.`);
+                    }
+                }
+
+                // AI Decision Logic
+                let distToBall = Math.hypot(ball.x - p.x, ball.y - p.y);
+
+                if(ball.owner === p) {
+                    // Dribble towards target goal
+                    let targetGoalX = (p.team === 'home') ? 780 : 20;
+                    p.x += (targetGoalX - p.x) * 0.02 * (maxSpeed / 2);
+                    p.y += (240 - p.y) * 0.01;
+                    ball.x = p.x + (p.team === 'home' ? 8 : -8);
+                    ball.y = p.y;
+
+                    // Shooting Decision
+                    if(Math.abs(p.x - targetGoalX) < 180 && Math.random() < 0.03) {
+                        // Shoot!
+                        ball.owner = null;
+                        ball.targetX = targetGoalX;
+                        ball.targetY = 210 + Math.random() * 60; // Goal area y bounds
+                        
+                        let teamIdx = (p.team === 'home') ? 0 : 1;
+                        matchEngine.stats.shots[teamIdx]++;
+                        
+                        if(Math.random() < (p.data.sho / 220)) {
+                            matchEngine.stats.onTarget[teamIdx]++;
+                            logMatchEvent(`CÚ SÚT CỰC NGOẠI MỤC của ${p.data.name}!`, 'goal');
+                        } else {
+                            logMatchEvent(`Cú sút của ${p.data.name} đi chệch khung thành!`);
+                        }
+                        updateMatchStatsUI();
+                    }
+
+                    // Passing Decision
+                    if(Math.random() < 0.02) {
+                        let teammate = matchEngine.players.find(tm => tm.team === p.team && tm !== p && Math.hypot(tm.x - p.x, tm.y - p.y) < 200);
+                        if(teammate) {
+                            // Check Offside
+                            let isOffside = checkOffside(p, teammate);
+                            if(isOffside) {
+                                matchEngine.linesman.flagRaised = true;
+                                logMatchEvent(`Trọng tài biên phất cờ! ${teammate.data.name} rơi vào thế VIỆT VỊ.`, 'foul');
+                                ball.owner = null;
+                                ball.x = teammate.x;
+                                ball.y = teammate.y;
+                            } else {
+                                ball.owner = null;
+                                ball.targetX = teammate.x;
+                                ball.targetY = teammate.y;
+                                logMatchEvent(`${p.data.name} chọc khe cho ${teammate.data.name}.`);
+                            }
+                        }
+                    }
+                } else if(!ball.owner) {
+                    // Move ball to target
+                    if(ball.targetX !== undefined) {
+                        ball.x += (ball.targetX - ball.x) * 0.08;
+                        ball.y += (ball.targetY - ball.y) * 0.08;
+
+                        if(distToBall < 15) {
+                            ball.owner = p;
+                        }
+                    }
+                } else if(ball.owner && ball.owner.team !== p.team) {
+                    // Defending AI: Chase ball or keep tactical formation
+                    if(distToBall < 150) {
+                        p.x += (ball.x - p.x) * 0.03 * maxSpeed;
+                        p.y += (ball.y - p.y) * 0.03 * maxSpeed;
+
+                        // Tackle logic
+                        if(distToBall < 12 && Math.random() < (p.data.def / 250)) {
+                            // Tackle Foul Check
+                            if(Math.random() < 0.08) {
+                                logMatchEvent(`PHẠM LỖI! ${p.data.name} xoạc bóng nguy hiểm.`, 'foul');
+                                let teamIdx = (p.team === 'home') ? 0 : 1;
+                                matchEngine.stats.fouls[teamIdx]++;
+                                if(Math.random() < 0.3) {
+                                    logMatchEvent(`Trọng tài rút THẺ VÀNG cảnh cáo ${p.data.name}!`, 'card');
+                                    matchEngine.stats.cards[teamIdx].y++;
+                                }
+                                updateMatchStatsUI();
+                            } else {
+                                ball.owner = p;
+                                logMatchEvent(`${p.data.name} xoạc bóng cướp bóng thành công!`);
+                            }
+                        }
+                    } else {
+                        // Return to formation home spot
+                        p.x += (p.homeX - p.x) * 0.02;
+                        p.y += (p.homeY - p.y) * 0.02;
+                    }
+                }
+
+                // Keep players inside canvas pitch
+                p.x = Math.max(15, Math.min(785, p.x));
+                p.y = Math.max(15, Math.min(465, p.y));
+            });
+
+            // Goal detection inside net area
+            if(ball.x > 775 && ball.y > 190 && ball.y < 290) {
+                matchEngine.homeScore++;
+                logMatchEvent(`VÀÔÒÔÖÖÖ! BÀN THẮNG DÀNH CHO ${matchEngine.homeTeam.name}!`, 'goal');
+                document.getElementById('matchScore').innerText = `${matchEngine.homeScore} - ${matchEngine.awayScore}`;
+                resetMatchPositions();
+            } else if(ball.x < 25 && ball.y > 190 && ball.y < 290) {
+                matchEngine.awayScore++;
+                logMatchEvent(`VÀÔÒÔÖÖÖ! BÀN THẮNG DÀNH CHO ${matchEngine.awayTeam.name}!`, 'goal');
+                document.getElementById('matchScore').innerText = `${matchEngine.homeScore} - ${matchEngine.awayScore}`;
+                resetMatchPositions();
+            }
+
+            // Referee follow ball movement
+            matchEngine.referee.x += (ball.x + 30 - matchEngine.referee.x) * 0.03;
+            matchEngine.referee.y += (ball.y + 30 - matchEngine.referee.y) * 0.03;
+        }
+
+        function checkOffside(passer, receiver) {
+            if(passer.team === 'home') {
+                let opponents = matchEngine.players.filter(p => p.team === 'away');
+                opponents.sort((a,b) => b.x - a.x); // Sort by x position
+                let lastDefender = opponents[1] || opponents[0]; // Second last opponent (including GK)
+                return receiver.x > lastDefender.x && receiver.x > 400;
+            } else {
+                let opponents = matchEngine.players.filter(p => p.team === 'home');
+                opponents.sort((a,b) => a.x - b.x);
+                let lastDefender = opponents[1] || opponents[0];
+                return receiver.x < lastDefender.x && receiver.x < 400;
+            }
+        }
+
+        function logMatchEvent(msg, type = 'normal') {
+            const logBox = document.getElementById('matchLog');
+            let entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            let displayMin = Math.floor(matchEngine.timeSec / 2);
+            entry.innerText = `[${displayMin}'] ${msg}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function updateMatchStatsUI() {
+            document.getElementById('statShots').innerText = `${matchEngine.stats.shots[0]} - ${matchEngine.stats.shots[1]}`;
+            document.getElementById('statOnTarget').innerText = `${matchEngine.stats.onTarget[0]} - ${matchEngine.stats.onTarget[1]}`;
+            document.getElementById('statFouls').innerText = `${matchEngine.stats.fouls[0]} - ${matchEngine.stats.fouls[1]}`;
+            document.getElementById('statCards').innerText = `${matchEngine.stats.cards[0].y}/${matchEngine.stats.cards[0].r} - ${matchEngine.stats.cards[1].y}/${matchEngine.stats.cards[1].r}`;
+        }
+
+        /* 2D Canvas Renderer */
+        function drawMatchCanvas() {
+            let ctx = matchEngine.ctx;
+            if(!ctx) return;
+
+            // Clear pitch
+            ctx.fillStyle = '#2e7d32';
+            ctx.fillRect(0, 0, 800, 480);
+
+            // Pitch Markings
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 2;
+
+            // Outer Boundary
+            ctx.strokeRect(15, 15, 770, 450);
+
+            // Halfway line & Center Circle
+            ctx.beginPath();
+            ctx.moveTo(400, 15);
+            ctx.lineTo(400, 465);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(400, 240, 60, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Penalty Boxes
+            ctx.strokeRect(15, 120, 120, 240);
+            ctx.strokeRect(665, 120, 120, 240);
+
+            // Goals
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(5, 190, 10, 100);
+            ctx.fillRect(785, 190, 10, 100);
+
+            // Draw Players
+            matchEngine.players.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Player name label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '9px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.data.name.split(' ')[0], p.x, p.y - 13);
+            });
+
+            // Draw Ball
+            let ball = matchEngine.ball;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Draw Referee
+            let ref = matchEngine.referee;
+            ctx.beginPath();
+            ctx.arc(ref.x, ref.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#f59e0b'; // Yellow referee shirt
+            ctx.fill();
+
+            // Draw Linesman
+            let lm = matchEngine.linesman;
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(788, 80, 6, 12);
+            if(lm.flagRaised) {
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(788, 70, 10, 8);
+            }
+        }
+    </script>
 </body>
 </html>
