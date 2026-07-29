@@ -3,110 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2D Football Simulation - Reality Physics</title>
+  <title>VICTORIA FOOTBALL - Pro Engine</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-main: #0b132b;
+      --bg-card: #1c2541;
+      --accent: #00b4d8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --text: #ffffff;
+      --text-dim: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    
     body {
-      background: #1a1a1a;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-main);
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
       padding: 10px;
     }
-    #game-container {
+
+    header {
+      width: 100%;
+      max-width: 1000px;
+      padding: 12px 20px;
       display: flex;
-      gap: 15px;
-      background: #2a2a2a;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    #canvas-wrapper {
-      position: relative;
+
+    .brand { font-size: 18px; font-weight: 800; color: var(--accent-green); letter-spacing: 1px; }
+    .role-badge { font-size: 12px; color: var(--text-dim); }
+
+    .main-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 1000px;
     }
+
+    @media (min-width: 850px) {
+      .main-layout { display: grid; grid-template-columns: 1fr 320px; }
+    }
+
+    .pitch-container {
+      background: var(--bg-card);
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-board {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 100%;
+      margin-bottom: 10px;
+      background: rgba(0,0,0,0.2);
+      padding: 8px 15px;
+      border-radius: 6px;
+    }
+
+    .team-name { font-weight: bold; font-size: 14px; }
+    .score { font-size: 22px; font-weight: 900; color: #fff; }
+    .timer { font-family: monospace; font-size: 16px; color: var(--accent); font-weight: bold; }
+
     canvas {
-      background: #388e3c;
-      border: 4px solid #fff;
+      width: 100%;
+      max-width: 650px;
+      height: auto;
+      aspect-ratio: 13 / 8;
+      background: #2e7d32;
+      border: 2px solid rgba(255,255,255,0.8);
       border-radius: 4px;
-      display: block;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
-    #sidebar {
-      width: 280px;
+
+    .controls-btn {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-start { background: var(--accent-green); color: #fff; }
+    .btn-reset { background: var(--accent-red); color: #fff; }
+    button:hover { opacity: 0.85; }
+
+    .sidebar {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    .scoreboard {
-      background: #111;
+
+    .panel {
+      background: var(--bg-card);
       padding: 12px;
-      border-radius: 6px;
-      text-align: center;
-      border: 1px solid #444;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    .score-title { font-size: 12px; color: #aaa; margin-bottom: 4px; }
-    .score-display { font-size: 24px; font-weight: bold; color: #4caf50; }
-    .stats-panel, .log-panel {
-      background: #111;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #444;
+
+    .panel-title {
       font-size: 13px;
-    }
-    .stats-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .log-panel {
-      height: 200px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 11px;
-      color: #ddd;
-    }
-    .log-item { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
-    .controls { display: flex; gap: 8px; }
-    button {
-      flex: 1;
-      padding: 8px;
-      background: #4caf50;
-      border: none;
-      color: #fff;
       font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
+      color: var(--accent);
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 4px;
     }
-    button:hover { background: #45a049; }
-    button#reset-btn { background: #f44336; }
-    button#reset-btn:hover { background: #da190b; }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: var(--text-dim);
+    }
+    .stat-row span:last-child { color: #fff; font-weight: bold; }
+
+    .log-box {
+      height: 180px;
+      overflow-y: auto;
+      font-size: 11px;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .log-item {
+      padding: 3px 6px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 3px;
+      border-left: 2px solid var(--accent);
+    }
   </style>
 </head>
 <body>
 
-  <div id="game-container">
-    <div id="canvas-wrapper">
-      <canvas id="pitch" width="800" height="500"></canvas>
+  <header>
+    <div class="brand">VICTORIA FOOTBALL</div>
+    <div class="role-badge">Quyền: Khách (Mô phỏng nâng cao)</div>
+  </header>
+
+  <div class="main-layout">
+    <div class="pitch-container">
+      <div class="score-board">
+        <div class="team-name" style="color: #60a5fa;" id="home-name">ĐỘI NHÀ</div>
+        <div class="score" id="score-text">0 - 0</div>
+        <div class="team-name" style="color: #f87171;" id="away-name">ĐỘI KHÁCH</div>
+        <div class="timer" id="match-timer">00:00</div>
+      </div>
+
+      <canvas id="pitch" width="650" height="400"></canvas>
+
+      <div class="controls-btn">
+        <button class="btn-start" id="start-btn">Đồng Ý Bắt Đầu</button>
+        <button class="btn-reset" id="reset-btn">Làm Mới Trận Đấu</button>
+      </div>
     </div>
 
-    <div id="sidebar">
-      <div class="scoreboard">
-        <div class="score-title">TRẬN ĐẤU GIẢ LẬP</div>
-        <div class="score-display" id="score">RED 0 - 0 BLUE</div>
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-title">Thống Kê Trận Đấu</div>
+        <div class="stat-row"><span>Cú Sút (Trúng Đích)</span><span id="st-shots">0 (0) - 0 (0)</span></div>
+        <div class="stat-row"><span>Kiểm Soát Bóng (%)</span><span id="st-poss">50% - 50%</span></div>
+        <div class="stat-row"><span>Phạm Lỗi</span><span id="st-fouls">0 - 0</span></div>
+        <div class="stat-row"><span>Việt Vị</span><span>0 - 0</span></div>
       </div>
 
-      <div class="stats-panel">
-        <div class="stats-row"><span>Sút bóng:</span><span id="stat-shots">0 - 0</span></div>
-        <div class="stats-row"><span>Phạm lỗi:</span><span id="stat-fouls">0 - 0</span></div>
-        <div class="stats-row"><span>Kiểm soát bóng:</span><span id="stat-possession">50% - 50%</span></div>
-      </div>
-
-      <div class="log-panel" id="match-log">
-        <div class="log-item">--- Trận đấu bắt đầu ---</div>
-      </div>
-
-      <div class="controls">
-        <button id="pause-btn">Tạm dừng</button>
-        <button id="reset-btn">Làm mới</button>
+      <div class="panel">
+        <div class="panel-title">Nhật Ký Trận Đấu</div>
+        <div class="log-box" id="log-box">
+          <div class="log-item">[0'] Trận đấu sẵn sàng. Nhấn Bắt đầu!</div>
+        </div>
       </div>
     </div>
   </div>
@@ -115,321 +206,381 @@
     const canvas = document.getElementById('pitch');
     const ctx = canvas.getContext('2d');
 
-    let isRunning = true;
-    let matchStats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeFouls: 0, awayFouls: 0, homePoss: 50 };
+    let isPlaying = false;
+    let gameTime = 0; // tính theo giây mô phỏng
+    let timerInterval = null;
 
-    // Khởi tạo Bóng
-    const ballState = {
+    // Thống kê
+    let stats = {
+      homeGoals: 0, awayGoals: 0,
+      homeShots: 0, awayShots: 0,
+      homeShotsOnTarget: 0, awayShotsOnTarget: 0,
+      homeFouls: 0, awayFouls: 0,
+      homePossTicks: 0, awayPossTicks: 0
+    };
+
+    // Bóng
+    const ball = {
       x: canvas.width / 2,
       y: canvas.height / 2,
       vx: 0,
       vy: 0,
       owner: null,
-      radius: 5
+      radius: 4.5
     };
 
-    // Khởi tạo Trọng tài
-    const refereeState = { x: canvas.width / 2, y: canvas.height / 2 - 50 };
-
-    // Khởi tạo Cầu thủ (Home: Red, Away: Blue)
-    function createTeam(isHome) {
-      const team = [];
-      const color = isHome ? '#e53935' : '#1e88e5';
-      const startX = isHome ? 100 : canvas.width - 100;
-
-      // 1 GK, 2 DEF, 2 MID, 1 FW
-      const positions = [
-        { role: 'GK', x: isHome ? 40 : canvas.width - 40, y: canvas.height / 2, pac: 50, phy: 80, def: 85, dri: 40 },
-        { role: 'DEF', x: isHome ? 180 : canvas.width - 180, y: 150, pac: 65, phy: 85, def: 80, dri: 50 },
-        { role: 'DEF', x: isHome ? 180 : canvas.width - 180, y: 350, pac: 65, phy: 85, def: 80, dri: 50 },
-        { role: 'MID', x: isHome ? 320 : canvas.width - 320, y: 180, pac: 75, phy: 70, def: 65, dri: 75 },
-        { role: 'MID', x: isHome ? 320 : canvas.width - 320, y: 320, pac: 75, phy: 70, def: 65, dri: 75 },
-        { role: 'FW',  x: isHome ? 380 : canvas.width - 380, y: 250, pac: 85, phy: 70, def: 40, dri: 85 }
+    // Tạo đội bóng
+    function initTeam(isHome) {
+      const color = isHome ? '#3b82f6' : '#ef4444';
+      const side = isHome ? 1 : -1;
+      const basePositions = [
+        { role: 'GK', x: isHome ? 30 : canvas.width - 30, y: 200, spd: 1.8, def: 80, phy: 75 },
+        { role: 'CB', x: isHome ? 120 : canvas.width - 120, y: 120, spd: 2.0, def: 78, phy: 80 },
+        { role: 'CB', x: isHome ? 120 : canvas.width - 120, y: 280, spd: 2.0, def: 78, phy: 80 },
+        { role: 'CM', x: isHome ? 230 : canvas.width - 230, y: 140, spd: 2.2, def: 70, phy: 70 },
+        { role: 'CM', x: isHome ? 230 : canvas.width - 230, y: 260, spd: 2.2, def: 70, phy: 70 },
+        { role: 'ST', x: isHome ? 300 : canvas.width - 300, y: 200, spd: 2.5, def: 50, phy: 72 }
       ];
 
-      positions.forEach((p, index) => {
-        team.push({
-          id: (isHome ? 'H' : 'A') + (index + 1),
-          name: (isHome ? 'Red ' : 'Blue ') + (index + 1),
-          isHome: isHome,
-          color: color,
-          role: p.role,
-          x: p.x,
-          y: p.y,
-          baseX: p.x,
-          baseY: p.y,
-          pac: p.pac,
-          phy: p.phy,
-          def: p.def,
-          dri: p.dri,
-          cooldown: 0
-        });
-      });
-      return team;
+      return basePositions.map((p, idx) => ({
+        id: (isHome ? 'H' : 'A') + (idx + 1),
+        name: (isHome ? 'Đội nhà ' : 'Đội khách ') + (idx + 1),
+        isHome: isHome,
+        role: p.role,
+        color: color,
+        x: p.x,
+        y: p.y,
+        baseX: p.x,
+        baseY: p.y,
+        speed: p.spd,
+        def: p.def,
+        phy: p.phy,
+        cooldown: 0
+      }));
     }
 
-    let homeTeamState = createTeam(true);
-    let awayTeamState = createTeam(false);
+    let homeTeam = initTeam(true);
+    let awayTeam = initTeam(false);
 
-    // LOGGING SYSTEM
-    function logMatch(msg) {
-      const logBox = document.getElementById('match-log');
+    function writeLog(text) {
+      const box = document.getElementById('log-box');
       const item = document.createElement('div');
       item.className = 'log-item';
-      item.innerText = msg;
-      logBox.appendChild(item);
-      logBox.scrollTop = logBox.scrollHeight;
+      const min = Math.floor(gameTime / 60);
+      item.innerText = `[${min}'] ${text}`;
+      box.appendChild(item);
+      box.scrollTop = box.scrollHeight;
     }
 
-    function updateStatsUI() {
-      document.getElementById('score').innerText = `RED ${matchStats.homeGoals} - ${matchStats.awayGoals} BLUE`;
-      document.getElementById('stat-shots').innerText = `${matchStats.homeShots} - ${matchStats.awayShots}`;
-      document.getElementById('stat-fouls').innerText = `${matchStats.homeFouls} - ${matchStats.awayFouls}`;
+    function updateUI() {
+      document.getElementById('score-text').innerText = `${stats.homeGoals} - ${stats.awayGoals}`;
+      document.getElementById('st-shots').innerText = `${stats.homeShots} (${stats.homeShotsOnTarget}) - ${stats.awayShots} (${stats.awayShotsOnTarget})`;
+      document.getElementById('st-fouls').innerText = `${stats.homeFouls} - ${stats.awayFouls}`;
+
+      const totalPoss = (stats.homePossTicks + stats.awayPossTicks) || 1;
+      const hPct = Math.round((stats.homePossTicks / totalPoss) * 100);
+      document.getElementById('st-poss').innerText = `${hPct}% - ${100 - hPct}%`;
+
+      const m = String(Math.floor(gameTime / 60)).padStart(2, '0');
+      const s = String(gameTime % 60).padStart(2, '0');
+      document.getElementById('match-timer').innerText = `${m}:${s}`;
     }
 
-    // ACTIONS
-    function triggerShot(p, targetX, targetY) {
-      if (p.isHome) matchStats.homeShots++; else matchStats.awayShots++;
-      
-      const angle = Math.atan2(targetY - p.y, targetX - p.x);
-      const power = 9 + Math.random() * 3;
-      
-      ballState.owner = null;
-      ballState.vx = Math.cos(angle) * power;
-      ballState.vy = Math.sin(angle) * power;
-      p.cooldown = 20;
+    // THUẬT TOÁN TÁCH CỰ LY (CHỐNG DỒN CỤC BẦY ĐÀN)
+    function applySeparation(p, allPlayers) {
+      let sepX = 0, sepY = 0;
+      const minDist = 18; // Khoảng cách tối thiểu giữa 2 cầu thủ
 
-      logMatch(`${p.name} dứt điểm căng về phía khung thành!`);
-      updateStatsUI();
-    }
-
-    function triggerPass(p) {
-      const teammates = (p.isHome ? homeTeamState : awayTeamState).filter(t => t !== p);
-      const target = teammates[Math.floor(Math.random() * teammates.length)];
-
-      const angle = Math.atan2(target.y - p.y, target.x - p.x);
-      ballState.owner = null;
-      ballState.vx = Math.cos(angle) * 6;
-      ballState.vy = Math.sin(angle) * 6;
-      p.cooldown = 15;
-    }
-
-    // AI ENGINE (VẬT LÝ VÀ TRANH CHẤP CHÂN THỰC)
-    function updateAIEngine() {
-      const allPlayers = [...homeTeamState, ...awayTeamState];
-
-      // Trọng tài di chuyển
-      refereeState.x += (ballState.x - refereeState.x) * 0.03;
-      refereeState.y += (ballState.y - 40 - refereeState.y) * 0.03;
-
-      // Cập nhật bóng khi ko ai giữ
-      if (!ballState.owner) {
-        ballState.x += ballState.vx;
-        ballState.y += ballState.vy;
-        ballState.vx *= 0.95;
-        ballState.vy *= 0.95;
-
-        // Va chạm biên / Goal
-        if (ballState.y <= 10 || ballState.y >= canvas.height - 10) ballState.vy *= -1;
-        if (ballState.x <= 10) {
-          if (ballState.y > 200 && ballState.y < 300) {
-            matchStats.awayGoals++;
-            logMatch(`VÀOOO! Blue ghi bàn!`);
-            resetPositions();
-          } else {
-            ballState.vx *= -1;
+      allPlayers.forEach(other => {
+        if (other !== p) {
+          const dx = p.x - other.x;
+          const dy = p.y - other.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > 0 && dist < minDist) {
+            sepX += (dx / dist) * (minDist - dist) * 0.15;
+            sepY += (dy / dist) * (minDist - dist) * 0.15;
           }
         }
-        if (ballState.x >= canvas.width - 10) {
-          if (ballState.y > 200 && ballState.y < 300) {
-            matchStats.homeGoals++;
-            logMatch(`VÀOOO! Red ghi bàn!`);
-            resetPositions();
-          } else {
-            ballState.vx *= -1;
-          }
-        }
+      });
+      p.x += sepX;
+      p.y += sepY;
+    }
+
+    // AI ENGINE
+    function updatePhysics() {
+      const allPlayers = [...homeTeam, ...awayTeam];
+
+      // Tính kiểm soát bóng
+      if (ball.owner) {
+        if (ball.owner.isHome) stats.homePossTicks++; else stats.awayPossTicks++;
       }
 
-      // Logic Cầu thủ
+      // Xử lý bóng di chuyển tự do
+      if (!ball.owner) {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        ball.vx *= 0.94;
+        ball.vy *= 0.94;
+
+        // Bật tường
+        if (ball.y <= 10 || ball.y >= canvas.height - 10) ball.vy *= -0.8;
+
+        // Bàn thắng
+        if (ball.x <= 5 && ball.y > 150 && ball.y < 250) {
+          stats.awayGoals++;
+          writeLog("VÀOOO! Đội khách ghi bàn mở tỷ số!");
+          resetMatchState();
+          return;
+        }
+        if (ball.x >= canvas.width - 5 && ball.y > 150 && ball.y < 250) {
+          stats.homeGoals++;
+          writeLog("VÀOOO! Đội nhà dứt điểm tung lưới!");
+          resetMatchState();
+          return;
+        }
+
+        // Bật biên ngang
+        if (ball.x <= 5 || ball.x >= canvas.width - 5) ball.vx *= -0.8;
+      }
+
+      // Tìm cầu thủ mỗi đội gần bóng nhất
+      let closestHome = null, minHomeDist = 9999;
+      let closestAway = null, minAwayDist = 9999;
+
+      homeTeam.forEach(p => {
+        const d = Math.hypot(ball.x - p.x, ball.y - p.y);
+        if (d < minHomeDist) { minHomeDist = d; closestHome = p; }
+      });
+      awayTeam.forEach(p => {
+        const d = Math.hypot(ball.x - p.x, ball.y - p.y);
+        if (d < minAwayDist) { minAwayDist = d; closestAway = p; }
+      });
+
+      // Cập nhật từng cầu thủ
       allPlayers.forEach(p => {
         if (p.cooldown > 0) p.cooldown--;
 
-        let speed = (p.pac / 200) * 2.0 + 1.0;
-        const distToBall = Math.hypot(ballState.x - p.x, ballState.y - p.y);
+        // Áp dụng chống giẫm chân nhau
+        applySeparation(p, allPlayers);
 
-        // NẾU ĐANG GIỮ BÓNG
-        if (ballState.owner === p) {
-          const targetGoalX = p.isHome ? canvas.width - 20 : 20;
+        // NẾU CÓ BÓNG
+        if (ball.owner === p) {
+          const targetGoalX = p.isHome ? canvas.width - 15 : 15;
           const targetGoalY = canvas.height / 2;
-          const distToGoal = Math.hypot(targetGoalX - p.x, targetGoalY - p.y);
+          const distGoal = Math.hypot(targetGoalX - p.x, targetGoalY - p.y);
 
-          // Tỳ đè tỳ vết: Kiểm tra đối phương ép sát
-          const enemyNear = allPlayers.find(e => e.isHome !== p.isHome && Math.hypot(e.x - p.x, e.y - p.y) < 18);
-          if (enemyNear) {
-            // Giảm tốc độ do bị đè, KHÔNG văng ra
-            const phyDiff = (enemyNear.phy - p.phy) / 100;
-            speed = Math.max(0.5, speed * (0.65 - phyDiff * 0.2));
-          }
-
+          // Rê bóng
           const angle = Math.atan2(targetGoalY - p.y, targetGoalX - p.x);
-          p.x += Math.cos(angle) * (speed * 0.7);
-          p.y += Math.sin(angle) * (speed * 0.7);
+          p.x += Math.cos(angle) * (p.speed * 0.65);
+          p.y += Math.sin(angle) * (p.speed * 0.65);
 
-          ballState.x = p.x + Math.cos(angle) * 8;
-          ballState.y = p.y + Math.sin(angle) * 8;
+          ball.x = p.x + Math.cos(angle) * 6;
+          ball.y = p.y + Math.sin(angle) * 6;
 
-          if (distToGoal < 150 || (distToGoal < 220 && Math.random() < 0.025)) {
-            triggerShot(p, targetGoalX, targetGoalY);
-          } else if (Math.random() < 0.03 || enemyNear) {
-            triggerPass(p);
+          // Quyết định Sút
+          if (distGoal < 140 || (distGoal < 200 && Math.random() < 0.03)) {
+            if (p.isHome) stats.homeShots++; else stats.awayShots++;
+            
+            const isTarget = Math.random() > 0.3;
+            if (isTarget) {
+              if (p.isHome) stats.homeShotsOnTarget++; else stats.awayShotsOnTarget++;
+            }
+
+            const shotAngle = Math.atan2((targetGoalY + (Math.random()*40-20)) - p.y, targetGoalX - p.x);
+            ball.owner = null;
+            ball.vx = Math.cos(shotAngle) * (8 + Math.random() * 4);
+            ball.vy = Math.sin(shotAngle) * (8 + Math.random() * 4);
+            p.cooldown = 30;
+
+            writeLog(`${p.name} dứt điểm căng từ xa!`);
           }
-        } 
-        // NẾU KO GIỮ BÓNG
+          // Quyết định Chuyền bóng
+          else if (Math.random() < 0.025) {
+            const mates = (p.isHome ? homeTeam : awayTeam).filter(m => m !== p && m.role !== 'GK');
+            const targetMate = mates[Math.floor(Math.random() * mates.length)];
+            
+            if (targetMate) {
+              const passAngle = Math.atan2(targetMate.y - p.y, targetMate.x - p.x);
+              ball.owner = null;
+              ball.vx = Math.cos(passAngle) * 6.5;
+              ball.vy = Math.sin(passAngle) * 6.5;
+              p.cooldown = 20;
+              writeLog(`${p.name} thực hiện đường chuyền đồng đội.`);
+            }
+          }
+        }
+        // NẾU KHÔNG CÓ BÓNG
         else {
-          if (distToBall < 180 && p.cooldown === 0) {
-            const angle = Math.atan2(ballState.y - p.y, ballState.x - p.x);
-            p.x += Math.cos(angle) * speed;
-            p.y += Math.sin(angle) * speed;
+          const isPresser = (p === closestHome || p === closestAway);
+          const distToBall = Math.hypot(ball.x - p.x, ball.y - p.y);
 
-            // Tiếp cận sát tranh chấp
-            if (distToBall < 12) {
-              if (ballState.owner) {
-                const owner = ballState.owner;
-                const stealChance = (p.def * 0.6 + p.phy * 0.4) - (owner.dri * 0.5 + owner.phy * 0.5);
-                
-                // Tỷ lệ cướp bóng bằng tỳ đè
-                if (Math.random() * 100 < (48 + stealChance * 0.3)) {
-                  ballState.owner = p;
-                  p.cooldown = 15;
-                  owner.cooldown = 15;
-                  logMatch(`${p.name} tỳ đè cướp bóng thành công từ ${owner.name}!`);
-                } else if (Math.random() < 0.025) {
+          // CHỈ CẦU THỦ GẦN NHẤT MỚI ĐƯỢC ÁP SÁT BÓNG (TẠO TÍNH CHIẾN THUẬT)
+          if (isPresser && p.role !== 'GK' && p.cooldown === 0) {
+            const angle = Math.atan2(ball.y - p.y, ball.x - p.x);
+            p.x += Math.cos(angle) * p.speed;
+            p.y += Math.sin(angle) * p.speed;
+
+            // Xử lý Cướp bóng / Tranh chấp sát người
+            if (distToBall < 10) {
+              if (ball.owner && ball.owner.isHome !== p.isHome) {
+                const victim = ball.owner;
+                // Tỷ lệ cướp
+                if (Math.random() < 0.35) {
+                  ball.owner = p;
+                  p.cooldown = 20;
+                  victim.cooldown = 20;
+                  writeLog(`${p.name} xoạc bóng cắt bóng chính xác!`);
+                } else if (Math.random() < 0.05) {
                   // Phạm lỗi
-                  if (p.isHome) matchStats.homeFouls++; else matchStats.awayFouls++;
-                  logMatch(`Còi vang! ${p.name} phạm lỗi trg pha tranh chấp.`);
-                  updateStatsUI();
-                  p.cooldown = 25;
+                  if (p.isHome) stats.homeFouls++; else stats.awayFouls++;
+                  writeLog(`Trọng tài thổi phạt! ${p.name} phạm lỗi nguy hiểm.`);
+                  p.cooldown = 35;
                 }
-              } else {
-                ballState.owner = p;
-                p.cooldown = 10;
+              } else if (!ball.owner) {
+                ball.owner = p;
+                p.cooldown = 15;
               }
             }
-          } else {
-            // Định hình lại vị trí đội hình
-            let shiftX = (ballState.x - canvas.width / 2) * 0.35;
-            let targetX = p.baseX + shiftX;
-            let targetY = p.baseY;
+          } 
+          // CÁC CẦU THỦ CÒN LẠI GIỮ ĐỘI HÌNH VÀ BỌC LÓT
+          else {
+            // GK giữ cầu môn
+            if (p.role === 'GK') {
+              const targetY = Math.max(160, Math.min(240, ball.y));
+              p.y += (targetY - p.y) * 0.08;
+              p.x += (p.baseX - p.x) * 0.08;
+            } else {
+              // Giữ vị trí chiến thuật theo hướng bóng
+              let shiftX = (ball.x - canvas.width / 2) * 0.25;
+              let targetX = p.baseX + shiftX;
+              let targetY = p.baseY + (ball.y - canvas.height / 2) * 0.15;
 
-            p.x += (targetX - p.x) * 0.04;
-            p.y += (targetY - p.y) * 0.04;
+              p.x += (targetX - p.x) * 0.05;
+              p.y += (targetY - p.y) * 0.05;
+            }
           }
         }
       });
     }
 
-    function resetPositions() {
-      ballState.x = canvas.width / 2;
-      ballState.y = canvas.height / 2;
-      ballState.vx = 0;
-      ballState.vy = 0;
-      ballState.owner = null;
+    function resetMatchState() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.vx = 0;
+      ball.vy = 0;
+      ball.owner = null;
 
-      [...homeTeamState, ...awayTeamState].forEach(p => {
+      [...homeTeam, ...awayTeam].forEach(p => {
         p.x = p.baseX;
         p.y = p.baseY;
         p.cooldown = 0;
       });
-      updateStatsUI();
+      updateUI();
     }
 
-    // RENDER GRAPHICS
-    function drawPitch() {
-      ctx.fillStyle = '#388e3c';
+    // DRAW ENGINE
+    function render() {
+      // Sân bóng
+      ctx.fillStyle = '#2e7d32';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Đường kẻ sân
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.lineWidth = 2;
+      // Kẻ vạch sân
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1.5;
 
-      // Đường giữa sân & Vòng tròn trung tâm
+      // Giữa sân
       ctx.beginPath();
       ctx.moveTo(canvas.width / 2, 0);
       ctx.lineTo(canvas.width / 2, canvas.height);
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+      ctx.arc(canvas.width / 2, canvas.height / 2, 45, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Vòng cấm địa (2 bên)
-      ctx.strokeRect(0, 120, 100, 260);
-      ctx.strokeRect(canvas.width - 100, 120, 100, 260);
+      // Vòng cấm
+      ctx.strokeRect(0, 110, 80, 180);
+      ctx.strokeRect(canvas.width - 80, 110, 80, 180);
 
       // Khung thành
       ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 200, 8, 100);
-      ctx.fillRect(canvas.width - 8, 200, 8, 100);
-    }
+      ctx.fillRect(0, 150, 4, 100);
+      ctx.fillRect(canvas.width - 4, 150, 4, 100);
 
-    function drawEntities() {
-      // Vẽ Trọng tài
-      ctx.fillStyle = '#ffeb3b';
-      ctx.beginPath();
-      ctx.arc(refereeState.x, refereeState.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Vẽ Cầu thủ
-      const allPlayers = [...homeTeamState, ...awayTeamState];
-      allPlayers.forEach(p => {
+      // Cầu thủ
+      [...homeTeam, ...awayTeam].forEach(p => {
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Tên cầu thủ
-        ctx.fillStyle = '#fff';
-        ctx.font = '9px Arial';
-        ctx.fillText(p.role, p.x - 8, p.y - 11);
+        // Viền bóng nếu đang giữ
+        if (ball.owner === p) {
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       });
 
-      // Vẽ Bóng
+      // Trọng tài
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(canvas.width/2 + (ball.x - canvas.width/2)*0.1, canvas.height/2 + (ball.y - canvas.height/2)*0.1, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Quả bóng
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(ballState.x, ballState.y, ballState.radius, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
-    // GAME LOOP
-    function gameLoop() {
-      if (isRunning) {
-        updateAIEngine();
-        drawPitch();
-        drawEntities();
+    function loop() {
+      if (isPlaying) {
+        updatePhysics();
+        updateUI();
       }
-      requestAnimationFrame(gameLoop);
+      render();
+      requestAnimationFrame(loop);
     }
 
-    // CONTROLS
-    document.getElementById('pause-btn').addEventListener('click', (e) => {
-      isRunning = !isRunning;
-      e.target.innerText = isRunning ? 'Tạm dừng' : 'Tiếp tục';
+    // CONTROLS & TIMERS
+    document.getElementById('start-btn').addEventListener('click', function() {
+      isPlaying = !isPlaying;
+      this.innerText = isPlaying ? 'Dừng Trận Đấu' : 'Đồng Ý Bắt Đầu';
+      this.style.background = isPlaying ? 'var(--accent-red)' : 'var(--accent-green)';
+
+      if (isPlaying && !timerInterval) {
+        timerInterval = setInterval(() => {
+          if (isPlaying) gameTime++;
+        }, 1000);
+      }
     });
 
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      matchStats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeFouls: 0, awayFouls: 0, homePoss: 50 };
-      resetPositions();
-      document.getElementById('match-log').innerHTML = '<div class="log-item">--- Trận đấu bắt đầu lại ---</div>';
+    document.getElementById('reset-btn').addEventListener('click', function() {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      gameTime = 0;
+      stats = { homeGoals: 0, awayGoals: 0, homeShots: 0, awayShots: 0, homeShotsOnTarget: 0, awayShotsOnTarget: 0, homeFouls: 0, awayFouls: 0, homePossTicks: 0, awayPossTicks: 0 };
+      document.getElementById('start-btn').innerText = 'Đồng Ý Bắt Đầu';
+      document.getElementById('start-btn').style.background = 'var(--accent-green)';
+      document.getElementById('log-box').innerHTML = '<div class="log-item">[0\'] Trận đấu bắt đầu lại.</div>';
+      resetMatchState();
     });
 
-    // START
-    gameLoop();
+    // START ENGINE
+    resetMatchState();
+    loop();
   </script>
 </body>
 </html>
