@@ -145,7 +145,7 @@
       color: #71717a;
     }
 
-    /* CẤU TRÚC CHỮ SỐ CUỘN RIÊNG BIỆT */
+    /* Khung hiển thị từng chữ số cuộn riêng biệt */
     .pop-container {
       display: inline-flex;
       align-items: center;
@@ -182,7 +182,7 @@
       padding: 0 1px;
     }
 
-    /* HIỆU ỨNG CUỘN CHỈ ÁP DỤNG DÀNH CHO CHỮ SỐ THAY ĐỔI */
+    /* Animation Cuộn Lên / Cuộn Xuống */
     @keyframes digitScrollUp {
       0% { transform: translateY(100%); opacity: 0.2; }
       100% { transform: translateY(0); opacity: 1; }
@@ -414,17 +414,19 @@
   </div>
 
   <script>
-    // CẤU HÌNH DATABASE FIREBASE TRỰC TUYẾN
+    // ----------------------------------------------------
+    // CẤU HÌNH DATABASE FIREBASE ONLINE TRỰC TUYẾN
+    // ----------------------------------------------------
     const firebaseConfig = {
-      databaseURL: "https://vcdb-753fa-default-rtdb.firebaseio.com/"
+      databaseURL: "https://victoria-population-default-rtdb.firebaseio.com/"
     };
     
     let dbRef = null;
     try {
       firebase.initializeApp(firebaseConfig);
-      dbRef = firebase.database().ref("victoria_countries");
+      dbRef = firebase.database().ref("victoria_countries_v2");
     } catch(e) {
-      console.log("Sử dụng LocalStorage dự phòng.");
+      console.log("Firebase chưa kết nối, sử dụng LocalStorage Autosave.");
     }
 
     const ADMIN_PASSWORD = "admin89897272";
@@ -434,35 +436,82 @@
     let editingCountryId = null;
     let lastTime = performance.now();
 
-    // Tỷ lệ chuẩn: 1 Ngày Thật (86.400s) = 2 Tháng Ảo (1/6 năm ảo = 518.400s)
+    // Logic Tỷ lệ chuẩn: 1 Ngày Thật (86.400s) = 2 Tháng Ảo (1/6 năm ảo = 518.400s)
     const VIRTUAL_YEAR_RATIO = 518400;
 
-    // LẮNG NGHE DATABASE CLOUD ONLINE & TÍNH BÙ THỜI GIAN THOÁT WEB
-    function initDatabase() {
+    // KHOẢNG LƯU AUTOSAVE TỰ ĐỘNG BỀN VỮNG (LOCALSTORAGE & CLOUD)
+    function saveAutosave() {
+      const nowMs = Date.now();
+      countries.forEach(c => c.lastTimestamp = nowMs);
+
+      // 1. Luôn lưu vào LocalStorage của trình duyệt (Dán lại code hay xóa code vẫn còn nguyên)
+      localStorage.setItem("victoria_countries_v2", JSON.stringify(countries));
+      localStorage.setItem("victoria_last_save_time", nowMs.toString());
+
+      // 2. Lưu lên Cloud Firebase nếu có kết nối
+      if (dbRef) {
+        const updateObj = {};
+        countries.forEach(c => {
+          updateObj[c.id] = {
+            id: c.id,
+            name: c.name,
+            flagUrl: c.flagUrl || null,
+            population: c.population,
+            growthRate: c.growthRate,
+            lastTimestamp: c.lastTimestamp
+          };
+        });
+        dbRef.set(updateObj);
+      }
+    }
+
+    // ĐỌC DỮ LIỆU AUTOSAVE BẤT KỂ KHI NÀO MỞ WEB/SỬA CODE & TÍNH BÙ THỜI GIAN
+    function loadAutosaveData() {
+      const localData = localStorage.getItem("victoria_countries_v2");
+      const lastSaveTimeStr = localStorage.getItem("victoria_last_save_time");
+      const nowMs = Date.now();
+
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          const lastSaveTime = lastSaveTimeStr ? parseInt(lastSaveTimeStr, 10) : nowMs;
+          const elapsedSeconds = Math.max(0, (nowMs - lastSaveTime) / 1000);
+
+          // Tính bù dân số trong thời gian thoát web hoặc sửa code
+          if (elapsedSeconds > 0) {
+            const virtualYearsPassed = elapsedSeconds / VIRTUAL_YEAR_RATIO;
+            parsed.forEach(c => {
+              const birthRate = c.growthRate || 0.01;
+              const deathRate = 0.01;
+              const netGrowthRate = birthRate - deathRate;
+              c.population += c.population * netGrowthRate * virtualYearsPassed;
+              c.lastTimestamp = nowMs;
+            });
+          }
+
+          countries = parsed;
+          renderList();
+          renderAdminCountryList();
+        } catch(e) {
+          console.error("Lỗi khôi phục Autosave:", e);
+        }
+      }
+
+      // Lắng nghe thêm đồng bộ từ Cloud Firebase (Nếu có)
       if (dbRef) {
         dbRef.on('value', (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            const rawList = Object.values(data);
-            processAndCatchupData(rawList);
-          } else {
-            countries = [];
-            renderList();
+            const cloudList = Object.values(data);
+            processCloudCatchup(cloudList);
           }
         });
-      } else {
-        const localData = localStorage.getItem("victoria_countries");
-        if (localData) {
-          processAndCatchupData(JSON.parse(localData));
-        }
       }
     }
 
-    // TÍNH BÙ DÂN SỐ TRONG KHOẢNG THỜI GIAN THOÁT WEB (OFFLINE CATCH-UP)
-    function processAndCatchupData(incomingList) {
+    function processCloudCatchup(cloudList) {
       const nowMs = Date.now();
-
-      incomingList.forEach(incoming => {
+      cloudList.forEach(incoming => {
         let existing = countries.find(c => c.id === incoming.id);
         const lastUpdated = incoming.lastTimestamp || nowMs;
         const elapsedSeconds = Math.max(0, (nowMs - lastUpdated) / 1000);
@@ -481,7 +530,6 @@
           existing.flagUrl = incoming.flagUrl;
           existing.population = incoming.population;
           existing.growthRate = incoming.growthRate;
-          existing.lastTimestamp = incoming.lastTimestamp;
         } else {
           incoming.prevPopulation = incoming.population;
           incoming.renderedChars = null;
@@ -489,34 +537,11 @@
         }
       });
 
-      const incomingIds = incomingList.map(i => i.id);
+      const incomingIds = cloudList.map(i => i.id);
       countries = countries.filter(c => incomingIds.includes(c.id));
 
       renderList();
       renderAdminCountryList();
-    }
-
-    // ĐỒNG BỘ LÊN CLOUD
-    function syncToDatabase() {
-      const nowMs = Date.now();
-      countries.forEach(c => c.lastTimestamp = nowMs);
-
-      if (dbRef) {
-        const updateObj = {};
-        countries.forEach(c => {
-          updateObj[c.id] = {
-            id: c.id,
-            name: c.name,
-            flagUrl: c.flagUrl || null,
-            population: c.population,
-            growthRate: c.growthRate,
-            lastTimestamp: c.lastTimestamp
-          };
-        });
-        dbRef.set(updateObj);
-      } else {
-        localStorage.setItem("victoria_countries", JSON.stringify(countries));
-      }
     }
 
     function toggleModal(show) {
@@ -601,7 +626,7 @@
       }
 
       resetFormState();
-      syncToDatabase();
+      saveAutosave();
       renderList();
       renderAdminCountryList();
     }
@@ -643,7 +668,7 @@
       };
 
       countries.push(clone);
-      syncToDatabase();
+      saveAutosave();
       renderList();
       renderAdminCountryList();
     }
@@ -651,7 +676,7 @@
     function deleteCountry(id) {
       countries = countries.filter(c => c.id !== id);
       if (editingCountryId === id) resetFormState();
-      syncToDatabase();
+      saveAutosave();
       renderList();
       renderAdminCountryList();
     }
@@ -706,7 +731,7 @@
       countries.forEach(c => updateDigitDisplay(c, true));
     }
 
-    // CẬP NHẬT HIỆU ỨNG CUỘN CHỈ VỚI CHỮ SỐ THAY ĐỔI
+    // HIỆU ỨNG CUỘN TỪNG CHỮ SỐ BỊ THAY ĐỔI
     function updateDigitDisplay(c, forceRebuild = false) {
       const container = document.getElementById(`pop-val-${c.id}`);
       if (!container) return;
@@ -746,7 +771,7 @@
       });
     }
 
-    // TÍNH TOÁN DÂN SỐ VÀ TĂNG/GIẢM HÀI HÒA
+    // VÒNG LẶP MÔ PHỎNG DÂN SỐ TĂNG / GIẢM
     function updateSimulation() {
       const now = performance.now();
       const deltaTime = (now - lastTime) / 1000;
@@ -769,7 +794,7 @@
           updateDigitDisplay(c);
         });
 
-        // Sắp xếp tự động BXH (Đông nhất lên đầu)
+        // Sắp xếp tự động BXH
         countries.sort((a, b) => b.population - a.population);
 
         const container = document.getElementById('countryContainer');
@@ -782,11 +807,11 @@
       }
     }
 
-    // Tự động lưu lên Cloud mỗi 10 giây
-    setInterval(syncToDatabase, 10000);
+    // Tự động Autosave định kỳ mỗi 2 giây
+    setInterval(saveAutosave, 2000);
 
-    // Khởi động Database & Vòng lặp
-    initDatabase();
+    // Khởi tạo Autosave ngay khi mở web
+    loadAutosaveData();
     setInterval(updateSimulation, 200);
   </script>
 </body>
