@@ -145,7 +145,7 @@
       color: #71717a;
     }
 
-    /* Khung hiển thị từng chữ số cuộn riêng biệt */
+    /* CẤU TRÚC CHỮ SỐ CUỘN RIÊNG BIỆT */
     .pop-container {
       display: inline-flex;
       align-items: center;
@@ -182,7 +182,7 @@
       padding: 0 1px;
     }
 
-    /* Animation Cuộn Lên / Cuộn Xuống */
+    /* HIỆU ỨNG CUỘN CHỈ ÁP DỤNG DÀNH CHO CHỮ SỐ THAY ĐỔI */
     @keyframes digitScrollUp {
       0% { transform: translateY(100%); opacity: 0.2; }
       100% { transform: translateY(0); opacity: 1; }
@@ -414,21 +414,17 @@
   </div>
 
   <script>
-    // ----------------------------------------------------
-    // CẤU HÌNH DATABASE FIREBASE ONLINE TRỰC TUYẾN
-    // Bạn có thể thay bằng Firebase Config miễn phí của bạn!
-    // ----------------------------------------------------
+    // CẤU HÌNH DATABASE FIREBASE TRỰC TUYẾN
     const firebaseConfig = {
-      databaseURL: "https://console.firebase.google.com/u/0/project/vcdb-753fa/database/vcdb-753fa-default-rtdb/data/~2F/"
+      databaseURL: "https://vcdb-753fa-default-rtdb.firebaseio.com/"
     };
     
-    // Khởi tạo Database
     let dbRef = null;
     try {
       firebase.initializeApp(firebaseConfig);
       dbRef = firebase.database().ref("victoria_countries");
     } catch(e) {
-      console.log("Sử dụng LocalStorage dự phòng nếu chưa cấu hình Firebase Database.");
+      console.log("Sử dụng LocalStorage dự phòng.");
     }
 
     const ADMIN_PASSWORD = "admin89897272";
@@ -438,10 +434,10 @@
     let editingCountryId = null;
     let lastTime = performance.now();
 
-    // Logic Tỷ lệ chuẩn: 1 Ngày Thật (86.400s) = 2 Tháng Ảo (1/6 năm ảo = 518.400s)
+    // Tỷ lệ chuẩn: 1 Ngày Thật (86.400s) = 2 Tháng Ảo (1/6 năm ảo = 518.400s)
     const VIRTUAL_YEAR_RATIO = 518400;
 
-    // LẮNG NGHE DATABASE ĐỒNG BỘ ONLINE TRỰC TUYẾN & TÍNH BÙ THỜI GIAN THOÁT WEB
+    // LẮNG NGHE DATABASE CLOUD ONLINE & TÍNH BÙ THỜI GIAN THOÁT WEB
     function initDatabase() {
       if (dbRef) {
         dbRef.on('value', (snapshot) => {
@@ -455,7 +451,6 @@
           }
         });
       } else {
-        // Dự phòng LocalStorage nếu offline
         const localData = localStorage.getItem("victoria_countries");
         if (localData) {
           processAndCatchupData(JSON.parse(localData));
@@ -463,7 +458,7 @@
       }
     }
 
-    // TÍNH TOÁN BÙ DÂN SỐ TRONG KHOẢNG THỜI GIAN THOÁT WEB (OFFLINE CATCH-UP)
+    // TÍNH BÙ DÂN SỐ TRONG KHOẢNG THỜI GIAN THOÁT WEB (OFFLINE CATCH-UP)
     function processAndCatchupData(incomingList) {
       const nowMs = Date.now();
 
@@ -472,7 +467,6 @@
         const lastUpdated = incoming.lastTimestamp || nowMs;
         const elapsedSeconds = Math.max(0, (nowMs - lastUpdated) / 1000);
 
-        // Tính bù dân số trong thời gian thoát web
         if (elapsedSeconds > 0) {
           const virtualYearsPassed = elapsedSeconds / VIRTUAL_YEAR_RATIO;
           const birthRate = incoming.growthRate || 0.01;
@@ -495,7 +489,6 @@
         }
       });
 
-      // Lọc bỏ quốc gia đã bị xóa từ Cloud
       const incomingIds = incomingList.map(i => i.id);
       countries = countries.filter(c => incomingIds.includes(c.id));
 
@@ -503,7 +496,7 @@
       renderAdminCountryList();
     }
 
-    // LƯU DỮ LIỆU LÊN DATABASE CLOUD ONLINE
+    // ĐỒNG BỘ LÊN CLOUD
     function syncToDatabase() {
       const nowMs = Date.now();
       countries.forEach(c => c.lastTimestamp = nowMs);
@@ -713,7 +706,7 @@
       countries.forEach(c => updateDigitDisplay(c, true));
     }
 
-    // HIỆU ỨNG CUỘN TỪNG CHỮ SỐ THAY ĐỔI
+    // CẬP NHẬT HIỆU ỨNG CUỘN CHỈ VỚI CHỮ SỐ THAY ĐỔI
     function updateDigitDisplay(c, forceRebuild = false) {
       const container = document.getElementById(`pop-val-${c.id}`);
       if (!container) return;
@@ -753,7 +746,7 @@
       });
     }
 
-    // VÒNG LẶP MÔ PHỎNG VÀ ĐỒNG BỘ THỜI GIAN THỰC
+    // TÍNH TOÁN DÂN SỐ VÀ TĂNG/GIẢM HÀI HÒA
     function updateSimulation() {
       const now = performance.now();
       const deltaTime = (now - lastTime) / 1000;
@@ -776,7 +769,7 @@
           updateDigitDisplay(c);
         });
 
-        // Sắp xếp tự động BXH
+        // Sắp xếp tự động BXH (Đông nhất lên đầu)
         countries.sort((a, b) => b.population - a.population);
 
         const container = document.getElementById('countryContainer');
@@ -789,7 +782,7 @@
       }
     }
 
-    // Tự động sao lưu đồng bộ lên Cloud mỗi 10 giây
+    // Tự động lưu lên Cloud mỗi 10 giây
     setInterval(syncToDatabase, 10000);
 
     // Khởi động Database & Vòng lặp
