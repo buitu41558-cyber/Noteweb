@@ -333,6 +333,18 @@
       margin-top: 4px;
       display: none;
     }
+
+    /* Đèn báo Trạng thái Cloud trong Admin Panel */
+    .cloud-status {
+      font-size: 10px;
+      color: #a1a1aa;
+      margin-top: 10px;
+      padding: 6px;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 4px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -407,6 +419,7 @@
 
         <h3>QUẢN LÝ QUỐC GIA</h3>
         <div id="adminCountryList"></div>
+        <div class="cloud-status" id="cloudStatusText">Trạng Thái Cloud: Đang kết nối...</div>
       </div>
 
     </div>
@@ -414,9 +427,9 @@
 
   <script>
     // ----------------------------------------------------
-    // CLOUD DATABASE ONLINE DÙNG CHUNG CẢ THẾ GIỚI
+    // CLOUD DATABASE ONLINE API TRỰC TUYẾN DÙNG CHUNG TẤT CẢ MỌI NGƯỜI
     // ----------------------------------------------------
-    const CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/1262446736780001280";
+    const CLOUD_DB_URL = "https://api.npoint.io/08ef1034f5963ec7ebbc";
 
     const ADMIN_PASSWORD = "admin89897272";
     let isAuthenticated = false;
@@ -424,59 +437,69 @@
     let countries = [];
     let editingCountryId = null;
     let lastTime = performance.now();
-    let isSavingToCloud = false;
+    let isSyncing = false;
 
     // Logic Tỷ lệ chuẩn: 1 Ngày Thật (86.400s) = 2 Tháng Ảo (1/6 năm ảo = 518.400s)
     const VIRTUAL_YEAR_RATIO = 518400;
 
-    // ĐỘNG BỘ DỮ LIỆU TỪ SERVER CLOUD CHUNG
+    function updateCloudStatusText(isOnline, count) {
+      const el = document.getElementById('cloudStatusText');
+      if (el) {
+        if (isOnline) {
+          el.innerText = `Trạng Thái Cloud: Đã Kết Nối Online (${count} quốc gia)`;
+          el.style.color = "#a1a1aa";
+        } else {
+          el.innerText = `Trạng Thái Cloud: Đang kết nối lại... (${count} quốc gia)`;
+          el.style.color = "#f87171";
+        }
+      }
+    }
+
+    // ĐỒNG BỘ DỮ LIỆU TỪ CLOUD SERVER VỀ CÁC ĐIỆN THOẠI
     async function loadCloudData() {
       try {
-        const response = await fetch(CLOUD_DB_URL, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
+        const response = await fetch(CLOUD_DB_URL, { cache: 'no-store' });
         if (response.ok) {
           const cloudList = await response.json();
-          if (Array.isArray(cloudList)) {
+          if (Array.isArray(cloudList) && cloudList.length > 0) {
             processCloudCatchup(cloudList);
+            updateCloudStatusText(true, countries.length);
+            return;
           }
         }
       } catch (err) {
-        // Dự phòng LocalStorage nếu không có mạng
-        const localData = localStorage.getItem("victoria_countries_online_v5");
-        if (localData) {
+        // Bộ nhớ dự phòng
+        const localData = localStorage.getItem("victoria_countries_online_v6");
+        if (localData && countries.length === 0) {
           try {
             processCloudCatchup(JSON.parse(localData));
           } catch(e) {}
         }
       }
+      updateCloudStatusText(true, countries.length);
     }
 
-    // ĐẨY DỮ LIỆU MỚI LÊN SERVER CLOUD CHUNG
+    // ĐẨY DỮ LIỆU MỚI LÊN CLOUD SERVER DÙNG CHUNG
     async function saveCloudData() {
       const nowMs = Date.now();
       countries.forEach(c => c.lastTimestamp = nowMs);
 
-      // Lưu tạm local
-      localStorage.setItem("victoria_countries_online_v5", JSON.stringify(countries));
+      localStorage.setItem("victoria_countries_online_v6", JSON.stringify(countries));
 
-      if (isSavingToCloud) return;
-      isSavingToCloud = true;
+      if (isSyncing) return;
+      isSyncing = true;
 
       try {
         await fetch(CLOUD_DB_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(countries)
         });
+        updateCloudStatusText(true, countries.length);
       } catch (err) {
-        console.log("Lỗi đẩy dữ liệu Cloud");
+        updateCloudStatusText(false, countries.length);
       } finally {
-        isSavingToCloud = false;
+        isSyncing = false;
       }
     }
 
@@ -767,7 +790,7 @@
           updateDigitDisplay(c);
         });
 
-        // Sắp xếp tự động BXH
+        // Sắp xếp tự động BXH (Đông nhất lên đầu)
         countries.sort((a, b) => b.population - a.population);
 
         const container = document.getElementById('countryContainer');
@@ -783,8 +806,8 @@
     // Khởi tạo đọc dữ liệu Cloud Server
     loadCloudData();
 
-    // Tự động kiểm tra đồng bộ dữ liệu với mọi người dùng mỗi 1.5 giây
-    setInterval(loadCloudData, 1500);
+    // Đồng bộ Cloud liên tục mỗi 1.2 giây
+    setInterval(loadCloudData, 1200);
 
     // Vòng lặp mô phỏng mỗi 0,2 giây
     setInterval(updateSimulation, 200);
