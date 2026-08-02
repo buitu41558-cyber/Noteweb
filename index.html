@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Victoria FC - World Cup Simulation</title>
-    <!-- Tailwind CSS (Clean & White Aesthetic) -->
+    <title>Victoria FC - Simulator</title>
+    <!-- Tailwind CSS (Giao diện màu trắng tối giản) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
@@ -13,25 +13,31 @@
 </head>
 <body class="pb-24 select-none">
 
-    <!-- HEADER TOP -->
+    <!-- HEADER & KHU VỰC THÔNG TIN TÀI KHOẢN -->
     <header class="bg-white border-b border-gray-200 p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center max-w-4xl mx-auto">
         <div>
             <h1 class="text-xl font-black text-gray-900 tracking-wider">VICTORIA FC</h1>
             <p class="text-[11px] text-gray-500 font-medium">World Cup 16 Teams Simulator</p>
         </div>
-        <div id="user-badge" class="text-right">
-            <!-- Render trạng thái người dùng -->
+        
+        <!-- INFO TÀI KHOẢN & NÚT ĐĂNG XUẤT -->
+        <div id="user-profile-bar" class="flex items-center gap-3">
+            <!-- Render động thông tin user -->
         </div>
     </header>
 
     <!-- MAIN CONTAINER -->
     <main class="max-w-4xl mx-auto p-4">
 
-        <!-- MODAL ĐĂNG KÝ / ĐĂNG NHẬP (BẮT BUỘC BAN ĐẦU) -->
+        <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ -->
         <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
             <div class="bg-white p-6 rounded-xl w-96 shadow-2xl border border-gray-100">
-                <h2 class="text-lg font-bold mb-1 text-gray-800">Đăng Nhập / Đăng Ký</h2>
-                <p class="text-xs text-gray-500 mb-4">Nhập thông tin tài khoản để bắt đầu</p>
+                <!-- TAB CHUYỂN ĐỔI ĐĂNG NHẬP / ĐĂNG KÝ -->
+                <div class="flex border-b border-gray-200 mb-4">
+                    <button id="auth-tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900">Đăng Nhập</button>
+                    <button id="auth-tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700">Đăng Ký</button>
+                </div>
+
                 <div class="space-y-3">
                     <div>
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Tên tài khoản</label>
@@ -41,38 +47,30 @@
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Mật khẩu</label>
                         <input type="password" id="auth-pass" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
                     </div>
-                    <div class="pt-2 border-t border-gray-100">
-                        <label class="text-xs font-semibold text-red-600 block mb-1">Mật khẩu ADMIN (Để trống nếu là Player)</label>
-                        <input type="password" id="admin-pass" placeholder="Nhập: hellovictoria123" class="w-full border border-red-200 rounded-lg p-2 text-sm focus:outline-none focus:border-red-500">
+                    
+                    <!-- PHẦN XÁC NHẬN ADMIN CHỈ HIỆN KHI ĐĂNG KÝ -->
+                    <div id="admin-field-container" class="hidden pt-2 border-t border-gray-100">
+                        <label class="text-xs font-semibold text-red-600 block mb-1">Mật khẩu xác minh Admin (Dành riêng Admin)</label>
+                        <input type="password" id="admin-pass" class="w-full border border-red-200 rounded-lg p-2 text-sm focus:outline-none focus:border-red-500">
                     </div>
-                    <button onclick="handleAuth()" class="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow">Vào Hệ Thống</button>
+
+                    <button id="auth-submit-btn" onclick="handleAuthSubmit()" class="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow">Đăng Nhập</button>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 1: ĐỘI HÌNH (CHỌN ĐỘI) -->
+        <!-- TAB 1: CHỌN ĐỘI BÓNG -->
         <section id="tab-select-team" class="tab-content">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4 flex justify-between items-center">
-                <div>
-                    <h2 class="text-base font-bold text-gray-800">Danh Sách Đội Bóng World Cup</h2>
-                    <p class="text-xs text-gray-500">Chọn đội do Admin khởi tạo và nhập mật khẩu của đội để nhận đội</p>
-                </div>
-                <div id="claimed-team-info" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 hidden">
-                    Đã nhận đội
-                </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+                <h2 class="text-base font-bold text-gray-800">Danh Sách Đội Bóng</h2>
             </div>
-            <div id="team-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <!-- Danh sách đội bóng sẽ được render ở đây -->
-            </div>
+            <div id="team-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
         </section>
 
-        <!-- TAB 2: ĐỘI HÌNH (XẾP ĐỘI HÌNH & 12+ SƠ ĐỒ) -->
+        <!-- TAB 2: XẾP ĐỘI HÌNH & VỊ TRÍ SÂN BÓNG -->
         <section id="tab-tactics" class="tab-content hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-base font-bold text-gray-800">Quản Lý Sơ Đồ & Vị Trí</h2>
-                    <p class="text-xs text-gray-500">Kéo cầu thủ thả vào đúng ô vị trí trên sân</p>
-                </div>
+                <h2 class="text-base font-bold text-gray-800">Quản Lý Sơ Đồ & Vị Trí</h2>
                 <select id="formation-select" onchange="applyFormation(this.value)" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white font-semibold focus:outline-none">
                     <option value="4-4-2">4-4-2 Classic</option>
                     <option value="4-3-3">4-3-3 Attack</option>
@@ -89,14 +87,12 @@
                 </select>
             </div>
 
-            <!-- SÂN BÓNG VỚI CÁC Ô VỊ TRÍ (POSITION SLOTS) -->
+            <!-- SÂN BÓNG XẾP VỊ TRÍ CẦU THỦ -->
             <div id="pitch-container" class="relative w-full h-[540px] pitch-bg rounded-xl shadow-inner overflow-hidden mb-4">
                 <div class="absolute inset-x-0 top-1/2 border-b-2 border-white/30"></div>
                 <div class="absolute w-36 h-36 border-2 border-white/30 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
                 <div class="absolute w-48 h-20 border-2 border-t-0 border-white/30 top-0 left-1/2 -translate-x-1/2"></div>
                 <div class="absolute w-48 h-20 border-2 border-b-0 border-white/30 bottom-0 left-1/2 -translate-x-1/2"></div>
-
-                <!-- Layer chứa 11 Ô vị trí trên sân -->
                 <div id="pitch-slots-layer" class="absolute inset-0"></div>
             </div>
 
@@ -106,13 +102,11 @@
                     <h3 class="text-xs font-bold uppercase text-gray-600">Hàng Ghế Dự Bị</h3>
                     <span id="bench-count" class="text-xs text-gray-400 font-mono">0 Cầu thủ</span>
                 </div>
-                <div id="bench-list" class="flex gap-2 overflow-x-auto min-h-[72px] p-2 bg-gray-50 border border-dashed rounded-lg border-gray-300">
-                    <!-- Render danh sách dự bị -->
-                </div>
+                <div id="bench-list" class="flex gap-2 overflow-x-auto min-h-[72px] p-2 bg-gray-50 border border-dashed rounded-lg border-gray-300"></div>
             </div>
         </section>
 
-        <!-- TAB 3: TRẬN ĐẤU (CHỈ ADMIN MỚI TẠO ĐƯỢC TRẬN) -->
+        <!-- TAB 3: TRẬN ĐẤU MÔ PHỎNG 2D -->
         <section id="tab-match" class="tab-content hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 mb-4 shadow-sm flex justify-between items-center">
                 <div class="text-center flex-1">
@@ -120,7 +114,7 @@
                     <h3 class="font-bold text-base text-gray-800" id="match-home-name">Home FC</h3>
                 </div>
                 <div class="text-center px-6 border-x border-gray-100">
-                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest block mb-1" id="match-status-text">Chưa bắt đầu</span>
+                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest block mb-1" id="match-status-text">CHƯA BẮT ĐẦU</span>
                     <div class="text-3xl font-black text-gray-900" id="match-score">0 - 0</div>
                 </div>
                 <div class="text-center flex-1">
@@ -129,12 +123,12 @@
                 </div>
             </div>
 
-            <!-- CANVAS 2D TOP-DOWN SIMULATOR -->
+            <!-- CANVAS SÂN BÓNG 2D CHI TIẾT ĐẦY ĐỦ VẠCH KẺ -->
             <div class="relative flex justify-center mb-4">
                 <canvas id="matchCanvas" width="700" height="450" class="pitch-bg rounded-xl shadow-lg w-full max-w-[700px]"></canvas>
             </div>
 
-            <!-- NHẬT KÝ TRẬN ĐẤU -->
+            <!-- NHẬT KÝ DIỄN BIẾN -->
             <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                 <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Nhật Ký Diễn Biến Trận Đấu</h4>
                 <div id="match-log" class="h-32 overflow-y-auto text-xs font-mono space-y-1 text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -147,34 +141,33 @@
         <section id="tab-admin" class="tab-content hidden">
             <div class="border-b border-red-200 pb-3 mb-6">
                 <h2 class="text-lg font-bold text-red-600">Admin Control Panel</h2>
-                <p class="text-xs text-gray-500">Quyền quản trị tối cao Victoria FC</p>
             </div>
 
             <!-- TẠO ĐỘI BÓNG -->
             <div class="bg-white p-5 rounded-xl border border-gray-200 mb-6 shadow-sm space-y-3">
                 <h3 class="font-bold text-sm text-gray-800">1. Tạo Đội Bóng Mới</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input type="text" id="admin-team-name" placeholder="Tên Đội (VD: France FC)" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
-                    <input type="password" id="admin-team-pass" placeholder="Mật khẩu cho player lấy đội" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
+                    <input type="text" id="admin-team-name" placeholder="Tên Đội Bóng" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
+                    <input type="password" id="admin-team-pass" placeholder="Mật khẩu lấy đội" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
                 </div>
                 <button onclick="adminCreateTeam()" class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800">Tạo Đội Bóng</button>
             </div>
 
-            <!-- THÊM CẦU THỦ CÓ CHỈ SỐ FCM -->
+            <!-- THÊM CẦU THỦ -->
             <div class="bg-white p-5 rounded-xl border border-gray-200 mb-6 shadow-sm space-y-3">
-                <h3 class="font-bold text-sm text-gray-800">2. Thêm Cầu Thủ Vào Đội (Chỉ số FCM)</h3>
+                <h3 class="font-bold text-sm text-gray-800">2. Thêm Cầu Thủ Vào Đội</h3>
                 <div>
                     <label class="text-xs text-gray-500 font-semibold block mb-1">Chọn Đội Bóng</label>
                     <select id="admin-select-team-for-player" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="p-name" placeholder="Tên Cầu Thủ (VD: Mbappe)" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
+                    <input type="text" id="p-name" placeholder="Tên Cầu Thủ" class="border rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
                     <select id="p-pos" class="border rounded-lg p-2 text-sm bg-white">
                         <option value="GK">Thủ Môn (GK)</option>
-                        <option value="CB">Hậu Vệ Vệ (CB)</option>
+                        <option value="CB">Hậu Vệ (CB)</option>
                         <option value="LB">Hậu Vệ Trái (LB)</option>
                         <option value="RB">Hậu Vệ Phải (RB)</option>
-                        <option value="CM">Tiền Vệ Trung Tâm (CM)</option>
+                        <option value="CM">Tiền Vệ (CM)</option>
                         <option value="CAM">Tiền Vệ Tấn Công (CAM)</option>
                         <option value="ST">Tiền Đạo (ST)</option>
                         <option value="LW">Tiền Đạo Trái (LW)</option>
@@ -182,12 +175,12 @@
                     </select>
                 </div>
                 <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <div>PAC (Tốc độ): <input type="number" id="st-speed" value="80" class="border rounded p-1 w-full mt-1"></div>
-                    <div>SHO (Sút): <input type="number" id="st-shoot" value="75" class="border rounded p-1 w-full mt-1"></div>
-                    <div>PAS (Chuyền): <input type="number" id="st-pass" value="75" class="border rounded p-1 w-full mt-1"></div>
-                    <div>DRI (Rê bóng): <input type="number" id="st-dribble" value="75" class="border rounded p-1 w-full mt-1"></div>
-                    <div>DEF (Phòng thủ): <input type="number" id="st-def" value="60" class="border rounded p-1 w-full mt-1"></div>
-                    <div>PHY (Thể lực): <input type="number" id="st-phy" value="70" class="border rounded p-1 w-full mt-1"></div>
+                    <div>PAC: <input type="number" id="st-speed" value="80" class="border rounded p-1 w-full mt-1"></div>
+                    <div>SHO: <input type="number" id="st-shoot" value="75" class="border rounded p-1 w-full mt-1"></div>
+                    <div>PAS: <input type="number" id="st-pass" value="75" class="border rounded p-1 w-full mt-1"></div>
+                    <div>DRI: <input type="number" id="st-dribble" value="75" class="border rounded p-1 w-full mt-1"></div>
+                    <div>DEF: <input type="number" id="st-def" value="60" class="border rounded p-1 w-full mt-1"></div>
+                    <div>PHY: <input type="number" id="st-phy" value="70" class="border rounded p-1 w-full mt-1"></div>
                 </div>
                 <button onclick="adminAddPlayer()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-500">Thêm Cầu Thủ</button>
             </div>
@@ -211,7 +204,7 @@
 
     </main>
 
-    <!-- BOTTOM NAVIGATION BAR (ĐÚNG 4 MỤC THEO YÊU CẦU) -->
+    <!-- BOTTOM BAR NAVIGATION -->
     <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 flex justify-around p-2 text-xs font-semibold z-40 shadow-lg max-w-4xl mx-auto">
         <button onclick="switchTab('tab-select-team')" class="nav-btn flex-1 py-2 text-center text-gray-700 hover:text-black">Đội hình (Chọn đội)</button>
         <button onclick="switchTab('tab-tactics')" class="nav-btn flex-1 py-2 text-center text-gray-700 hover:text-black">Đội hình (Xếp đội hình)</button>
@@ -219,45 +212,108 @@
         <button id="nav-admin-btn" onclick="switchTab('tab-admin')" class="nav-btn flex-1 py-2 text-center text-red-600 hover:text-red-800 hidden">Admin Panel</button>
     </nav>
 
-    <!-- JAVASCRIPT LOGIC TRỌN GÓI -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- 1. STATE & LOCALSTORAGE ---
+        // CƠ SỞ DỮ LIỆU LOCALSTORAGE
+        let registeredUsers = JSON.parse(localStorage.getItem('vic_registered_users')) || [];
         let currentUser = JSON.parse(localStorage.getItem('vic_user')) || null;
         let teams = JSON.parse(localStorage.getItem('vic_teams')) || [];
         let pitchAssignments = JSON.parse(localStorage.getItem('vic_assignments')) || {};
+        let currentAuthMode = 'login';
         let currentFormationKey = '4-4-2';
 
         window.onload = function() {
+            drawPitchDetails(); // Vẽ sẵn đường kẻ sân bóng khi tải trang
             if (currentUser) {
                 document.getElementById('auth-modal').classList.add('hidden');
                 updateUserUI();
+            } else {
+                document.getElementById('auth-modal').classList.remove('hidden');
             }
         };
 
-        // --- 2. AUTHENTICATION ---
-        function handleAuth() {
-            const u = document.getElementById('auth-user').value.trim();
-            const p = document.getElementById('auth-pass').value.trim();
-            const adminP = document.getElementById('admin-pass').value.trim();
+        // CHUYỂN TAB ĐĂNG NHẬP / ĐĂNG KÝ
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            const loginBtn = document.getElementById('auth-tab-login-btn');
+            const regBtn = document.getElementById('auth-tab-register-btn');
+            const adminContainer = document.getElementById('admin-field-container');
+            const submitBtn = document.getElementById('auth-submit-btn');
 
-            if (!u || !p) return alert("Vui lòng nhập tên tài khoản và mật khẩu!");
-
-            let role = 'user';
-            if (adminP === 'hellovictoria123') {
-                role = 'admin';
+            if (mode === 'login') {
+                loginBtn.className = "flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900";
+                regBtn.className = "flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700";
+                adminContainer.classList.add('hidden');
+                submitBtn.innerText = "Đăng Nhập";
+            } else {
+                regBtn.className = "flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900";
+                loginBtn.className = "flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700";
+                adminContainer.classList.remove('hidden');
+                submitBtn.innerText = "Tạo Tài Khoản";
             }
-
-            currentUser = { username: u, role: role, claimedTeamId: null };
-            localStorage.setItem('vic_user', JSON.stringify(currentUser));
-            document.getElementById('auth-modal').classList.add('hidden');
-            updateUserUI();
         }
 
+        // XỬ LÝ ĐĂNG NHẬP HOẶC ĐĂNG KÝ
+        function handleAuthSubmit() {
+            const u = document.getElementById('auth-user').value.trim();
+            const p = document.getElementById('auth-pass').value.trim();
+
+            if (!u || !p) return alert("Vui lòng nhập đầy đủ tên tài khoản và mật khẩu!");
+
+            if (currentAuthMode === 'register') {
+                // Kiểm tra trùng tài khoản
+                const exist = registeredUsers.some(user => user.username.toLowerCase() === u.toLowerCase());
+                if (exist) return alert("Tài khoản này đã tồn tại! Vui lòng chọn tên đăng nhập khác.");
+
+                const adminP = document.getElementById('admin-pass').value.trim();
+                let role = (adminP === 'hellovictoria123') ? 'admin' : 'user';
+
+                const newUser = { username: u, password: p, role: role, claimedTeamId: null };
+                registeredUsers.push(newUser);
+                localStorage.setItem('vic_registered_users', JSON.stringify(registeredUsers));
+
+                currentUser = newUser;
+                localStorage.setItem('vic_user', JSON.stringify(currentUser));
+                document.getElementById('auth-modal').classList.add('hidden');
+                updateUserUI();
+                alert("Đăng ký tài khoản thành công!");
+            } else {
+                // Đăng nhập
+                const user = registeredUsers.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
+                if (!user) return alert("Sai tên tài khoản hoặc mật khẩu!");
+
+                currentUser = user;
+                localStorage.setItem('vic_user', JSON.stringify(currentUser));
+                document.getElementById('auth-modal').classList.add('hidden');
+                updateUserUI();
+            }
+        }
+
+        // ĐĂNG XUẤT TÀI KHOẢN
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('vic_user');
+            document.getElementById('user-profile-bar').innerHTML = '';
+            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('nav-admin-btn').classList.add('hidden');
+        }
+
+        // CẬP NHẬT GIAO DIỆN USER PROFILE
         function updateUserUI() {
-            const badge = document.getElementById('user-badge');
-            badge.innerHTML = `
-                <div class="text-xs font-bold text-gray-800">${currentUser.username}</div>
-                <div class="text-[10px] text-gray-400 uppercase font-semibold">${currentUser.role}</div>
+            if (!currentUser) return;
+
+            const claimedTeam = teams.find(t => t.id == currentUser.claimedTeamId);
+            const teamNameText = claimedTeam ? claimedTeam.name : 'Chưa có đội';
+
+            const profileBar = document.getElementById('user-profile-bar');
+            profileBar.innerHTML = `
+                <div class="text-right">
+                    <div class="text-xs font-bold text-gray-900">${currentUser.username} <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono uppercase">${currentUser.role}</span></div>
+                    <div class="text-[11px] text-emerald-600 font-semibold">${teamNameText}</div>
+                </div>
+                <button onclick="handleLogout()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-lg font-semibold transition">
+                    Đăng xuất
+                </button>
             `;
 
             if (currentUser.role === 'admin') {
@@ -274,7 +330,7 @@
             document.getElementById(tabId).classList.remove('hidden');
         }
 
-        // --- 3. ĐỘI HÌNH & TACTICS POSITION SLOTS (12+ FORMATIONS) ---
+        // --- SƠ ĐỒ ĐỘI HÌNH & XẾP CẦU THỦ ---
         const FORMATIONS = {
             '4-4-2': [
                 { slotId: 0, pos: 'GK', x: 50, y: 88 },
@@ -398,7 +454,7 @@
             benchContainer.innerHTML = '';
 
             if (!currentUser || !currentUser.claimedTeamId) {
-                benchContainer.innerHTML = '<span class="text-xs text-gray-400 p-2">Vui lòng chọn và nhận đội bóng ở Tab "Chọn đội" trước.</span>';
+                benchContainer.innerHTML = '<span class="text-xs text-gray-400 p-2">Chọn đội bóng ở Tab "Chọn đội" trước.</span>';
                 return;
             }
 
@@ -431,7 +487,6 @@
             });
         }
 
-        // DRAG & DROP
         let draggedData = null;
 
         function dragStart(event, playerId, sourceType, fromSlotId = null) {
@@ -486,12 +541,12 @@
             return Math.round((s.speed + s.shoot + s.pass + s.dribble + s.def + s.phy) / 6);
         }
 
-        // --- 4. ADMIN & QUẢN LÝ ĐỘI ---
+        // --- ADMIN CONTROLS ---
         function adminCreateTeam() {
             const name = document.getElementById('admin-team-name').value.trim();
             const pass = document.getElementById('admin-team-pass').value.trim();
 
-            if (!name || !pass) return alert("Vui lòng nhập tên đội và mật khẩu lấy đội!");
+            if (!name || !pass) return alert("Vui lòng nhập đầy đủ thông tin đội!");
 
             const newTeam = { id: Date.now(), name: name, pass: pass, players: [] };
             teams.push(newTeam);
@@ -529,7 +584,7 @@
             const team = teams.find(t => t.id == teamId);
             team.players.push(player);
             localStorage.setItem('vic_teams', JSON.stringify(teams));
-            alert(`Đã thêm ${name} (${pos}) vào đội ${team.name}`);
+            alert(`Đã thêm cầu thủ ${name} vào đội ${team.name}`);
 
             document.getElementById('p-name').value = '';
             if (currentUser && currentUser.claimedTeamId == teamId) applyFormation(currentFormationKey);
@@ -540,7 +595,7 @@
             container.innerHTML = '';
 
             if (teams.length === 0) {
-                container.innerHTML = '<p class="text-xs text-gray-400 col-span-2">Chưa có đội bóng nào. Vui lòng đăng nhập tài khoản Admin để tạo đội.</p>';
+                container.innerHTML = '<p class="text-xs text-gray-400 col-span-2">Chưa có đội bóng nào do Admin tạo.</p>';
                 return;
             }
 
@@ -551,7 +606,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="font-bold text-sm text-gray-800">${t.name}</div>
-                        <div class="text-xs text-gray-400 mt-0.5">Số cầu thủ: ${t.players ? t.players.length : 0}</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Cầu thủ: ${t.players ? t.players.length : 0}</div>
                     </div>
                     <button onclick="claimTeam(${t.id})" class="px-3 py-1.5 rounded-lg text-xs font-semibold ${isClaimedByMe ? 'bg-emerald-600 text-white' : 'bg-gray-900 text-white hover:bg-gray-800'}">
                         ${isClaimedByMe ? 'Đang Chọn' : 'Lấy Đội'}
@@ -568,14 +623,21 @@
             if (inputPass === team.pass) {
                 currentUser.claimedTeamId = teamId;
                 localStorage.setItem('vic_user', JSON.stringify(currentUser));
+
+                // Cập nhật lại trong danh sách registeredUsers
+                const userInDb = registeredUsers.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
+                if (userInDb) {
+                    userInDb.claimedTeamId = teamId;
+                    localStorage.setItem('vic_registered_users', JSON.stringify(registeredUsers));
+                }
+
                 pitchAssignments = {};
                 localStorage.setItem('vic_assignments', JSON.stringify(pitchAssignments));
 
-                alert(`Chúc mừng! Bạn đã nhận quản lý đội ${team.name}`);
-                renderTeamList();
-                applyFormation(currentFormationKey);
+                alert(`Đã lấy thành công đội ${team.name}`);
+                updateUserUI();
             } else if (inputPass !== null) {
-                alert("Mật khẩu lấy đội không chính xác!");
+                alert("Mật khẩu đội không đúng!");
             }
         }
 
@@ -594,7 +656,7 @@
             });
         }
 
-        // --- 5. 2D MATCH SIMULATOR ENGINE (TOP-DOWN A.I) ---
+        // --- 2D MATCH CANVAS WITH FULL DETAILED PITCH LINES ---
         let canvas = document.getElementById('matchCanvas');
         let ctx = canvas.getContext('2d');
         let matchInterval = null;
@@ -603,6 +665,53 @@
         let homePlayers = [];
         let awayPlayers = [];
         let score = { home: 0, away: 0 };
+
+        // VẼ ĐẦY ĐỦ VẠCH KẺ SÂN BÓNG TRÊN CANVAS
+        function drawPitchDetails() {
+            ctx.fillStyle = '#1b5e20';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+
+            // Đường viền biên
+            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+
+            // Đường giữa sân
+            ctx.beginPath();
+            ctx.moveTo(15, canvas.height / 2);
+            ctx.lineTo(canvas.width - 15, canvas.height / 2);
+            ctx.stroke();
+
+            // Vòng tròn trung tâm
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Chấm giao bóng
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Vòng cấm địa Phía Trên (Home/Away Goal Area Top)
+            ctx.strokeRect((canvas.width - 240) / 2, 15, 240, 80);
+            ctx.strokeRect((canvas.width - 100) / 2, 15, 100, 30);
+
+            // Khung thành Trên
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect((canvas.width - 90) / 2, 3, 90, 12);
+            ctx.strokeRect((canvas.width - 90) / 2, 3, 90, 12);
+
+            // Vòng cấm địa Phía Dưới (Goal Area Bottom)
+            ctx.strokeRect((canvas.width - 240) / 2, canvas.height - 95, 240, 80);
+            ctx.strokeRect((canvas.width - 100) / 2, canvas.height - 45, 100, 30);
+
+            // Khung thành Dưới
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect((canvas.width - 90) / 2, canvas.height - 15, 90, 12);
+            ctx.strokeRect((canvas.width - 90) / 2, canvas.height - 15, 90, 12);
+        }
 
         function adminStartMatch() {
             const hId = document.getElementById('admin-match-home').value;
@@ -617,21 +726,21 @@
             document.getElementById('match-away-name').innerText = awayTeam.name;
             document.getElementById('match-status-text').innerText = "ĐANG THI ĐẤU";
             document.getElementById('match-score').innerText = "0 - 0";
+            score = { home: 0, away: 0 };
 
             switchTab('tab-match');
             initMatchData();
-            logMatch(`Trận đấu giữa ${homeTeam.name} và ${awayTeam.name} chính thức bắt đầu!`);
+            logMatch(`Trận đấu giữa ${homeTeam.name} và ${awayTeam.name} bắt đầu!`);
         }
 
         function initMatchData() {
             ball = { x: 350, y: 225, vx: 0, vy: 0 };
-            
-            // Khởi tạo vị trí A.I trên sân 2D Top-Down
+
             homePlayers = [
                 { x: 350, y: 410, color: '#2563eb', speed: 2, num: '1' },
                 { x: 200, y: 320, color: '#2563eb', speed: 2.5, num: '4' },
                 { x: 500, y: 320, color: '#2563eb', speed: 2.5, num: '5' },
-                { x: 350, y: 235, color: '#2563eb', speed: 3.2, num: '9' } // Giao bóng
+                { x: 350, y: 235, color: '#2563eb', speed: 3.2, num: '9' }
             ];
 
             awayPlayers = [
@@ -646,9 +755,9 @@
         }
 
         function updateMatchLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPitchDetails(); // Vẽ lại chi tiết vạch kẻ mỗi khung hình
 
-            // Vẽ Bóng
+            // Vẽ Quả Bóng
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, 6, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
@@ -656,7 +765,7 @@
             ctx.strokeStyle = '#000000';
             ctx.stroke();
 
-            // Cập nhật A.I Đội Nhà (Xanh)
+            // A.I Đội Nhà (Xanh)
             homePlayers.forEach(p => {
                 let dx = ball.x - p.x;
                 let dy = ball.y - p.y;
@@ -666,7 +775,6 @@
                     p.x += (dx / dist) * p.speed;
                     p.y += (dy / dist) * p.speed;
                 } else {
-                    // Chạm bóng -> Sút hoặc chuyền lên
                     ball.vx = (Math.random() - 0.5) * 10;
                     ball.vy = -7;
                 }
@@ -675,9 +783,11 @@
                 ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
                 ctx.fillStyle = p.color;
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
             });
 
-            // Cập nhật A.I Đội Khách (Đỏ)
+            // A.I Đội Khách (Đỏ)
             awayPlayers.forEach(p => {
                 let dx = ball.x - p.x;
                 let dy = ball.y - p.y;
@@ -695,24 +805,25 @@
                 ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
                 ctx.fillStyle = p.color;
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
             });
 
-            // Di chuyển bóng
             ball.x += ball.vx;
             ball.y += ball.vy;
             ball.vx *= 0.95;
             ball.vy *= 0.95;
 
-            // Bắt Bàn Thắng (Khung thành trên/dưới)
-            if (ball.y < 10 && ball.x > 280 && ball.x < 420) {
+            // Xử lý Bàn Thắng
+            if (ball.y < 15 && ball.x > 305 && ball.x < 395) {
                 score.home++;
                 document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
-                logMatch(`VÀÔÓOOO! Đội nhà vừa ghi bàn thắng tuyệt đẹp!`);
+                logMatch(`VÀOOOO! Đội nhà vừa ghi bàn!`);
                 ball = { x: 350, y: 225, vx: 0, vy: 0 };
-            } else if (ball.y > 440 && ball.x > 280 && ball.x < 420) {
+            } else if (ball.y > 435 && ball.x > 305 && ball.x < 395) {
                 score.away++;
                 document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
-                logMatch(`VÀÔÓOOO! Đội khách san bằng tỷ số!`);
+                logMatch(`VÀOOOO! Đội khách ghi bàn!`);
                 ball = { x: 350, y: 225, vx: 0, vy: 0 };
             }
         }
