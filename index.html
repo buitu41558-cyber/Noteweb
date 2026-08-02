@@ -78,7 +78,7 @@
                 </select>
             </div>
 
-            <!-- SÂN DỌC ĐỂ XẾP VỊ TRÍ (GK DƯỚI -> ST TRÊN) -->
+            <!-- SÂN DỌC ĐỂ XẾP VỊ TRÍ -->
             <div id="pitch-container" class="relative w-full max-w-md mx-auto h-[540px] pitch-vertical rounded-xl shadow-inner overflow-hidden mb-4">
                 <div class="absolute inset-x-0 top-1/2 border-b-2 border-white/30"></div>
                 <div class="absolute w-36 h-36 border-2 border-white/30 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
@@ -98,8 +98,9 @@
             </div>
         </section>
 
-        <!-- TAB 3: TRẬN ĐẤU MÔ PHỎNG (SÂN NGANG - TRÁI VS PHẢI) -->
+        <!-- TAB 3: TRẬN ĐẤU MÔ PHỎNG -->
         <section id="tab-match" class="tab-content hidden">
+            
             <div class="bg-white p-4 rounded-xl border border-gray-200 mb-4 shadow-sm space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -130,12 +131,12 @@
                 </div>
             </div>
 
-            <!-- CANVAS SÂN NGANG 800x460 (22 CẦU THỦ) -->
+            <!-- CANVAS SÂN NGANG 800x460 -->
             <div class="relative flex justify-center mb-4 overflow-x-auto">
                 <canvas id="matchCanvas" width="800" height="460" class="rounded-xl shadow-lg border-4 border-white"></canvas>
             </div>
 
-            <!-- NHẬT KÝ -->
+            <!-- NHẬT KÝ TRẬN ĐẤU -->
             <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                 <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Nhật Ký Trận Đấu</h4>
                 <div id="match-log" class="h-32 overflow-y-auto text-xs font-mono space-y-1 text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100"></div>
@@ -201,7 +202,7 @@
         <button id="nav-admin-btn" onclick="switchTab('tab-admin')" class="nav-btn flex-1 py-2 text-center text-red-600 hover:text-red-800 hidden">Admin Panel</button>
     </nav>
 
-    <!-- JAVASCRIPT LOGIC TRỌN GÓI -->
+    <!-- JAVASCRIPT CODE ENGINE -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('vic_registered_users')) || [];
         let currentUser = JSON.parse(localStorage.getItem('vic_user')) || null;
@@ -210,7 +211,6 @@
         let currentAuthMode = 'login';
         let currentFormationKey = '4-4-2';
 
-        // TỰ ĐỘNG KHỞI TẠO 2 ĐỘI TEST CÓ ĐỦ 11 CẦU THỦ NẾU CHƯA CÓ ĐỘI BÓNG NÀO
         function initPreloadedTestTeams() {
             if (teams.length === 0) {
                 teams = [
@@ -255,13 +255,6 @@
             }
         }
 
-        // ENGINE MATCH VARS
-        let canvas = document.getElementById('matchCanvas');
-        let ctx = canvas.getContext('2d');
-        let matchInterval = null;
-        let isMatchRunning = false;
-        let ball = { x: 400, y: 230, vx: 0, vy: 0 };
-
         const BASE_POS_HOME = [
             { x: 60, y: 230 },  { x: 170, y: 70 },  { x: 160, y: 175 }, { x: 160, y: 285 },
             { x: 170, y: 390 }, { x: 280, y: 70 },  { x: 270, y: 175 }, { x: 270, y: 285 },
@@ -273,6 +266,13 @@
             { x: 630, y: 390 }, { x: 520, y: 70 },  { x: 530, y: 180 }, { x: 530, y: 280 },
             { x: 520, y: 390 }, { x: 425, y: 175 }, { x: 425, y: 285 }
         ];
+
+        let canvas = document.getElementById('matchCanvas');
+        let ctx = canvas.getContext('2d');
+        let matchInterval = null;
+        let isMatchRunning = false;
+        let ball = { x: 400, y: 230, vx: 0, vy: 0 };
+        let score = { home: 0, away: 0 };
 
         let homePlayers = [];
         let awayPlayers = [];
@@ -404,7 +404,7 @@
             if (tabId === 'tab-match') renderHorizontalMatchPitch();
         }
 
-        // --- CẤU HÌNH SƠ ĐỒ SÂN DỌC (GK Ở DƯỚI -> ST Ở TRÊN) ---
+        // CẤU HÌNH SƠ ĐỒ SÂN DỌC
         const FORMATIONS = {
             '4-4-2': [
                 { slotId: 0, pos: 'GK', x: 50, y: 88 },
@@ -731,7 +731,7 @@
             });
         }
 
-        // --- MATCH ENGINE: LOAD ĐỦ 11 CẦU THỦ MỖI ĐỘI ---
+        // --- MATCH ENGINE: THUẬT TOÁN MÔ PHỎNG GIỮ VỊ TRÍ VÀ CHỐNG DỒN CỤC ---
         function initDefaultMatchPlayers() {
             const t1 = teams[0] || null;
             const t2 = teams[1] || null;
@@ -739,14 +739,14 @@
             homePlayers = BASE_POS_HOME.map((pos, idx) => {
                 const p = (t1 && t1.players && t1.players[idx]) ? t1.players[idx] : null;
                 return {
-                    x: pos.x, y: pos.y, color: '#2563eb', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 35) : 2.2, shoot: p ? p.stats.shoot : 75
+                    x: pos.x, y: pos.y, baseX: pos.x, baseY: pos.y, color: '#2563eb', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 32) : 2.4, shoot: p ? p.stats.shoot : 75
                 };
             });
 
             awayPlayers = BASE_POS_AWAY.map((pos, idx) => {
                 const p = (t2 && t2.players && t2.players[idx]) ? t2.players[idx] : null;
                 return {
-                    x: pos.x, y: pos.y, color: '#dc2626', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 35) : 2.2, shoot: p ? p.stats.shoot : 75
+                    x: pos.x, y: pos.y, baseX: pos.x, baseY: pos.y, color: '#dc2626', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 32) : 2.4, shoot: p ? p.stats.shoot : 75
                 };
             });
         }
@@ -765,40 +765,112 @@
             document.getElementById('match-away-name').innerText = awayTeam.name;
             document.getElementById('match-status-text').innerText = "ĐANG THI ĐẤU";
             document.getElementById('match-score').innerText = "0 - 0";
+            score = { home: 0, away: 0 };
 
             homePlayers = BASE_POS_HOME.map((pos, idx) => {
                 const p = (homeTeam.players && homeTeam.players[idx]) ? homeTeam.players[idx] : null;
                 return {
-                    x: pos.x,
-                    y: pos.y,
-                    color: '#2563eb',
-                    num: `${idx + 1}`,
-                    name: p ? p.name : `P${idx + 1}`,
-                    speed: p ? (p.stats.speed / 35) : 2.2,
-                    shoot: p ? p.stats.shoot : 75
+                    x: pos.x, y: pos.y, baseX: pos.x, baseY: pos.y, color: '#2563eb', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 32) : 2.4, shoot: p ? p.stats.shoot : 75
                 };
             });
 
             awayPlayers = BASE_POS_AWAY.map((pos, idx) => {
                 const p = (awayTeam.players && awayTeam.players[idx]) ? awayTeam.players[idx] : null;
                 return {
-                    x: pos.x,
-                    y: pos.y,
-                    color: '#dc2626',
-                    num: `${idx + 1}`,
-                    name: p ? p.name : `P${idx + 1}`,
-                    speed: p ? (p.stats.speed / 35) : 2.2,
-                    shoot: p ? p.stats.shoot : 75
+                    x: pos.x, y: pos.y, baseX: pos.x, baseY: pos.y, color: '#dc2626', num: `${idx + 1}`, name: p ? p.name : `P${idx + 1}`, speed: p ? (p.stats.speed / 32) : 2.4, shoot: p ? p.stats.shoot : 75
                 };
             });
 
+            resetKickoff();
             isMatchRunning = true;
-            ball = { x: 400, y: 230, vx: 0, vy: 0 };
-
             logMatch(`Trận đấu bắt đầu: ${homeTeam.name} vs ${awayTeam.name}`);
 
             if (matchInterval) clearInterval(matchInterval);
             matchInterval = setInterval(updateMatchLoop, 1000 / 30);
+        }
+
+        function resetKickoff() {
+            ball = { x: 400, y: 230, vx: 0, vy: 0 };
+            homePlayers.forEach((p, idx) => {
+                p.x = BASE_POS_HOME[idx].x;
+                p.y = BASE_POS_HOME[idx].y;
+            });
+            awayPlayers.forEach((p, idx) => {
+                p.x = BASE_POS_AWAY[idx].x;
+                p.y = BASE_POS_AWAY[idx].y;
+            });
+        }
+
+        function getClosestPlayer(playersArr, b) {
+            let closest = playersArr[0];
+            let minDist = Math.hypot(b.x - playersArr[0].x, b.y - playersArr[0].y);
+            for (let i = 1; i < playersArr.length; i++) {
+                let d = Math.hypot(b.x - playersArr[i].x, b.y - playersArr[i].y);
+                if (d < minDist) {
+                    minDist = d;
+                    closest = playersArr[i];
+                }
+            }
+            return closest;
+        }
+
+        function applySeparation(allP) {
+            for (let i = 0; i < allP.length; i++) {
+                for (let j = i + 1; j < allP.length; j++) {
+                    let dx = allP[j].x - allP[i].x;
+                    let dy = allP[j].y - allP[i].y;
+                    let dist = Math.hypot(dx, dy);
+                    if (dist < 22 && dist > 0) {
+                        let push = (22 - dist) / 2;
+                        allP[i].x -= (dx / dist) * push;
+                        allP[i].y -= (dy / dist) * push;
+                        allP[j].x += (dx / dist) * push;
+                        allP[j].y += (dy / dist) * push;
+                    }
+                }
+            }
+        }
+
+        function handlePlayerBallAction(p, team) {
+            if (team === 'home') {
+                if (p.x > 580) {
+                    let angle = Math.atan2(230 + (Math.random() * 40 - 20) - p.y, 780 - p.x);
+                    let force = 9 + (p.shoot / 10);
+                    ball.vx = Math.cos(angle) * force;
+                    ball.vy = Math.sin(angle) * force;
+                    logMatch(`${p.name} dứt điểm về phía khung thành!`);
+                } else {
+                    let forwardTeammates = homePlayers.filter(t => t.x > p.x + 10);
+                    if (forwardTeammates.length > 0) {
+                        let target = forwardTeammates[Math.floor(Math.random() * forwardTeammates.length)];
+                        let angle = Math.atan2(target.y - p.y, target.x - p.x);
+                        ball.vx = Math.cos(angle) * 7;
+                        ball.vy = Math.sin(angle) * 7;
+                    } else {
+                        ball.vx = 6;
+                        ball.vy = (Math.random() - 0.5) * 4;
+                    }
+                }
+            } else {
+                if (p.x < 220) {
+                    let angle = Math.atan2(230 + (Math.random() * 40 - 20) - p.y, 20 - p.x);
+                    let force = 9 + (p.shoot / 10);
+                    ball.vx = Math.cos(angle) * force;
+                    ball.vy = Math.sin(angle) * force;
+                    logMatch(`${p.name} dứt điểm về phía khung thành!`);
+                } else {
+                    let forwardTeammates = awayPlayers.filter(t => t.x < p.x - 10);
+                    if (forwardTeammates.length > 0) {
+                        let target = forwardTeammates[Math.floor(Math.random() * forwardTeammates.length)];
+                        let angle = Math.atan2(target.y - p.y, target.x - p.x);
+                        ball.vx = Math.cos(angle) * 7;
+                        ball.vy = Math.sin(angle) * 7;
+                    } else {
+                        ball.vx = -6;
+                        ball.vy = (Math.random() - 0.5) * 4;
+                    }
+                }
+            }
         }
 
         function renderHorizontalMatchPitch() {
@@ -847,7 +919,7 @@
             ctx.strokeStyle = '#000000';
             ctx.stroke();
 
-            // Vẽ ĐỦ 11 CẦU THỦ ĐỘI NHÀ
+            // Vẽ 11 CẦU THỦ ĐỘI NHÀ
             homePlayers.forEach(p => {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
@@ -864,7 +936,7 @@
                 ctx.fillText(p.num, p.x, p.y);
             });
 
-            // Vẽ ĐỦ 11 CẦU THỦ ĐỘI KHÁCH
+            // Vẽ 11 CẦU THỦ ĐỘI KHÁCH
             awayPlayers.forEach(p => {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
@@ -885,48 +957,82 @@
         function updateMatchLoop() {
             if (!isMatchRunning) return;
 
-            homePlayers.forEach(p => {
-                let dx = ball.x - p.x;
-                let dy = ball.y - p.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (dist > 15) {
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
-                } else {
-                    ball.vx = 8;
-                    ball.vy = (Math.random() - 0.5) * 6;
-                }
-            });
-
-            awayPlayers.forEach(p => {
-                let dx = ball.x - p.x;
-                let dy = ball.y - p.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (dist > 15) {
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
-                } else {
-                    ball.vx = -8;
-                    ball.vy = (Math.random() - 0.5) * 6;
-                }
-            });
-
+            // Vật lý bóng
             ball.x += ball.vx;
             ball.y += ball.vy;
-            ball.vx *= 0.95;
-            ball.vy *= 0.95;
+            ball.vx *= 0.94;
+            ball.vy *= 0.94;
+
+            if (ball.x < 20) { ball.x = 20; ball.vx = -ball.vx * 0.5; }
+            if (ball.x > 780) { ball.x = 780; ball.vx = -ball.vx * 0.5; }
+            if (ball.y < 20) { ball.y = 20; ball.vy = -ball.vy * 0.5; }
+            if (ball.y > 440) { ball.y = 440; ball.vy = -ball.vy * 0.5; }
+
+            let homeClosest = getClosestPlayer(homePlayers, ball);
+            let awayClosest = getClosestPlayer(awayPlayers, ball);
+
+            // A.I Đội Nhà
+            homePlayers.forEach(p => {
+                let targetX = p.baseX + (ball.x - 400) * 0.25;
+                let targetY = p.baseY + (ball.y - 230) * 0.15;
+
+                if (p === homeClosest && Math.abs(ball.x - p.baseX) < 260) {
+                    targetX = ball.x;
+                    targetY = ball.y;
+                }
+
+                let dx = targetX - p.x;
+                let dy = targetY - p.y;
+                let dist = Math.hypot(dx, dy);
+                if (dist > 3) {
+                    p.x += (dx / dist) * p.speed;
+                    p.y += (dy / dist) * p.speed;
+                }
+
+                if (Math.hypot(ball.x - p.x, ball.y - p.y) < 14) {
+                    handlePlayerBallAction(p, 'home');
+                }
+            });
+
+            // A.I Đội Khách
+            awayPlayers.forEach(p => {
+                let targetX = p.baseX + (ball.x - 400) * 0.25;
+                let targetY = p.baseY + (ball.y - 230) * 0.15;
+
+                if (p === awayClosest && Math.abs(ball.x - p.baseX) < 260) {
+                    targetX = ball.x;
+                    targetY = ball.y;
+                }
+
+                let dx = targetX - p.x;
+                let dy = targetY - p.y;
+                let dist = Math.hypot(dx, dy);
+                if (dist > 3) {
+                    p.x += (dx / dist) * p.speed;
+                    p.y += (dy / dist) * p.speed;
+                }
+
+                if (Math.hypot(ball.x - p.x, ball.y - p.y) < 14) {
+                    handlePlayerBallAction(p, 'away');
+                }
+            });
+
+            applySeparation([...homePlayers, ...awayPlayers]);
+
+            // Bàn thắng & Reset
+            if (ball.x > 770 && ball.y > 185 && ball.y < 275) {
+                score.home++;
+                document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
+                logMatch(`VÀOOOO! ${document.getElementById('match-home-name').innerText} ghi bàn!`);
+                resetKickoff();
+            } else if (ball.x < 30 && ball.y > 185 && ball.y < 275) {
+                score.away++;
+                document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
+                logMatch(`VÀOOOO! ${document.getElementById('match-away-name').innerText} ghi bàn!`);
+                resetKickoff();
+            }
 
             renderHorizontalMatchPitch();
-
-            if (ball.x > 780 && ball.y > 180 && ball.y < 270) {
-                logMatch(`VÀOOOO! Đội nhà ghi bàn!`);
-                ball = { x: 400, y: 230, vx: 0, vy: 0 };
-            } else if (ball.x < 20 && ball.y > 180 && ball.y < 270) {
-                logMatch(`VÀOOOO! Đội khách ghi bàn!`);
-                ball = { x: 400, y: 230, vx: 0, vy: 0 };
-            }
         }
 
         function logMatch(msg) {
