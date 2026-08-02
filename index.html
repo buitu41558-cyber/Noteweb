@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Victoria FC - Simulator</title>
-    <!-- Tailwind CSS (Giao diện màu trắng tối giản) -->
+    <title>Victoria FC - World Cup Simulator</title>
+    <!-- Tailwind CSS (Giao diện đơn giản màu trắng) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
@@ -13,16 +13,16 @@
 </head>
 <body class="pb-24 select-none">
 
-    <!-- HEADER & KHU VỰC THÔNG TIN TÀI KHOẢN -->
+    <!-- HEADER TOP & PROFILE -->
     <header class="bg-white border-b border-gray-200 p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center max-w-4xl mx-auto">
         <div>
             <h1 class="text-xl font-black text-gray-900 tracking-wider">VICTORIA FC</h1>
             <p class="text-[11px] text-gray-500 font-medium">World Cup 16 Teams Simulator</p>
         </div>
         
-        <!-- INFO TÀI KHOẢN & NÚT ĐĂNG XUẤT -->
-        <div id="user-profile-bar" class="flex items-center gap-3">
-            <!-- Render động thông tin user -->
+        <!-- THÔNG TIN TÀI KHOẢN & ĐĂNG XUẤT -->
+        <div id="user-profile-bar" class="flex items-center gap-2">
+            <!-- Render động thông tin tài khoản -->
         </div>
     </header>
 
@@ -32,7 +32,6 @@
         <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ -->
         <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
             <div class="bg-white p-6 rounded-xl w-96 shadow-2xl border border-gray-100">
-                <!-- TAB CHUYỂN ĐỔI ĐĂNG NHẬP / ĐĂNG KÝ -->
                 <div class="flex border-b border-gray-200 mb-4">
                     <button id="auth-tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900">Đăng Nhập</button>
                     <button id="auth-tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700">Đăng Ký</button>
@@ -47,14 +46,12 @@
                         <label class="text-xs font-semibold text-gray-600 block mb-1">Mật khẩu</label>
                         <input type="password" id="auth-pass" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:border-gray-800">
                     </div>
-                    
-                    <!-- PHẦN XÁC NHẬN ADMIN CHỈ HIỆN KHI ĐĂNG KÝ -->
-                    <div id="admin-field-container" class="hidden pt-2 border-t border-gray-100">
-                        <label class="text-xs font-semibold text-red-600 block mb-1">Mật khẩu xác minh Admin (Dành riêng Admin)</label>
-                        <input type="password" id="admin-pass" class="w-full border border-red-200 rounded-lg p-2 text-sm focus:outline-none focus:border-red-500">
+                    <div>
+                        <label class="text-xs font-semibold text-red-600 block mb-1">Mật khẩu Admin (Để trống nếu là User)</label>
+                        <input type="password" id="admin-pass" placeholder="Mật khẩu Admin" class="w-full border border-red-200 rounded-lg p-2 text-sm focus:outline-none focus:border-red-500">
                     </div>
 
-                    <button id="auth-submit-btn" onclick="handleAuthSubmit()" class="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow">Đăng Nhập</button>
+                    <button id="auth-submit-btn" onclick="handleAuthSubmit()" class="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow">Xác Nhận</button>
                 </div>
             </div>
         </div>
@@ -123,9 +120,9 @@
                 </div>
             </div>
 
-            <!-- CANVAS SÂN BÓNG 2D CHI TIẾT ĐẦY ĐỦ VẠCH KẺ -->
+            <!-- CANVAS SÂN BÓNG 2D CÓ ĐẦY ĐỦ CỎ SỌC & CẦU THỦ ĐỨNG SÂN -->
             <div class="relative flex justify-center mb-4">
-                <canvas id="matchCanvas" width="700" height="450" class="pitch-bg rounded-xl shadow-lg w-full max-w-[700px]"></canvas>
+                <canvas id="matchCanvas" width="700" height="450" class="rounded-xl shadow-lg w-full max-w-[700px] border-4 border-white"></canvas>
             </div>
 
             <!-- NHẬT KÝ DIỄN BIẾN -->
@@ -212,9 +209,8 @@
         <button id="nav-admin-btn" onclick="switchTab('tab-admin')" class="nav-btn flex-1 py-2 text-center text-red-600 hover:text-red-800 hidden">Admin Panel</button>
     </nav>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC TRỌN GÓI -->
     <script>
-        // CƠ SỞ DỮ LIỆU LOCALSTORAGE
         let registeredUsers = JSON.parse(localStorage.getItem('vic_registered_users')) || [];
         let currentUser = JSON.parse(localStorage.getItem('vic_user')) || null;
         let teams = JSON.parse(localStorage.getItem('vic_teams')) || [];
@@ -222,8 +218,37 @@
         let currentAuthMode = 'login';
         let currentFormationKey = '4-4-2';
 
+        // KHỞI TẠO DỮ LIỆU ĐỘI HÌNH BÀN CHƠI DỰ PHÒNG CHO CANVASS MATCH
+        let ball = { x: 350, y: 225, vx: 0, vy: 0 };
+        let homePlayers = [
+            { x: 350, y: 410, color: '#2563eb', num: '1' },
+            { x: 180, y: 330, color: '#2563eb', num: '2' },
+            { x: 300, y: 340, color: '#2563eb', num: '4' },
+            { x: 400, y: 340, color: '#2563eb', num: '5' },
+            { x: 520, y: 330, color: '#2563eb', num: '3' },
+            { x: 230, y: 250, color: '#2563eb', num: '6' },
+            { x: 350, y: 260, color: '#2563eb', num: '8' },
+            { x: 470, y: 250, color: '#2563eb', num: '10' },
+            { x: 200, y: 150, color: '#2563eb', num: '7' },
+            { x: 350, y: 230, color: '#2563eb', num: '9' },
+            { x: 500, y: 150, color: '#2563eb', num: '11' }
+        ];
+        let awayPlayers = [
+            { x: 350, y: 40, color: '#dc2626', num: '1' },
+            { x: 180, y: 110, color: '#dc2626', num: '2' },
+            { x: 300, y: 100, color: '#dc2626', num: '4' },
+            { x: 400, y: 100, color: '#dc2626', num: '5' },
+            { x: 520, y: 110, color: '#dc2626', num: '3' },
+            { x: 230, y: 190, color: '#dc2626', num: '6' },
+            { x: 350, y: 180, color: '#dc2626', num: '8' },
+            { x: 470, y: 190, color: '#dc2626', num: '10' },
+            { x: 200, y: 280, color: '#dc2626', num: '7' },
+            { x: 350, y: 210, color: '#dc2626', num: '9' },
+            { x: 500, y: 280, color: '#dc2626', num: '11' }
+        ];
+
         window.onload = function() {
-            drawPitchDetails(); // Vẽ sẵn đường kẻ sân bóng khi tải trang
+            renderFullMatchPitch();
             if (currentUser) {
                 document.getElementById('auth-modal').classList.add('hidden');
                 updateUserUI();
@@ -232,41 +257,32 @@
             }
         };
 
-        // CHUYỂN TAB ĐĂNG NHẬP / ĐĂNG KÝ
         function switchAuthTab(mode) {
             currentAuthMode = mode;
             const loginBtn = document.getElementById('auth-tab-login-btn');
             const regBtn = document.getElementById('auth-tab-register-btn');
-            const adminContainer = document.getElementById('admin-field-container');
-            const submitBtn = document.getElementById('auth-submit-btn');
 
             if (mode === 'login') {
                 loginBtn.className = "flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900";
                 regBtn.className = "flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700";
-                adminContainer.classList.add('hidden');
-                submitBtn.innerText = "Đăng Nhập";
             } else {
                 regBtn.className = "flex-1 py-2 text-sm font-bold border-b-2 border-gray-900 text-gray-900";
                 loginBtn.className = "flex-1 py-2 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-700";
-                adminContainer.classList.remove('hidden');
-                submitBtn.innerText = "Tạo Tài Khoản";
             }
         }
 
-        // XỬ LÝ ĐĂNG NHẬP HOẶC ĐĂNG KÝ
         function handleAuthSubmit() {
             const u = document.getElementById('auth-user').value.trim();
             const p = document.getElementById('auth-pass').value.trim();
+            const adminP = document.getElementById('admin-pass').value.trim();
 
-            if (!u || !p) return alert("Vui lòng nhập đầy đủ tên tài khoản và mật khẩu!");
+            if (!u || !p) return alert("Vui lòng nhập tên tài khoản và mật khẩu!");
+
+            let role = (adminP === 'hellovictoria123') ? 'admin' : 'user';
 
             if (currentAuthMode === 'register') {
-                // Kiểm tra trùng tài khoản
                 const exist = registeredUsers.some(user => user.username.toLowerCase() === u.toLowerCase());
                 if (exist) return alert("Tài khoản này đã tồn tại! Vui lòng chọn tên đăng nhập khác.");
-
-                const adminP = document.getElementById('admin-pass').value.trim();
-                let role = (adminP === 'hellovictoria123') ? 'admin' : 'user';
 
                 const newUser = { username: u, password: p, role: role, claimedTeamId: null };
                 registeredUsers.push(newUser);
@@ -276,11 +292,12 @@
                 localStorage.setItem('vic_user', JSON.stringify(currentUser));
                 document.getElementById('auth-modal').classList.add('hidden');
                 updateUserUI();
-                alert("Đăng ký tài khoản thành công!");
+                alert("Đăng ký thành công!");
             } else {
-                // Đăng nhập
                 const user = registeredUsers.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
                 if (!user) return alert("Sai tên tài khoản hoặc mật khẩu!");
+
+                if (adminP === 'hellovictoria123') user.role = 'admin';
 
                 currentUser = user;
                 localStorage.setItem('vic_user', JSON.stringify(currentUser));
@@ -289,7 +306,26 @@
             }
         }
 
-        // ĐĂNG XUẤT TÀI KHOẢN
+        // NÂNG CẤP TRỰC TIẾP LÊN ADMIN
+        function promptAdminUpgrade() {
+            const key = prompt("Nhập mật khẩu xác minh Admin:");
+            if (key === 'hellovictoria123') {
+                currentUser.role = 'admin';
+                localStorage.setItem('vic_user', JSON.stringify(currentUser));
+
+                const userInDb = registeredUsers.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
+                if (userInDb) {
+                    userInDb.role = 'admin';
+                    localStorage.setItem('vic_registered_users', JSON.stringify(registeredUsers));
+                }
+
+                alert("Tài khoản đã được kích hoạt quyền ADMIN thành công!");
+                updateUserUI();
+            } else if (key !== null) {
+                alert("Mật khẩu Admin không đúng!");
+            }
+        }
+
         function handleLogout() {
             currentUser = null;
             localStorage.removeItem('vic_user');
@@ -298,7 +334,6 @@
             document.getElementById('nav-admin-btn').classList.add('hidden');
         }
 
-        // CẬP NHẬT GIAO DIỆN USER PROFILE
         function updateUserUI() {
             if (!currentUser) return;
 
@@ -308,9 +343,14 @@
             const profileBar = document.getElementById('user-profile-bar');
             profileBar.innerHTML = `
                 <div class="text-right">
-                    <div class="text-xs font-bold text-gray-900">${currentUser.username} <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono uppercase">${currentUser.role}</span></div>
+                    <div class="text-xs font-bold text-gray-900">${currentUser.username} <span class="text-[10px] ${currentUser.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'} px-1.5 py-0.5 rounded font-mono uppercase">${currentUser.role}</span></div>
                     <div class="text-[11px] text-emerald-600 font-semibold">${teamNameText}</div>
                 </div>
+                ${currentUser.role !== 'admin' ? `
+                    <button onclick="promptAdminUpgrade()" class="text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-300 px-2 py-1 rounded-lg font-semibold transition">
+                        Kích hoạt Admin
+                    </button>
+                ` : ''}
                 <button onclick="handleLogout()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-2.5 py-1 rounded-lg font-semibold transition">
                     Đăng xuất
                 </button>
@@ -318,6 +358,8 @@
 
             if (currentUser.role === 'admin') {
                 document.getElementById('nav-admin-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('nav-admin-btn').classList.add('hidden');
             }
 
             renderTeamList();
@@ -328,9 +370,10 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
+            if (tabId === 'tab-match') renderFullMatchPitch();
         }
 
-        // --- SƠ ĐỒ ĐỘI HÌNH & XẾP CẦU THỦ ---
+        // --- CẤU HÌNH SƠ ĐỒ THAY ĐỔI ---
         const FORMATIONS = {
             '4-4-2': [
                 { slotId: 0, pos: 'GK', x: 50, y: 88 },
@@ -546,7 +589,7 @@
             const name = document.getElementById('admin-team-name').value.trim();
             const pass = document.getElementById('admin-team-pass').value.trim();
 
-            if (!name || !pass) return alert("Vui lòng nhập đầy đủ thông tin đội!");
+            if (!name || !pass) return alert("Vui lòng nhập đầy đủ tên và mật khẩu lấy đội!");
 
             const newTeam = { id: Date.now(), name: name, pass: pass, players: [] };
             teams.push(newTeam);
@@ -624,7 +667,6 @@
                 currentUser.claimedTeamId = teamId;
                 localStorage.setItem('vic_user', JSON.stringify(currentUser));
 
-                // Cập nhật lại trong danh sách registeredUsers
                 const userInDb = registeredUsers.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
                 if (userInDb) {
                     userInDb.claimedTeamId = teamId;
@@ -656,28 +698,25 @@
             });
         }
 
-        // --- 2D MATCH CANVAS WITH FULL DETAILED PITCH LINES ---
+        // --- MATCH CANVAS SIMULATOR VỚI CỎ SỌC & CẦU THỦ ĐỘNG ---
         let canvas = document.getElementById('matchCanvas');
         let ctx = canvas.getContext('2d');
         let matchInterval = null;
+        let isMatchRunning = false;
 
-        let ball = { x: 350, y: 225, vx: 0, vy: 0 };
-        let homePlayers = [];
-        let awayPlayers = [];
-        let score = { home: 0, away: 0 };
+        function renderFullMatchPitch() {
+            // 1. Vẽ cỏ sọc ngang (Grass Stripes Pattern)
+            const stripeHeight = 45;
+            for (let i = 0; i < canvas.height; i += stripeHeight) {
+                ctx.fillStyle = (i / stripeHeight) % 2 === 0 ? '#1e7e34' : '#1b5e20';
+                ctx.fillRect(0, i, canvas.width, stripeHeight);
+            }
 
-        // VẼ ĐẦY ĐỦ VẠCH KẺ SÂN BÓNG TRÊN CANVAS
-        function drawPitchDetails() {
-            ctx.fillStyle = '#1b5e20';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+            // 2. Vẽ vạch kẻ trắng
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
 
-            // Đường viền biên
-            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
-
-            // Đường giữa sân
+            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30); // Biên
             ctx.beginPath();
             ctx.moveTo(15, canvas.height / 2);
             ctx.lineTo(canvas.width - 15, canvas.height / 2);
@@ -694,23 +733,62 @@
             ctx.fillStyle = '#ffffff';
             ctx.fill();
 
-            // Vòng cấm địa Phía Trên (Home/Away Goal Area Top)
+            // Vòng cấm Phía Trên
             ctx.strokeRect((canvas.width - 240) / 2, 15, 240, 80);
             ctx.strokeRect((canvas.width - 100) / 2, 15, 100, 30);
-
-            // Khung thành Trên
             ctx.fillStyle = 'rgba(255,255,255,0.2)';
             ctx.fillRect((canvas.width - 90) / 2, 3, 90, 12);
             ctx.strokeRect((canvas.width - 90) / 2, 3, 90, 12);
 
-            // Vòng cấm địa Phía Dưới (Goal Area Bottom)
+            // Vòng cấm Phía Dưới
             ctx.strokeRect((canvas.width - 240) / 2, canvas.height - 95, 240, 80);
             ctx.strokeRect((canvas.width - 100) / 2, canvas.height - 45, 100, 30);
-
-            // Khung thành Dưới
             ctx.fillStyle = 'rgba(255,255,255,0.2)';
             ctx.fillRect((canvas.width - 90) / 2, canvas.height - 15, 90, 12);
             ctx.strokeRect((canvas.width - 90) / 2, canvas.height - 15, 90, 12);
+
+            // 3. Vẽ Quả Bóng giữa sân
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
+
+            // 4. Vẽ Cầu Thủ Đội Nhà (Áo Xanh)
+            homePlayers.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Số áo
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.num, p.x, p.y);
+            });
+
+            // 5. Vẽ Cầu Thủ Đội Khách (Áo Đỏ)
+            awayPlayers.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.num, p.x, p.y);
+            });
         }
 
         function adminStartMatch() {
@@ -726,44 +804,19 @@
             document.getElementById('match-away-name').innerText = awayTeam.name;
             document.getElementById('match-status-text').innerText = "ĐANG THI ĐẤU";
             document.getElementById('match-score').innerText = "0 - 0";
-            score = { home: 0, away: 0 };
 
             switchTab('tab-match');
-            initMatchData();
-            logMatch(`Trận đấu giữa ${homeTeam.name} và ${awayTeam.name} bắt đầu!`);
-        }
-
-        function initMatchData() {
+            isMatchRunning = true;
             ball = { x: 350, y: 225, vx: 0, vy: 0 };
 
-            homePlayers = [
-                { x: 350, y: 410, color: '#2563eb', speed: 2, num: '1' },
-                { x: 200, y: 320, color: '#2563eb', speed: 2.5, num: '4' },
-                { x: 500, y: 320, color: '#2563eb', speed: 2.5, num: '5' },
-                { x: 350, y: 235, color: '#2563eb', speed: 3.2, num: '9' }
-            ];
-
-            awayPlayers = [
-                { x: 350, y: 40, color: '#dc2626', speed: 2, num: '1' },
-                { x: 200, y: 130, color: '#dc2626', speed: 2.5, num: '3' },
-                { x: 500, y: 130, color: '#dc2626', speed: 2.5, num: '4' },
-                { x: 350, y: 200, color: '#dc2626', speed: 3.0, num: '10' }
-            ];
+            logMatch(`Trọng tài thổi còi bắt đầu trận đấu giữa ${homeTeam.name} và ${awayTeam.name}!`);
 
             if (matchInterval) clearInterval(matchInterval);
             matchInterval = setInterval(updateMatchLoop, 1000 / 30);
         }
 
         function updateMatchLoop() {
-            drawPitchDetails(); // Vẽ lại chi tiết vạch kẻ mỗi khung hình
-
-            // Vẽ Quả Bóng
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, 6, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff';
-            ctx.fill();
-            ctx.strokeStyle = '#000000';
-            ctx.stroke();
+            if (!isMatchRunning) return;
 
             // A.I Đội Nhà (Xanh)
             homePlayers.forEach(p => {
@@ -772,19 +825,12 @@
                 let dist = Math.sqrt(dx*dx + dy*dy);
 
                 if (dist > 12) {
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
+                    p.x += (dx / dist) * 2.2;
+                    p.y += (dy / dist) * 2.2;
                 } else {
                     ball.vx = (Math.random() - 0.5) * 10;
                     ball.vy = -7;
                 }
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.stroke();
             });
 
             // A.I Đội Khách (Đỏ)
@@ -794,19 +840,12 @@
                 let dist = Math.sqrt(dx*dx + dy*dy);
 
                 if (dist > 12) {
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
+                    p.x += (dx / dist) * 2.2;
+                    p.y += (dy / dist) * 2.2;
                 } else {
                     ball.vx = (Math.random() - 0.5) * 10;
                     ball.vy = 7;
                 }
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.stroke();
             });
 
             ball.x += ball.vx;
@@ -814,16 +853,14 @@
             ball.vx *= 0.95;
             ball.vy *= 0.95;
 
-            // Xử lý Bàn Thắng
+            renderFullMatchPitch();
+
+            // Ghi bàn
             if (ball.y < 15 && ball.x > 305 && ball.x < 395) {
-                score.home++;
-                document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
-                logMatch(`VÀOOOO! Đội nhà vừa ghi bàn!`);
+                logMatch(`VÀOOOO! Đội nhà vừa làm tung lưới đối phương!`);
                 ball = { x: 350, y: 225, vx: 0, vy: 0 };
             } else if (ball.y > 435 && ball.x > 305 && ball.x < 395) {
-                score.away++;
-                document.getElementById('match-score').innerText = `${score.home} - ${score.away}`;
-                logMatch(`VÀOOOO! Đội khách ghi bàn!`);
+                logMatch(`VÀOOOO! Đội khách ghi bàn mở tỷ số!`);
                 ball = { x: 350, y: 225, vx: 0, vy: 0 };
             }
         }
